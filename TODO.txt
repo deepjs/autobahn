@@ -1,0 +1,224 @@
+layer dataModel/role :
+
+{
+	roles:{
+		full:{
+			facets:{
+				Fiche:Fiche
+			}
+		},
+		custom:{
+			ids:[],
+
+		},
+		public:{
+			urlmap:pulicMap,
+			facets:{
+				Fiche:FicheFacet
+			},
+			statics:{
+				leaf:{urls:["/www/common/js-lib/leaf"], root: "node_modules/leaf", directoryListing: true},
+				compose:{urls:["/www/common/js-lib/compose"], root: "node_modules/compose", directoryListing: true},
+				rql:{urls:["/www/common/js-lib/rql"], root: "node_modules/rql", directoryListing: true},
+				"promised-io"{urls:["/www/common/js-lib/promised-io"], root: "node_modules/promised-io", directoryListing: true},
+				"shared":{urls:["/www/common/js-custom/shared"], root: "app/shared", directoryListing: true},
+				www:{urls:["/www"], root: "www", directoryListing: true, index:"index.html"}	
+			}
+		},
+		member:{
+			backgrounds:["#../public"],
+			facets:{
+				Member:MemberFacet
+			},
+			urlmap:{
+				profile:{
+
+				}
+			}
+		},
+		traductor:{
+
+		},
+		admin:{
+			backgrounds:["#../full"],
+			urlmap:{
+				backgrounds:["#../public/urlmap"],
+				subs:{
+					admin:{
+						controller:"controller/admin-controller.js"
+					}
+				}
+			}
+		}
+	}
+}
+
+
+layer de la map url : 
+
+
+{
+	accepted:"/",
+	controller:"controller/main-controller.js"
+	errors:{
+		"404":{
+			controller:{
+				template:{
+					root:"swig::templates/error404.html"
+				}
+			}
+		}
+	},
+	subs:{
+		language:{
+			accepted:[ "fr", "nl", "en" ],
+			redirect:"/{{ request.path[0] }}/{{ __this.parent.facets.Category[request.path[0]].shorturl }}",
+			subs:{
+				helps:{
+					accepted:"json/translation.json#/url/helps/{{ request.path[0] }}",
+					redirect:"/{{ request.path[0] }}/{{ __this.context.defaultCategory[request.path[0]].shorturl }}",
+					subs:{
+						fiche:{
+							accepted:"/Fiche/?{{ request.language }}.shorturl={{ request.path[2] }}",
+							controller:"controller/fiche-controller.js"
+						}
+					}
+				},
+				about:{
+					accepted:"json/translation.json#/url/about/{{ request.path[0] }}",
+					controller:"controller/about-controller.js"
+				},
+				category:{
+					default:"{{ __this.context.defaultCategory[request.path[0]].shorturl }}",
+					accepted:"/Category/?{{ request.language }}.shorturl={{ request.path[1] }}",
+					controller:"controller/browse-controller.js"
+				}
+			}
+		},
+		login:{
+			controller:"controller/login-controller.js"
+		}
+	}
+}
+
+ controlleurs principaux : 
+UrlMapController
+RouteNode
+RoleController
+
+idée : charger toute la map des urls au load du serveur
+il doit connaitre un truc genre /lang/keyword-translated/entry-title-slug
+
+
+
+
+FACET CONTROLLER : 
+
+- facet de base : 
+	- get : handle les schemas
+	- par defaut : possède un dummies-store
+	- offir un ensemble de fonctions de base pour get/query/put/post/delete
+		- getSchemas
+		- getDummies
+		- getFromStore
+		...
+
+		layer : { 
+
+			dummies:[
+
+			],
+			schema:{
+
+			},
+			store:{
+				controller:"...",
+				constructor:function(){
+					//
+				}
+			},
+			get:{ 
+				methods:{
+					schemas:function(){},
+					dummies:function(){},
+					store:function(){}
+				},
+				schema:{
+					"backgrounds":["#../schema"]
+				},
+				serveSchemas:true || { get:false, post:true, etc...} || false
+				serveDummies:true, 
+				serveStore:false,
+				
+				/*
+					type de restriction : 
+						- ne peut recupérer que l'objet avec l'id du remote user
+ 						- ne peut récupérer que certain avec une valeur particulière (ou un ensemble)
+
+ 						==> faut établir la relation (link) owner
+ 						- ne peut récupérer que ce qu'il lui appartient
+
+ 						==> faudrait donner de manière générique quelle(s) relation(s) doivent être fullfilled avec l'user
+				*/
+			}, 
+			query:{ 
+				serveDummies:true, 
+				serveStore:false,
+				store:{ "backgrounds":["#../store"] },
+				restriction:function(remoteUser, object){}
+
+				/*
+					ici les restrictions devrait pouvoir établir le set maximal de rql utilisable
+					les limits de range
+					les ranges d'ids accessibles
+					les relations utilisateurs
+					limite temporelles de répétition de queries
+				*/
+			},
+			put:{ 
+				serve:{
+					dummies:true, 
+					serveStore:false
+				},
+				store:{ "backgrounds":["#../store"] },
+				restriction:function(remoteUser, object){}
+			},
+			post:{ 
+				serveDummies:true, 
+				serveStore:false,
+				store:{ "backgrounds":["#../store"] }
+
+
+				/*
+					limite 
+
+				*/
+			}
+		}
+
+
+
+- TRADUCTIONS DEEP-SCHEMA: 
+
+	- faire repository (ou db) des traductions des erreurs du deep-schema : un doc par pays-langue
+	- faire interface pour éditer/visualiser/choper
+
+
+- Faire lib : 
+	smart-views
+	- qui contient les vues/widgets/templates/json des UI smart
+
+	smart-bahn
+	- qui contient les services/routes smart
+
+
+
+
+
+
+
+
+
+
+
+

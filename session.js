@@ -1,0 +1,173 @@
+/**
+ * Middleware for HTTP sessions. Requests will have a getSession(createIfNecessary, expires)
+ * (both arguments optional) method for accessing the session.
+ * Sessions can also be statically accessed with the exported getCurrentSession function.
+ * Session middleware can be started with any object store, and defaults to a
+ * Perstore provided session store.
+ */
+
+if(typeof define !== 'function'){
+	var define = require('amdefine')(module);
+}
+
+define(function (require){
+	var promiseModule = require("promised-io/promise"),
+		settings = require("perstore/util/settings"),
+		sha1 = require("pintura/util/sha1").hex_sha1;
+	var Memory = require("autobahn/stores/memory").store;
+	
+	var deep = require("deep/deep");
+	//var when = require("deep/promise").when;
+	var autobahnController = require("autobahn/autobahn-controller");
+
+
+	var Session = {
+
+	};
+	Session.jsgi = function(store, options, nextApp){
+		if(!store)
+			store = new Memory();
+		Session.store = store;
+		options = options || {};
+		Session.expires = options.expires || settings.sessionTTL || 300;
+		Session.expiresDeltaMS = Session.expires*1000;
+		//
+		//console.log("Session.jsgi : ", store)
+		return function(request){
+			var session = null;
+			// try to fetch the stored session
+			var cookieId, cookie = request.headers.cookie;
+			cookieId = cookie && cookie.match(/pintura-session=([^;]+)/);
+			cookieId = cookieId && cookieId[1];
+			if (cookieId) 
+			{
+				if (cookieId === cookieVerification(request)) 
+					// allow for cookie-based CSRF verification
+					delete request.crossSiteForgeable;
+				session = store.get(cookieId);
+			}
+			var context = promiseModule.currentContext;
+			if(!context)
+				context = promiseModule.currentContext = deep.context = request.context = {};
+			context.request = request;
+			// wait for promised session
+			return promiseModule.whenPromise(session).then(function(session){
+				// make session available as request.session
+				if(session)
+				{
+					var timeout = new Date() > new Date(session.expires);
+					if(timeout)
+					{
+						store.delete(cookieId);
+						request.session = null;
+						return {
+							status:403,
+							body:"session timeout. please login.",
+							headers:{}
+						}
+					}
+					else
+						request.session = session;	
+				}	
+				else
+					request.session = null;
+
+				// process the request
+				return promiseModule.whenPromise(nextApp(request)).then(function(response){
+					// store session cookie
+					//console.log("session next app result : ", response)
+					if(request.session) /// refresh cookies and session expiration
+					{	
+						var expires = new Date().valueOf()+Session.expiresDeltaMS;
+						Session.setSessionCookie(response, request.session.id, expires);
+						request.session.expires = new Date(expires).toISOString()
+						// save session
+						return promiseModule.whenPromise(store.put(request.session )).then(function(){
+							return response;
+						});
+					}
+					return response;
+				});
+			});
+		};
+	};
+	function checkTimeout(id, expires){
+		var till = (expires.valueOf() - new Date().valueOf()) + 5000;
+		if(till > 0)
+			setTimeout(function(){
+				promiseModule.whenPromise(Session.store.get(id)).then(function(session){
+					if(!session)
+						return;
+					var exp = new Date(session.expires);
+					if(new Date() >= exp)
+						Session.store.delete(id);
+					else
+						checkTimeout(id, exp);
+				})
+			}, till);
+		else
+			promiseModule.whenPromise(Session.store.get(id)).then(function(session){
+				if(session)
+					Session.store.delete(id);
+			})
+	}
+
+	// gets a session, creating a new one if necessary
+	function forceSession(request, expires){
+		var session = request.session;
+		if(session)
+			return session;
+		var newSessionId = generateSessionKey();
+		if (!expires) expires = -Session.expires;
+		if (expires < 0)
+			expires = ((new Date()).valueOf())-expires*1000;
+		var expiration = new Date(expires);
+
+		// TODO: use add()
+		session = request.session = {
+			expires: new Date(expiration).toISOString(),
+			id: newSessionId,
+			save:function(){
+				return Session.store.put(session);
+			}
+		}; 
+		//console.log("forceSesison : ", session)
+		checkTimeout(session.id, expiration);
+		return promiseModule.whenPromise(Session.store.put(session)).then(function(){
+			return session;
+		});
+	};
+
+	Session.getCurrentSession = function (createIfNecessary, expiration){
+		var request = promiseModule.currentContext && promiseModule.currentContext.request;
+		if(request){
+			if(request.session){
+				return request.session;
+			}
+			if(createIfNecessary){
+				expiration = expiration || (new Date().valueOf()+Session.expiresDeltaMS);
+				return forceSession(request, expiration);
+			}
+		}
+		return null;
+	}
+
+	function cookieVerification(request){
+		var pinturaAuth = request.queryString.match(/pintura-session=(\w+)/);
+		if(pinturaAuth){
+			request.queryString = request.queryString.replace(/pintura-session=\w+/,'');
+			return pinturaAuth[1];
+		}
+	}
+	Session.setSessionCookie = function (response, sessionId, expires){
+		if (!response.headers) response.headers = {};
+		response.headers["set-cookie"] = "pintura-session=" + sessionId + ";" + (settings.security.httpOnlyCookies ? "HttpOnly;" : "") + "path=/" + (expires ? ";expires=" + new Date(expires).toUTCString() : "");
+	}
+	function generateSessionKey(username, password){
+		return sha1(rnd()+rnd()+rnd()) + sha1(rnd()+rnd()+rnd());
+	};
+	function rnd(){
+		return Math.random().toString().substring(4);
+	}
+	return Session;
+});
