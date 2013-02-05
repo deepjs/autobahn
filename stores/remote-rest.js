@@ -26,6 +26,9 @@ Remote.prototype.setRemoteHeaders = function (options, headers) {
 		headers["Session-ID"] = options.session.id;
 	if(options.referer)
 		headers["referer"] = options.referer;
+	if(options["accept-language"])
+		headers["accept-language"] = options["accept-language"];
+
 }
 Remote.prototype = {
 		dummies:null,
@@ -39,30 +42,26 @@ Remote.prototype = {
 				*/
 				//set the headers
 				var headers = {};
-				headers["Accept-Language"] = options["accept-language"];
-				headers["referer"] = options["referer"];
-				//if(this.headers)
-				//	deepCopy(this.headers, headers, false);
-				var session = options.session;
-				if(session && session.remoteUser)
-					headers["Session-ID"] = session.id;
 
+				this.setRemoteHeaders(options, headers);
+				
 				return when(request({
 					method:"GET",
 					url:url,
 					//queryString: query,
 					headers: headers
-				})).done( function  (success) {
+				}))
+				.done( function  (success) {
 					createParser("GET");
 				})
 				.fail(function (error) {
 					console.log("error (remote HTTP call failed) while calling remote-services : get::"+this.remoteURL+ " - ", error);
-					return new errors.server( error.body, error.status);
+					return error;
 				});
 
 			}catch(error){
 				console.log("error (throw) while calling remote-store : get::"+this.remoteURL+ " - ", error);
-				throw new errors.server(JSON.stringify(error), 500);
+				throw error;
 			}
 		},
 		put: function(object, options){
@@ -75,7 +74,7 @@ Remote.prototype = {
 
 				var finalURL = (this.remoteURL[this.remoteURL.length-1]=="/")?(this.remoteURL+id):(this.remoteURL+"/"+id);
 
-				var headers =   {};
+				var headers =  {};
 				headers["Accept-Language"] = options["accept-language"];
 				headers["referer"] = options["referer"];
 
@@ -97,8 +96,7 @@ Remote.prototype = {
 					console.log("error (remote HTTP call failed) while calling remote-services : put::"+finalURL+ " - ", error);
 					return {
 						status:503,
-						body:"error (remote HTTP call failed) while calling remote-services : put::"+finalURL,
-						__isRemoteResponse__:true
+						body:"error (remote HTTP call failed) while calling remote-services : put::"+finalURL
 					}
 					//throw new AccessError("error while posting on store")
 				});
@@ -106,8 +104,7 @@ Remote.prototype = {
 				console.log("error (throw) while calling remote-store : put::"+finalURL+ " - ", error);
 				return {
 					status:500,
-					body:"error (throw) while calling remote-store : put::"+finalURL,
-					__isRemoteResponse__:true
+					body:"error (throw) while calling remote-store : put::"+finalURL
 				}
 			}
 		},
@@ -145,8 +142,7 @@ Remote.prototype = {
 					console.log("error (remote HTTP call failed) while calling remote-services : post::"+this.remoteURL+ " - ", error);
 					return {
 						status:503,
-						body:"error (remote HTTP call failed) while calling remote-services : post::"+this.remoteURL,
-						__isRemoteResponse__:true
+						body:"error (remote HTTP call failed) while calling remote-services : post::"+this.remoteURL
 					}
 					//throw new AccessError("error while posting on store")
 				});
@@ -154,8 +150,7 @@ Remote.prototype = {
 				console.log("error (throw) while calling remote-store : post::"+this.remoteURL+ " - ", error);
 				return {
 					status:500,
-					body:"error (throw) while calling remote-store : post::"+this.remoteURL,
-					__isRemoteResponse__:true
+					body:"error (throw) while calling remote-store : post::"+this.remoteURL
 				}
 				//throw new Error("error while remote-rest.post : ", error);
 			}
@@ -197,8 +192,7 @@ Remote.prototype = {
 					console.log("error (remote HTTP call failed) while calling remote-services : query::"+this.remoteURL+ " - ", error);
 					return {
 						status:503,
-						body:"error (remote HTTP call failed) while calling remote-services : query::"+this.remoteURL,
-						__isRemoteResponse__:true
+						body:"error (remote HTTP call failed) while calling remote-services : query::"+this.remoteURL
 					}
 					//throw new AccessError("error while querying on store")
 				});
@@ -206,8 +200,7 @@ Remote.prototype = {
 				console.log("error (throw) while calling remote-store : query::"+this.remoteURL+ " - ", error);
 				return {
 					status:500,
-					body:"error (throw) while calling remote-store : query::"+this.remoteURL,
-					__isRemoteResponse__:true
+					body:"error (throw) while calling remote-store : query::"+this.remoteURL
 				}
 				//throw new Error("error while remote-rest.query : ", e);
 			}
@@ -238,14 +231,9 @@ function createParser(method){
 	return function (response)
 	{
 		
-
 		if(console && console.flags && console.flags["remote-rest"])
 			console.log("remote-rest : "+method+" - direct response from remote  : ", response.status, " body : ", response.body);
-		var r = {
-			status:response.status,
-			body:null,
-			__isRemoteResponse__:true
-		}
+		
 		var def = deep.Deferred();
 		try{
 			when(response.body.join('')).then(function(resolved){
@@ -279,20 +267,18 @@ function createParser(method){
 							console.log("resolved gives : key ", i, " - val : ", resolved[i] )
 						}*/
 				}
-				r.body = resolved;
-				def.resolve(r);
+				def.resolve(resolved);
 			}, function(r){
 				def.reject(r);
 			});
 		}catch(e){
-				r.status = 500;
-				r.body = "remote-store : parsing failed !";
-				def.reject(r);
-				//throw new Error("error while remote-rest.createParser : ", e);
+				def.reject(e);
 			}
 		return deep.promise(def);
 	}
 }
+
+
 
 
 return Remote;
