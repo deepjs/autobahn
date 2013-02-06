@@ -232,7 +232,7 @@ define(function FacetControllerDefine(require){
 
 			return deep.when(responseValue)
 			.done(function(responseValue){
-				// console.log("second responseValue handler : ", responseValue)
+				 console.log("second responseValue handler : ", responseValue)
 				if(typeof responseValue != 'undefined' && responseValue != null)
 				{
 					if(responseValue instanceof Error)
