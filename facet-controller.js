@@ -240,7 +240,7 @@ define(function FacetControllerDefine(require){
 					return {
 						status: status,
 						headers: infos.responseHeaders,
-						body: [responseValue];
+						body: [responseValue]
 					}
 				}	
 				throw new errors.NotFound("error : facets doesn't give something");
