@@ -20,7 +20,8 @@ Remote.prototype = {
 			
 		},	
 		setRequestHeaders : function (options, requestHeaders) {
-		
+			console.log("setRequestHeaders ", JSON.stringify(options, null, " ") )
+			
 			if(!options)
 				return;
 
