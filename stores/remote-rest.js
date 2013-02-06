@@ -15,23 +15,23 @@ var erros = require("autobahn/errors");
 var Remote = function (argument) {
 	// body...
 }
-Remote.prototype.setRequestHeaders = function (options, requestHeaders) {
-	
-	if(!options)
-		return;
-
-	if(options.session)
-		requestHeaders["Session-ID"] = options.session.id;
-	if(options.request.headers.referer)
-		requestHeaders["referer"] = options.request.headers.referer;
-	if(options.request.headers["accept-language"])
-		requestHeaders["accept-language"] = options.request.headers["accept-language"];
-
-}
-Remote.prototype.setResponseHeaders = function (options, remoteResponse) {
-	
-}
 Remote.prototype = {
+		setResponseHeaders : function (options, remoteResponse) {
+			
+		},	
+		setRequestHeaders : function (options, requestHeaders) {
+		
+			if(!options)
+				return;
+
+			if(options.session)
+				requestHeaders["Session-ID"] = options.session.id;
+			if(options.request.headers.referer)
+				requestHeaders["referer"] = options.request.headers.referer;
+			if(options.request.headers["accept-language"])
+				requestHeaders["accept-language"] = options.request.headers["accept-language"];
+
+		},
 		dummies:null,
 		remoteURL:null,
 		get: function(id, options){
