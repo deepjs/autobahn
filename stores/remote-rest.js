@@ -9,7 +9,6 @@ define(function(require){
 var JSONExt = require("perstore/util/json-ext");
 var request = require("promised-io/http-client").request;
 var deep = require("deep/deep");
-var when = deep.when;
 var DatabaseError = require("perstore/errors").DatabaseError,
 	AccessError = require("perstore/errors").AccessError,
 	MethodNotAllowedError = require("perstore/errors").MethodNotAllowedError;
@@ -42,10 +41,14 @@ Remote.prototype = {
 				*/
 				//set the headers
 				var headers = {};
-
+				
+				var session = Session.getCurrentSession(false);
+				if(session && session.remoteUser)
+					headers["Session-ID"] = session.id;
+				
 				this.setRemoteHeaders(options, headers);
 				
-				return when(request({
+				return deep.when(request({
 					method:"GET",
 					url:url,
 					//queryString: query,
@@ -75,12 +78,12 @@ Remote.prototype = {
 				var finalURL = (this.remoteURL[this.remoteURL.length-1]=="/")?(this.remoteURL+id):(this.remoteURL+"/"+id);
 
 				var headers =  {};
-				headers["Accept-Language"] = options["accept-language"];
-				headers["referer"] = options["referer"];
-
+				
 				var session = Session.getCurrentSession(false);
 				if(session && session.remoteUser)
 					headers["Session-ID"] = session.id;
+
+				this.setRemoteHeaders(options, headers);
 
 				var responsePromise= 
 					request({
@@ -91,21 +94,16 @@ Remote.prototype = {
 						headers: headers
 					});
 
-				return when(responsePromise).then(createParser("PUT"),function  (error) {
-					// body...
-					console.log("error (remote HTTP call failed) while calling remote-services : put::"+finalURL+ " - ", error);
-					return {
-						status:503,
-						body:"error (remote HTTP call failed) while calling remote-services : put::"+finalURL
-					}
-					//throw new AccessError("error while posting on store")
-				});
+				return deep.when(responsePromise)
+					.done( function (success) {
+						createParser("PUT")
+					}).fail( function  (error) {
+						console.log("error (remote HTTP call failed) while calling remote-services : put::"+finalURL+ " - ", error);
+						return error
+					});
 			}catch(error){
 				console.log("error (throw) while calling remote-store : put::"+finalURL+ " - ", error);
-				return {
-					status:500,
-					body:"error (throw) while calling remote-store : put::"+finalURL
-				}
+				throw error;
 			}
 		},
 		post: function(object, options){
@@ -114,20 +112,15 @@ Remote.prototype = {
 				//if(console && console.flags && console.flags["remote-rest"])
 					console.log("REMOTE STORE : post : ", object, " - on  ", this.remoteURL, " - accepted language : ",options["accept-language"])
 
-
 				var headers = {};
-
-				if(options["accept-language"])
-					headers["Accept-Language"] = options["accept-language"];
-				headers["referer"] = options["referer"];
-				//if(this.headers)
-					//deepCopy(this.headers, headers, false);
 
 				var session = Session.getCurrentSession(false);
 				if(session && session.remoteUser)
 					headers["Session-ID"] = session.id;
 
-				console.log("HEADER  : ", headers )
+				this.setRemoteHeaders(options, headers);
+
+				//console.log("HEADER  : ", headers )
 				var responsePromise= 
 					request({
 						method: "POST",
@@ -137,22 +130,18 @@ Remote.prototype = {
 						body: JSONExt.stringify(object),
 						headers: headers
 					});
-				return when(responsePromise).then(createParser("POST"), function  (error) {
-					// body...
-					console.log("error (remote HTTP call failed) while calling remote-services : post::"+this.remoteURL+ " - ", error);
-					return {
-						status:503,
-						body:"error (remote HTTP call failed) while calling remote-services : post::"+this.remoteURL
-					}
-					//throw new AccessError("error while posting on store")
-				});
+				
+				return deep.when(responsePromise)
+					.done(function (success) {
+						createParser("POST")
+					})
+					.fail( function  (error) {
+						console.log("error (remote HTTP call failed) while calling remote-services : post::"+this.remoteURL+ " - ", error);
+						return error;
+					});
 			}catch(error){
 				console.log("error (throw) while calling remote-store : post::"+this.remoteURL+ " - ", error);
-				return {
-					status:500,
-					body:"error (throw) while calling remote-store : post::"+this.remoteURL
-				}
-				//throw new Error("error while remote-rest.post : ", error);
+				throw error;
 			}
 		},
 		query: function(query, options){
@@ -160,18 +149,17 @@ Remote.prototype = {
 			options = options || {};
 			try{
 
-
 				var headers =  {};
-
-				headers["Accept-Language"] = options["accept-language"];
-				headers["referer"] = options["referer"];
-				//deepCopy(this.headers, headers, false);
+				
 				var session = Session.getCurrentSession(false);
 				if(session && session.remoteUser)
 					headers["Session-ID"] = session.id;
 				if(options.start || options.end){
 					headers.range = "items=" + options.start + '-' + options.end; 
 				}
+
+				this.setRemoteHeaders(options, headers);
+
 				query = query.replace(/\$[1-9]/g, function(t){
 					return JSONExt.stringify(options.parameters[t.substring(1) - 1]);
 				});
@@ -182,27 +170,21 @@ Remote.prototype = {
 						finalURL += query;
 					else
 						finalURL += "?"+query;
-				return when(request({
+
+				return deep.when(request({
 					method:"GET",
 					url:finalURL,
 					//queryString: query,
 					headers: headers
-				})).then(createParser('QUERY'),function  (error) {
-					// body...
+				})).done(function (success) {
+					createParser('QUERY')
+				}).fail(function  (error) {
 					console.log("error (remote HTTP call failed) while calling remote-services : query::"+this.remoteURL+ " - ", error);
-					return {
-						status:503,
-						body:"error (remote HTTP call failed) while calling remote-services : query::"+this.remoteURL
-					}
-					//throw new AccessError("error while querying on store")
+					return error;
 				});
 			}catch(error){
 				console.log("error (throw) while calling remote-store : query::"+this.remoteURL+ " - ", error);
-				return {
-					status:500,
-					body:"error (throw) while calling remote-store : query::"+this.remoteURL
-				}
-				//throw new Error("error while remote-rest.query : ", e);
+				throw error;
 			}
 		},
 		"delete": function(id){
