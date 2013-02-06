@@ -9,13 +9,8 @@ define(function(require){
 var JSONExt = require("perstore/util/json-ext");
 var request = require("promised-io/http-client").request;
 var deep = require("deep/deep");
-var DatabaseError = require("perstore/errors").DatabaseError,
-	AccessError = require("perstore/errors").AccessError,
-	MethodNotAllowedError = require("perstore/errors").MethodNotAllowedError;
-var autobahnController = require("autobahn/autobahn-controller");
 var Session = require("autobahn/session");
 var erros = require("autobahn/errors");
-//var Session = require("pintura/jsgi/session");
 
 var Remote = function (argument) {
 	// body...
