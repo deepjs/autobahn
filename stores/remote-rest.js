@@ -57,9 +57,7 @@ Remote.prototype = {
 					//queryString: query,
 					headers: headers
 				}))
-				.done( function  (success) {
-					createParser("GET", self, options);
-				})
+				.done( createParser("GET", self, options) )
 				.fail(function (error) {
 					console.log("error (remote HTTP call failed) while calling remote-services : get::"+this.remoteURL+ " - ", error);
 					return error;
@@ -97,9 +95,8 @@ Remote.prototype = {
 					});
 
 				return deep.when(responsePromise)
-					.done( function (success) {
-						createParser("PUT", self, options)
-					}).fail( function  (error) {
+					.done( createParser("PUT", self, options) )
+					.fail( function  (error) {
 						console.log("error (remote HTTP call failed) while calling remote-services : put::"+finalURL+ " - ", error);
 						return error
 					});
@@ -133,9 +130,7 @@ Remote.prototype = {
 					});
 				
 				return deep.when(responsePromise)
-					.done(function (success) {
-						createParser("POST", self, options)
-					})
+					.done( createParser("POST", self, options) )
 					.fail( function  (error) {
 						console.log("error (remote HTTP call failed) while calling remote-services : post::"+this.remoteURL+ " - ", error);
 						return error;
@@ -148,7 +143,7 @@ Remote.prototype = {
 		query: function(query, options){
 			var self = this;
 
-			//console.log("Remote query : ", query, options);
+			console.log("Remote query : ", query, options);
 			options = options || {};
 			try{
 
@@ -176,9 +171,7 @@ Remote.prototype = {
 					url:finalURL,
 					//queryString: query,
 					headers: headers
-				})).done(function (success) {
-					createParser('QUERY', self, options)
-				}).fail(function  (error) {
+				})).done( createParser('QUERY', self, options) ).fail(function  (error) {
 					console.log("error (remote HTTP call failed) while calling remote-services : query::"+this.remoteURL+ " - ", error);
 					return error;
 				});
