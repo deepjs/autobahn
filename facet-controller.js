@@ -172,7 +172,7 @@ define(function FacetControllerDefine(require){
 				//console.log("Method dont has body : ", method)
 				if(infos.method === "get" && (!path || path.charAt(path.length-1) == '/')){
 					
-					responseValue = this["query"](queryString, infos.responseHeaders);
+					responseValue = this["query"](queryString, infos);
 					//else
 					//	responseValue = this[method](queryString, infos);
 					
