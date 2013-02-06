@@ -211,7 +211,7 @@ function createParser(method, store, options){
 
 		var def = deep.Deferred();
 		try{
-			when(response.body.join('')).then(function(resolved){
+			deep.when(response.body.join('')).then(function(resolved){
 				//console.log("remote "+method+" done : result : ", resolved)
 				if(typeof resolved === "string")
 				{
