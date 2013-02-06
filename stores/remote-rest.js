@@ -15,19 +15,30 @@ var erros = require("autobahn/errors");
 var Remote = function (argument) {
 	// body...
 }
-Remote.prototype.setRemoteHeaders = function (options, headers) {
-	if(options.session)
-		headers["Session-ID"] = options.session.id;
-	if(options.referer)
-		headers["referer"] = options.referer;
-	if(options["accept-language"])
-		headers["accept-language"] = options["accept-language"];
+Remote.prototype.setRequestHeaders = function (options, requestHeaders) {
+	
+	if(!options)
+		return;
 
+	if(options.session)
+		requestHeaders["Session-ID"] = options.session.id;
+	if(options.request.headers.referer)
+		requestHeaders["referer"] = options.request.headers.referer;
+	if(options.request.headers["accept-language"])
+		requestHeaders["accept-language"] = options.request.headers["accept-language"];
+
+}
+Remote.prototype.setResponseHeaders = function (options, remoteResponse) {
+	
 }
 Remote.prototype = {
 		dummies:null,
 		remoteURL:null,
 		get: function(id, options){
+			options = options || {};
+
+			var self = this;
+
 			try{
 				//construct of the url
 				var url = (this.remoteURL[this.remoteURL.length-1]=="/")?(this.remoteURL+id):(this.remoteURL+"/"+id);
@@ -37,11 +48,7 @@ Remote.prototype = {
 				//set the headers
 				var headers = {};
 				
-				var session = Session.getCurrentSession(false);
-				if(session && session.remoteUser)
-					headers["Session-ID"] = session.id;
-				
-				this.setRemoteHeaders(options, headers);
+				this.setRequestHeaders(options, headers);
 				
 				return deep.when(request({
 					method:"GET",
@@ -50,7 +57,7 @@ Remote.prototype = {
 					headers: headers
 				}))
 				.done( function  (success) {
-					createParser("GET");
+					createParser("GET", self, options);
 				})
 				.fail(function (error) {
 					console.log("error (remote HTTP call failed) while calling remote-services : get::"+this.remoteURL+ " - ", error);
@@ -63,6 +70,9 @@ Remote.prototype = {
 			}
 		},
 		put: function(object, options){
+			var self = this;
+			options = options || {};
+
 			try{
 				//console.log("Remote put : ", id);
 				if(!options.id)
@@ -74,11 +84,7 @@ Remote.prototype = {
 
 				var headers =  {};
 				
-				var session = Session.getCurrentSession(false);
-				if(session && session.remoteUser)
-					headers["Session-ID"] = session.id;
-
-				this.setRemoteHeaders(options, headers);
+				this.setRequestHeaders(options, headers);
 
 				var responsePromise= 
 					request({
@@ -91,7 +97,7 @@ Remote.prototype = {
 
 				return deep.when(responsePromise)
 					.done( function (success) {
-						createParser("PUT")
+						createParser("PUT", self, options)
 					}).fail( function  (error) {
 						console.log("error (remote HTTP call failed) while calling remote-services : put::"+finalURL+ " - ", error);
 						return error
@@ -102,6 +108,9 @@ Remote.prototype = {
 			}
 		},
 		post: function(object, options){
+			var self = this;
+			options = options || {};
+
 
 			try{
 				//if(console && console.flags && console.flags["remote-rest"])
@@ -109,11 +118,7 @@ Remote.prototype = {
 
 				var headers = {};
 
-				var session = Session.getCurrentSession(false);
-				if(session && session.remoteUser)
-					headers["Session-ID"] = session.id;
-
-				this.setRemoteHeaders(options, headers);
+				this.setRequestHeaders(options, headers);
 
 				//console.log("HEADER  : ", headers )
 				var responsePromise= 
@@ -128,7 +133,7 @@ Remote.prototype = {
 				
 				return deep.when(responsePromise)
 					.done(function (success) {
-						createParser("POST")
+						createParser("POST", self, options)
 					})
 					.fail( function  (error) {
 						console.log("error (remote HTTP call failed) while calling remote-services : post::"+this.remoteURL+ " - ", error);
@@ -140,20 +145,19 @@ Remote.prototype = {
 			}
 		},
 		query: function(query, options){
+			var self = this;
+
 			//console.log("Remote query : ", query, options);
 			options = options || {};
 			try{
 
 				var headers =  {};
 				
-				var session = Session.getCurrentSession(false);
-				if(session && session.remoteUser)
-					headers["Session-ID"] = session.id;
 				if(options.start || options.end){
 					headers.range = "items=" + options.start + '-' + options.end; 
 				}
 
-				this.setRemoteHeaders(options, headers);
+				this.setRequestHeaders(options, headers);
 
 				query = query.replace(/\$[1-9]/g, function(t){
 					return JSONExt.stringify(options.parameters[t.substring(1) - 1]);
@@ -172,7 +176,7 @@ Remote.prototype = {
 					//queryString: query,
 					headers: headers
 				})).done(function (success) {
-					createParser('QUERY')
+					createParser('QUERY', self, options)
 				}).fail(function  (error) {
 					console.log("error (remote HTTP call failed) while calling remote-services : query::"+this.remoteURL+ " - ", error);
 					return error;
@@ -182,18 +186,16 @@ Remote.prototype = {
 				throw error;
 			}
 		},
-		"delete": function(id){
+		"delete": function(id, options){
+			var self = this;
+
 		//	console.log("Remote delete : ", id);
 			options = options || {};
 		
 			var headers = {};
 			
-			headers["Accept-Language"] = options["accept-language"];
-			headers["referer"] = options["referer"];
-			//deepCopy(this.headers, headers, false);
-			var session = Session.getCurrentSession(false);
-			if(session && session.remoteUser)
-				headers["Session-ID"] = session.id;
+			this.setRequestHeaders(options,headers);
+
 			return request({
 				method:"DELETE",
 				pathInfo: (this.remoteURL[this.remoteURL.length-1]=="/")?(this.remoteURL+id):(this.remoteURL+"/"+id),
@@ -204,13 +206,15 @@ Remote.prototype = {
 	}
 
 
-function createParser(method){
+function createParser(method, store, options){
 	return function (response)
 	{
 		
 		if(console && console.flags && console.flags["remote-rest"])
 			console.log("remote-rest : "+method+" - direct response from remote  : ", response.status, " body : ", response.body);
 		
+		store.setResponseHeaders( options, response);
+
 		var def = deep.Deferred();
 		try{
 			when(response.body.join('')).then(function(resolved){
@@ -254,9 +258,6 @@ function createParser(method){
 		return deep.promise(def);
 	}
 }
-
-
-
 
 return Remote;
 });

@@ -240,7 +240,7 @@ define(function FacetControllerDefine(require){
 					return {
 						status: status,
 						headers: infos.responseHeaders,
-						body: responseValue
+						body: [responseValue];
 					}
 				}	
 				throw new errors.NotFound("error : facets doesn't give something");
@@ -248,8 +248,8 @@ define(function FacetControllerDefine(require){
 		}
 		catch(e){
 			// console.log("FACET ANALYSE ERROR : ", JSON.stringify(e));
-			if(e instanceof Error)
-				throw error;
+			if(e instanceof Error && e.status)
+				throw e;
 			throw new errors.Server("Facet analyse error : "+JSON.stringify(e), 500);
 			//throw e;// new Error("error while facet.analyse : ", e);
 		}
