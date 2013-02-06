@@ -21,7 +21,7 @@ Remote.prototype = {
 		},	
 		setRequestHeaders : function (options, requestHeaders) {
 			console.log("setRequestHeaders ", JSON.stringify(options, null, " ") )
-			
+
 			if(!options)
 				return;
 
@@ -148,7 +148,7 @@ Remote.prototype = {
 		query: function(query, options){
 			var self = this;
 
-			//console.log("Remote query : ", query, options);
+			console.log("Remote query : ", query, options);
 			options = options || {};
 			try{
 
