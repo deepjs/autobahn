@@ -332,6 +332,7 @@ define(function FacetControllerDefine(require){
 	}
 
 	FacetController.prototype.query = function(query, options){
+		console.log("FacetController QUERY : options = ", options);
 		var othis = this;
 		if(!this.store)
 			throw new AccessError(this.name + " don't have store to query something");
