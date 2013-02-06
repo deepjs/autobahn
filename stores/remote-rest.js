@@ -148,7 +148,7 @@ Remote.prototype = {
 		query: function(query, options){
 			var self = this;
 
-			console.log("Remote query : ", query, options);
+			//console.log("Remote query : ", query, options);
 			options = options || {};
 			try{
 
@@ -211,7 +211,7 @@ function createParser(method, store, options){
 	return function (response)
 	{
 		
-		if(console && console.flags && console.flags["remote-rest"])
+		//if(console && console.flags && console.flags["remote-rest"])
 			console.log("remote-rest : "+method+" - direct response from remote  : ", response.status, " body : ", response.body);
 		
 		store.setResponseHeaders( options, response);
