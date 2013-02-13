@@ -10,10 +10,10 @@ define(function(require){
 
 
 	var ErrorHandler = function(nextApp){
-		return function(request){
+		return function(request, autobahnResponse){
 			//console.log("JSGI Errors : will call next app ")
 			try{
-				return deep.when(nextApp(request))
+				return deep.when(nextApp(request, autobahnResponse))
 				.done(function(response){
 					//console.log("JSGI Errors : direct response : ",response )
 					if(response instanceof Error)
@@ -34,7 +34,7 @@ define(function(require){
 
 			}
 			function errorHandler(e){
-				console.log("JSGI ERRORS : ", e);
+				//console.log("JSGI ERRORS : ", e);
 				var response = {
 					headers:{
 						"content-type":"application/json"

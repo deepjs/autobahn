@@ -11,7 +11,7 @@ if(typeof define !== 'function'){
 }
 
 define(function (require){
-	var promiseModule = require("promised-io/promise"),
+	//var promiseModule = require("promised-io/promise"),
 		settings = require("perstore/util/settings"),
 		sha1 = require("pintura/util/sha1").hex_sha1;
 	var Memory = require("autobahn/stores/memory").store;
@@ -46,12 +46,12 @@ define(function (require){
 					delete request.crossSiteForgeable;
 				session = store.get(cookieId);
 			}
-			var context = promiseModule.currentContext;
+			var context = deep.context;
 			if(!context)
-				context = promiseModule.currentContext = deep.context = request.context = {};
+				context = deep.context = request.context = {};
 			context.request = request;
 			// wait for promised session
-			return promiseModule.whenPromise(session).then(function(session){
+			return deep.when(session).then(function(session){
 				// make session available as request.session
 				if(session)
 				{
@@ -73,7 +73,7 @@ define(function (require){
 					request.session = null;
 
 				// process the request
-				return promiseModule.whenPromise(nextApp(request)).then(function(response){
+				return deep.when(nextApp(request)).then(function(response){
 					// store session cookie
 					//console.log("session next app result : ", response)
 					if(request.session) /// refresh cookies and session expiration
@@ -82,7 +82,7 @@ define(function (require){
 						Session.setSessionCookie(response, request.session.id, expires);
 						request.session.expires = new Date(expires).toISOString()
 						// save session
-						return promiseModule.whenPromise(store.put(request.session )).then(function(){
+						return deep.when(store.put(request.session )).then(function(){
 							return response;
 						});
 					}
@@ -95,7 +95,7 @@ define(function (require){
 		var till = (expires.valueOf() - new Date().valueOf()) + 5000;
 		if(till > 0)
 			setTimeout(function(){
-				promiseModule.whenPromise(Session.store.get(id)).then(function(session){
+				deep.when(Session.store.get(id)).then(function(session){
 					if(!session)
 						return;
 					var exp = new Date(session.expires);
@@ -106,7 +106,7 @@ define(function (require){
 				})
 			}, till);
 		else
-			promiseModule.whenPromise(Session.store.get(id)).then(function(session){
+			deep.when(Session.store.get(id)).then(function(session){
 				if(session)
 					Session.store.delete(id);
 			})
@@ -133,13 +133,13 @@ define(function (require){
 		}; 
 		//console.log("forceSesison : ", session)
 		checkTimeout(session.id, expiration);
-		return promiseModule.whenPromise(Session.store.put(session)).then(function(){
+		return deep.when(Session.store.put(session)).then(function(){
 			return session;
 		});
 	};
 
 	Session.getCurrentSession = function (createIfNecessary, expiration){
-		var request = promiseModule.currentContext && promiseModule.currentContext.request;
+		var request = deep.context && deep.context.request;
 		if(request){
 			if(request.session){
 				return request.session;

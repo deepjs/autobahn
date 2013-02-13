@@ -1,56 +1,49 @@
 
 var deep = require("deep/deep");
 var	Static = require("pintura/jsgi/static").Static;
-var	promise = require("promised-io/promise");
+var AutobahnResponse = require("autobahn/autobahn-response");
 
 
-var statics = require("pintura/jsgi/cascade").Cascade([
 
-// cascade from static to pintura REST handling
-	Static({cachePolicy:{js:0}, urls:["/common/js-lib/deep","/chloe2013/lib/deep"], root: "node_modules/deep", directoryListing: true}),
-	//Static({cachePolicy:{js:0}, urls:["/common/js-lib/deep"], root: "node_modules/deep", directoryListing: true}),
-	Static({urls:["/common/js-lib/compose"], root: "node_modules/compose", directoryListing: true}),
-	Static({urls:["/common/js-lib/rql"], root: "node_modules/rql", directoryListing: true}),
-	Static({urls:["/common/js-lib/promised-io"], root: "node_modules/promised-io", directoryListing: true}),
-	Static({urls:["/js-custom"], root: "node_modules/smart-push", directoryListing: true}),
-	//Static({urls:["/www"], root: "www", directoryListing: true, index:"index.html"}),			
-	//Static({urls:["/chloe2013"], root: "www/chloe2013/", directoryListing: true, index:"index.html"}),			
-	Static({urls:["/"], root: "www/app/", directoryListing: true, index:"index.html"}),			
-	Static({urls:["/common"], root: "www/common/", directoryListing: true, index:"index.html"})
-])
-
-var AutobahnStaticsJSGI = exports.AutobahnStaticsJSGI = function(app){
+var AutobahnStaticsJSGI = exports.AutobahnStaticsJSGI = function(stats, app){
+	var statics = require("pintura/jsgi/cascade").Cascade(stats)
 	return function(request){
 		return deep.when(statics(request)).then(function(response){
-			//console.log("AutobahnJSGI : ---------- response : ", response);
+			console.log("AutobahnJSGI : ---------- response : ", response);
 			if(!response || response.status >= 400)
+			{
 				if(app)
 				{
-					var def = deep.Deferred();
-					deep.when(app(request)).then(function (result) {
-						//console.log("autobahn jsgi : next app response : ", result)
-						if(result && result.headers && result.headers.request)
-							delete result.headers.request;
-						def.resolve(result);
+					//console.log("autobahn.statics.jsgi : try next app ")
+					return deep.when(app(request)).then(function (result) {
+						//console.log("autobahn.statics.jsgi :  next app result  ", result)
+
+						if(result instanceof AutobahnResponse)
+							return result;
+						var autobahnResponse = null;
+						if(result)
+							 autobahnResponse = new AutobahnResponse(result.status, result.headers, result.body);
+						else
+							 autobahnResponse = new AutobahnResponse(404, {}, result);
+						return autobahnResponse;
 					}, function (error) {
-						def.reject(error);
+						return error;
 					});
-					
-					return deep.promise(def);
 				}	
-				else
-					return { headers:{}, status:404, body:["error 404 (A.JSGI.statics)"]};
-			//if(response.body instanceof Buffer)
-			//	response.body = response.body.toString("utf8");
-			return response;
+				if(response instanceof AutobahnResponse)
+					return response;
+				return new AutobahnResponse(404, {}, "error 404 (A.JSGI.statics)");
+			}
+			
+			if(response instanceof AutobahnResponse)
+				return response;
+			return new AutobahnResponse(response.status || 200, response.headers || {}, response.body || response)
+		
 		});
 	};
 };
-
+/*
 var promiseModule = require("promised-io/promise");
-
-
-
 
 AutobahnStaticsJSGI.getFile = function(path, type)
 {
@@ -103,3 +96,5 @@ AutobahnStaticsJSGI.getFile = function(path, type)
 
 return promise.promise(def);
 }
+
+*/

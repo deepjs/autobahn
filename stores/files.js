@@ -15,7 +15,6 @@ var FSStore = function(options){
 	options = options || {};
 	if(options.dataFolder)
 		this.dataFolder = options.dataFolder;
-	this.store = FileSystem({dataFolder:this.dataFolder});
 }
 FSStore.prototype = {
 		dummies:null,
@@ -37,17 +36,17 @@ FSStore.prototype = {
 		},
 		put: function(object, options){
 			try{
+				if()
+				if(console && console.flags && console.flags["fs-store"])
+					console.log("FS : post : ", object)
 
-			if(console && console.flags && console.flags["fs-store"])
-				console.log("FS : post : ", object)
-
-			return when(this.store.put(object, options)).then(function (res){
-				return object;
-			},function  (error) {
-				// body...
-				console.log("error while puting on FS services : - ", error);
-				return { status:500, headers:{}, body:["error 500 (FS store put)"]};
-			});
+				return when(this.store.put(object, options)).then(function (res){
+					return object;
+				},function  (error) {
+					// body...
+					console.log("error while puting on FS services : - ", error);
+					return { status:500, headers:{}, body:["error 500 (FS store put)"]};
+				});
 			}catch(error){
 				console.log("error (throw) while puting on FS store :  - ", error);
 				return { status:500, headers:{}, body:["error 500 (FS store put)"]};

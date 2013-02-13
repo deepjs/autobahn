@@ -21,12 +21,12 @@ if(typeof define !== 'function'){
 
 define(function FacetControllerDefine(require){
 	var deep = require("deep/deep");
-	var promiseModule = require("promised-io/promise");
 	var when = deep.when;
 	var Validator = require("deep/deep-schema");
-	var FacetController = function(){}
 	var errors = require("autobahn/errors");
+	var AutobahnResponse = require("autobahn/autobahn-response");
 
+	var FacetController = function(){}
 	FacetController.prototype = {
 
 		schemas : {
@@ -133,13 +133,13 @@ define(function FacetControllerDefine(require){
 			var status = 200;
 			deep.utils.up(this.headers, infos.responseHeaders);
 
-			// console.log("FACET ANALYSE : infos : ", path, scriptName, method);
+			 console.log("FACET ANALYSE : infos : ", path, scriptName, method);
 			if(!this.schemas[infos.method])
 				throw new errors.MethodNotAllowed("method ("+infos.method+") don't allowed in model");
 	
 			if(!this[infos.method])
 				throw new errors.MethodNotAllowed("method ("+infos.method+") not founded in model");
-			// console.log("facet : this.schemas : ", this.schemas[infos.method])
+			 console.log("facet : this.schemas : ", this.schemas[infos.method])
 			var othis = this;
 			var responseValue = null;
 			infos.id = decodeURIComponent(infos.path);
@@ -197,6 +197,10 @@ define(function FacetControllerDefine(require){
 			}
 			else // method has body
 			{
+				 console.log("Facet : method has body ", request.body, " - infos : " , infos)
+
+
+
 				if(method == "put")
 				{
 		
@@ -209,20 +213,19 @@ define(function FacetControllerDefine(require){
 						throw new errors.PreconditionFailed("Facet need id on put");
 					
 				}
-				// console.log("Facet : method has body ", request.body, " - infos : " , infos)
 				responseValue = this[method](request.body, infos);
-				//console.log("Facet : method has body : responseValue ", responseValue)
+				console.log("Facet : method has body : responseValue ", responseValue)
 
 				deep.when(responseValue)
 				.done(function(responseValue){
-				//	console.log("first responseValue handler : ", responseValue)
+					console.log("first responseValue handler : ", responseValue)
 					if(responseValue)
 					{
 						infos.responseHeaders["content-type"] = "application/javascript"
 						// include a Content-Location per http://greenbytes.de/tech/webdav/draft-ietf-httpbis-p2-semantics-08.html#rfc.section.6.1
 						infos.responseHeaders["content-location"] = request.scheme + "://" + request.headers.host + scriptName  + '/' + (othis.getId(responseValue));
 					}
-					if(promiseModule.currentContext && promiseModule.currentContext.generatedId)
+					if(deep.context && deep.context.generatedId)
 					{
 						status = 201;
 						infos.responseHeaders.location = infos.responseHeaders["content-location"]; // maybe it should come from transaction.generatedId?
@@ -247,7 +250,7 @@ define(function FacetControllerDefine(require){
 			}); 
 		}
 		catch(e){
-			// console.log("FACET ANALYSE ERROR : ", JSON.stringify(e));
+			 console.log("FACET ANALYSE ERROR : ", e);
 			if(e instanceof Error && e.status)
 				throw e;
 			throw new errors.Server("Facet analyse error : "+JSON.stringify(e), 500);
@@ -372,7 +375,10 @@ define(function FacetControllerDefine(require){
 					return othis.filterProperties(obj, othis.schemas.put);
 				});
 			else
+			{
+				console.log("PRECONDITION FAILED : ", JSON.stringify(report, null, ' '));
 				throw new errors.PreconditionFailed("put failed to be executed : precondition failed : ", report);
+			}	
 		},function(error){
 			if(error instanceof Error)
 				throw error;

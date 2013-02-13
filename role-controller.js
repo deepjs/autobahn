@@ -9,6 +9,7 @@ if(typeof define !== 'function'){
 define(function RoleControllerDefine(require){
 	var deep = require("deep/deep");
 	//var RouteNode = require("autobahn/route-node-controller");
+	var AutobahnResponse = require("autobahn/autobahn-response")
 	var Cascade = require("pintura/jsgi/cascade").Cascade;
 	var	Static = require("pintura/jsgi/static").Static;
 	var RoleController = function (argument) {
@@ -34,41 +35,50 @@ define(function RoleControllerDefine(require){
 			var self = this;
 			var c = this.statics(request);
 			//console.log("RoleController.analyse : statics : ", c);
+			//console.log("RoleController.analyse : facets : ", this);
 
 			var noStatics = function (error) {
-				console.log("RoleController : statics error : ", error)
-				if(self.facets && self.facets[options.part])
-					return deep.when(self.facets[options.part].analyse(request, options))
+				//console.log("RoleController : statics error : try next")
+				if(self.facets && self.facets[options.part]) 
+				{
+					console.log("try facet : ", options.part)
+					return deep(request.body)
+					.catchError()
+					.done(function(){
+						return self.facets[options.part].analyse(request, options);
+					})
 					.done(function (success) {
-						//console.log("RoleController : facets success : ", success)
-						//if(!success || success.status >= 400)
-
-						return success;
+						console.log("RoleController : facets success : ", success)
+						//if(!success || success.status >= 400
+						if(typeof success === 'undefined' || success == null)
+							return new AutobahnResponse(404, {}, "facet failed to retrieve something")
+						if(success instanceof AutobahnResponse)
+							return success;
+						if(success.status)
+							return new AutobahnResponse(success.status, success.headers, success.body || success.message || "facet return nothing");
 					})
 					.fail(function (error) {
 						console.log("RoleController : facets error : ", error)
 						return error;
 					});
+				}
 				else if(self.routes)
 					return self.routes.analyse(request, options);
-				else
-					return {
-						status:404,
-						headers:{},
-						body:[]
-					}
+				
+				console.log("autobahn has nothing to do with request");
+				return new AutobahnResponse(404, {}, "autobahn has nothing to do with request : "+ request.url);
 			}
 
 			return deep.when(c)
-			.done(function (success) {
-				//	console.log("RoleController : statics success : ", success);
-				if(!success || success.status >= 400)
-				{
-					return noStatics(success);
-				}
-				return success;
+			.fail(function (error) {
+				return noStatics(error);
 			})
-			.fail(noStatics);
+			.done(function (success) {
+				console.log("RoleController : statics success : ", success);
+				if(!success || success.status >= 400)
+					return noStatics(success);
+				return success;
+			});
 			//return { status:404, headers:headers, body:["error 404 (RC)"]};
 		},
 		getFile : function(path, type)

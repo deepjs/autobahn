@@ -95,27 +95,25 @@ if(typeof define !== 'function'){
 	var define = require('amdefine')(module);
 }
 
-define(function (require){
+define(function (require)
+{
 	var deep = require("deep/deep");
-	var when = deep.when;
 	var RoleController = require("autobahn/role-controller");
 	var FacetController = require("autobahn/facet-controller");
 	var Session = require("autobahn/session");
 	var statics = require("autobahn/jsgi/autobahn-statics-jsgi").AutobahnStaticsJSGI;
 	var errors = require("autobahn/errors");
+	var AutobahnResponse = require("autobahn/autobahn-response");
 	var dicoCompiled = {};
 
 	var AutobahnController = function(){}
-
-
 	AutobahnController.prototype = {
-
 		facets:{
 			get:function (id, options) {
 				if(!this.store)
 					throw new AccessError(this.name + " don't have store to get something");
 				var othis = this;
-				return when(this.store.get(id, options)).then( function(obj){
+				return deep.when(this.store.get(id, options)).then( function(obj){
 					if(!obj)
 						return obj;
 					if(obj.status && obj.status >= 400)
@@ -171,11 +169,7 @@ define(function (require){
 			}
 			catch(e)
 			{
-				return {
-					status:500,
-					headers:{},
-					body:["error while gettings file : "+path, e]
-				}
+				return e;
 			}
 	
 			return statics.getFile(path);
@@ -205,7 +199,7 @@ define(function (require){
 					console.log("autobahn", "getRole() : request.remoteUser.login : ", session.remoteUser.login);
 			}	
 			if(console.flags["autobahn"])
-				console.log("autobahn", "getRole() : will compil roles : ", roles);
+				console.log("autobahn", "getRole() : will compil roles : ", roles, this);
 			return deep.when(this.compileRoles(roles))
 			.done(function (ctrl) {
 				request.roleController = ctrl;
@@ -213,7 +207,7 @@ define(function (require){
 		},
 		analyseRequest : function(request)
 		{
-
+			//console.log("analyseRequest : ", request, this)
 			var path = request.pathInfo.substring(1);
 			var method = request.method.toLowerCase();
 			var scriptName = request.scriptName;
@@ -245,30 +239,34 @@ define(function (require){
 				infos.responseHeaders[i] = headers[i];
 			delete infos.responseHeaders["user-agent"];
 			delete infos.responseHeaders["content-type"];
+			delete infos.responseHeaders["content-length"];
 	
 			return deep.when(this.getRequestController(request))
 			.done(function(ctrl){
-				// console.log("role compiled : ", ctrl)
+				//console.log("role compiled : ", ctrl)
 				//	console.log("role compiled : login : ", ctrl.facets.login.post)
 				try{
 					return deep.when(ctrl.analyse(request, infos))
 					.done(function (result) {
+						//console.log("result in autobahn controller : ", result)
+						if(!(result instanceof AutobahnResponse) )
+							return new AutobahnResponse(200, infos.responseHeaders, result);
 						return result;
 					})
 					.fail(function  (error) {
-						if(!error ||  !error.status)
-							return { status:404, headers:infos.responseHeaders, body:["error : ", JSON.stringify(error)]};
-						return error;
+						error = error || {};
+						return new AutobahnResponse(error.status || 404, error.headers || {},
+						error.toString() || "Autobahn-Controller : error when analyses request (fail 2): "+error.toString());
 					});
 				}
 				catch(e){
-					return { status:404, headers:{}, body:["error when analyses request : ",JSON.stringify(e)]};
+					e = e || {};
+					return new AutobahnResponse(e.status || 404, e.headers || {}, e.toString() ||  "Autobahn-Controller : error when analyses request (throw): "+String(e));
 				}
 			})
 			.fail(function (error) {
-				if(!error ||  !error.status)
-					return { status:404, headers:infos.responseHeaders, body:["error : ", JSON.stringify(error)]};
-				return error;
+				error = error || {};
+				return new AutobahnResponse(error.status || 404, error.headers || {}, error.toString() || "Autobahn-Controller : error when analyses request (fail1) : "+String(error));
 			});
 		},
 		compileRoles : function(roles)
@@ -291,8 +289,6 @@ define(function (require){
 							throw new Error({msg:"error while compiling roles : no role founded with : "+e, error:null});
 					});
 					this.roles[joined] = ctrl;
-
-					
 				}
 			}catch(e){
 				if(e instanceof Error)
@@ -303,7 +299,9 @@ define(function (require){
 
 			if(!ctrl.loaded)
 			{
+				//console.log("CONTROLLER NOT LOADED : load it : ", ctrl)
 				var d = deep(ctrl)
+				//.flatten()
 				.bottom(new RoleController())
 				.query("./facets/*")
 				.bottom(new FacetController())
@@ -334,7 +332,8 @@ define(function (require){
 	}
 	
 	var autobahnCtrl = new AutobahnController();
-	deep.request.autobahn = autobahnCtrl;
+	//deep.request.autobahn = autobahnCtrl;
+	//console.log("_____________________________________________ autobahnCtrl : ", autobahnCtrl)
 	return autobahnCtrl;
 })
 
