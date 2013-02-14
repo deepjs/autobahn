@@ -6,10 +6,11 @@ var AutobahnResponse = require("autobahn/autobahn-response");
 
 
 var AutobahnStaticsJSGI = exports.AutobahnStaticsJSGI = function(stats, app){
+//	console.log("AutobahnStaticsJSGI : init : statics : ", stats)
 	var statics = require("pintura/jsgi/cascade").Cascade(stats)
 	return function(request){
 		return deep.when(statics(request)).then(function(response){
-			//console.log("AutobahnStaticsJSGI : ---------- response : ", response);
+		//	console.log("AutobahnStaticsJSGI : ---------- response : ", response);
 			if(!response || response.status >= 400)
 			{
 				if(app)
