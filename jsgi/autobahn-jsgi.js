@@ -6,7 +6,7 @@ var AutobahnJSGI = exports.AutobahnJSGI = function(autobahnController, app){
 	return function(request){
 		return deep.when(autobahnController.analyseRequest(request))
 		.done(function(response){
-			console.log("AutobahnJSGI : ---------- response : ", response);
+			//console.log("AutobahnJSGI : ---------- response : ", response);
 			if(!response)
 				if(app)
 				{

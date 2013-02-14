@@ -9,7 +9,7 @@ var AutobahnStaticsJSGI = exports.AutobahnStaticsJSGI = function(stats, app){
 	var statics = require("pintura/jsgi/cascade").Cascade(stats)
 	return function(request){
 		return deep.when(statics(request)).then(function(response){
-			console.log("AutobahnJSGI : ---------- response : ", response);
+			//console.log("AutobahnStaticsJSGI : ---------- response : ", response);
 			if(!response || response.status >= 400)
 			{
 				if(app)
