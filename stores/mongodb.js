@@ -84,6 +84,11 @@ Mongo.prototype =  {
 			query = query.replace(/\$[1-9]/g, function(t){
 				return JSONExt.stringify(headers.parameters[t.substring(1) - 1]);
 			});
+			//hack to remove "&null" at the end of request coming from nowhere...
+			var nullCharAtEnd = query.substring(query.length - 5, query.length);
+			if(nullCharAtEnd == "&null")
+				query = query.substring(0, query.length - 5);
+
 			//console.log("Mongo will do query : ", query, options);
 			return when(this.mongo.query(query, headers)).then(function(res){ 
 				// console.log("Mongo query res : ", res);
