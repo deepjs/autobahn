@@ -238,6 +238,8 @@ define(function FacetControllerDefine(require){
 				 console.log("second responseValue handler : ", responseValue)
 				if(typeof responseValue != 'undefined' && responseValue != null)
 				{
+					infos.responseHeaders["content-type"] = "application/json;charset=utf-8;"
+
 					if(responseValue instanceof Error)
 						return responseValue;
 					return {
