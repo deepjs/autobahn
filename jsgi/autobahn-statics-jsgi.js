@@ -11,11 +11,13 @@ var statics = require("pintura/jsgi/cascade").Cascade([
 	//Static({cachePolicy:{js:0}, urls:["/common/js-lib/deep"], root: "node_modules/deep", directoryListing: true}),
 	Static({urls:["/common/js-lib/compose"], root: "node_modules/compose", directoryListing: true}),
 	Static({urls:["/common/js-lib/rql"], root: "node_modules/rql", directoryListing: true}),
+	Static({urls:["/common/js-lib/smart-widgets"], root: "node_modules/smart-widgets", directoryListing: true}),
 	Static({urls:["/common/js-lib/promised-io"], root: "node_modules/promised-io", directoryListing: true}),
 	Static({urls:["/js-custom"], root: "node_modules/smart-push", directoryListing: true}),
 	//Static({urls:["/www"], root: "www", directoryListing: true, index:"index.html"}),			
 	//Static({urls:["/chloe2013"], root: "www/chloe2013/", directoryListing: true, index:"index.html"}),			
 	Static({urls:["/"], root: "www/app/", directoryListing: true, index:"index.html"}),			
+	Static({urls:["/ced"], root: "www/ced/", directoryListing: true, index:"index.html"}),			
 	Static({urls:["/common"], root: "www/common/", directoryListing: true, index:"index.html"})
 ])
 
