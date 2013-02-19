@@ -1,9 +1,11 @@
 
-var when = require("deep/promise").when;
-var autobahnController = require("autobahn/autobahn-controller");
-var AutobahnJSGI = exports.AutobahnJSGI = function(app){
+var deep = require("deep/deep");
+var AutobahnResponse = require("autobahn/autobahn-response");
+var AutobahnJSGI = exports.AutobahnJSGI = function(autobahnController, app){
+	//console.log("creation of autobahn jsgi : ", autobahnController);
 	return function(request){
-		return when(autobahnController.analyseRequest(request)).then(function(response){
+		return deep.when(autobahnController.analyseRequest(request))
+		.done(function(response){
 			//console.log("AutobahnJSGI : ---------- response : ", response);
 			if(!response)
 				if(app)
@@ -12,7 +14,7 @@ var AutobahnJSGI = exports.AutobahnJSGI = function(app){
 					return res;
 				}
 				else
-					return { headers:{}, status:404, body:["AutobahnJSGI 404"] }
+					return new AutobahnResponse(404,{}, "AutobahnJSGI 404");
 			return response;
 		});
 	};

@@ -9,28 +9,37 @@ define(function(require){
 var JSONExt = require("perstore/util/json-ext");
 var request = require("promised-io/http-client").request;
 var deep = require("deep/deep");
-var when = deep.when;
-var DatabaseError = require("perstore/errors").DatabaseError,
-	AccessError = require("perstore/errors").AccessError,
-	MethodNotAllowedError = require("perstore/errors").MethodNotAllowedError;
-var autobahnController = require("autobahn/autobahn-controller");
 var Session = require("autobahn/session");
 var erros = require("autobahn/errors");
-//var Session = require("pintura/jsgi/session");
 
 var Remote = function (argument) {
 	// body...
 }
-Remote.prototype.setRemoteHeaders = function (options, headers) {
-	if(options.session)
-		headers["Session-ID"] = options.session.id;
-	if(options.referer)
-		headers["referer"] = options.referer;
-}
 Remote.prototype = {
+		setResponseHeaders : function (options, remoteResponse) {
+			
+		},	
+		setRequestHeaders : function (options, requestHeaders) {
+			//console.log("setRequestHeaders ", JSON.stringify(options, null, " ") )
+
+			if(!options)
+				return;
+
+			if(options.session)
+				requestHeaders["Session-ID"] = options.session.id;
+			if(options.request.headers.referer)
+				requestHeaders["referer"] = options.request.headers.referer;
+			if(options.request.headers["accept-language"])
+				requestHeaders["accept-language"] = options.request.headers["accept-language"];
+
+		},
 		dummies:null,
 		remoteURL:null,
 		get: function(id, options){
+			options = options || {};
+
+			var self = this;
+
 			try{
 				//construct of the url
 				var url = (this.remoteURL[this.remoteURL.length-1]=="/")?(this.remoteURL+id):(this.remoteURL+"/"+id);
@@ -39,33 +48,30 @@ Remote.prototype = {
 				*/
 				//set the headers
 				var headers = {};
-				headers["Accept-Language"] = options["accept-language"];
-				headers["referer"] = options["referer"];
-				//if(this.headers)
-				//	deepCopy(this.headers, headers, false);
-				var session = options.session;
-				if(session && session.remoteUser)
-					headers["Session-ID"] = session.id;
-
-				return when(request({
+				
+				this.setRequestHeaders(options, headers);
+				
+				return deep.when(request({
 					method:"GET",
 					url:url,
 					//queryString: query,
 					headers: headers
-				})).done( function  (success) {
-					createParser("GET");
-				})
+				}))
+				.done( createParser("GET", self, options) )
 				.fail(function (error) {
 					console.log("error (remote HTTP call failed) while calling remote-services : get::"+this.remoteURL+ " - ", error);
-					return new errors.server( error.body, error.status);
+					return error;
 				});
 
 			}catch(error){
 				console.log("error (throw) while calling remote-store : get::"+this.remoteURL+ " - ", error);
-				throw new errors.server(JSON.stringify(error), 500);
+				throw error;
 			}
 		},
 		put: function(object, options){
+			var self = this;
+			options = options || {};
+
 			try{
 				//console.log("Remote put : ", id);
 				if(!options.id)
@@ -75,13 +81,9 @@ Remote.prototype = {
 
 				var finalURL = (this.remoteURL[this.remoteURL.length-1]=="/")?(this.remoteURL+id):(this.remoteURL+"/"+id);
 
-				var headers =   {};
-				headers["Accept-Language"] = options["accept-language"];
-				headers["referer"] = options["referer"];
-
-				var session = Session.getCurrentSession(false);
-				if(session && session.remoteUser)
-					headers["Session-ID"] = session.id;
+				var headers =  {};
+				
+				this.setRequestHeaders(options, headers);
 
 				var responsePromise= 
 					request({
@@ -92,45 +94,31 @@ Remote.prototype = {
 						headers: headers
 					});
 
-				return when(responsePromise).then(createParser("PUT"),function  (error) {
-					// body...
-					console.log("error (remote HTTP call failed) while calling remote-services : put::"+finalURL+ " - ", error);
-					return {
-						status:503,
-						body:"error (remote HTTP call failed) while calling remote-services : put::"+finalURL,
-						__isRemoteResponse__:true
-					}
-					//throw new AccessError("error while posting on store")
-				});
+				return deep.when(responsePromise)
+					.done( createParser("PUT", self, options) )
+					.fail( function  (error) {
+						console.log("error (remote HTTP call failed) while calling remote-services : put::"+finalURL+ " - ", error);
+						return error
+					});
 			}catch(error){
 				console.log("error (throw) while calling remote-store : put::"+finalURL+ " - ", error);
-				return {
-					status:500,
-					body:"error (throw) while calling remote-store : put::"+finalURL,
-					__isRemoteResponse__:true
-				}
+				throw error;
 			}
 		},
 		post: function(object, options){
+			var self = this;
+			options = options || {};
+
 
 			try{
 				//if(console && console.flags && console.flags["remote-rest"])
 					console.log("REMOTE STORE : post : ", object, " - on  ", this.remoteURL, " - accepted language : ",options["accept-language"])
 
-
 				var headers = {};
 
-				if(options["accept-language"])
-					headers["Accept-Language"] = options["accept-language"];
-				headers["referer"] = options["referer"];
-				//if(this.headers)
-					//deepCopy(this.headers, headers, false);
+				this.setRequestHeaders(options, headers);
 
-				var session = Session.getCurrentSession(false);
-				if(session && session.remoteUser)
-					headers["Session-ID"] = session.id;
-
-				console.log("HEADER  : ", headers )
+				//console.log("HEADER  : ", headers )
 				var responsePromise= 
 					request({
 						method: "POST",
@@ -140,43 +128,33 @@ Remote.prototype = {
 						body: JSONExt.stringify(object),
 						headers: headers
 					});
-				return when(responsePromise).then(createParser("POST"), function  (error) {
-					// body...
-					console.log("error (remote HTTP call failed) while calling remote-services : post::"+this.remoteURL+ " - ", error);
-					return {
-						status:503,
-						body:"error (remote HTTP call failed) while calling remote-services : post::"+this.remoteURL,
-						__isRemoteResponse__:true
-					}
-					//throw new AccessError("error while posting on store")
-				});
+				
+				return deep.when(responsePromise)
+					.done( createParser("POST", self, options) )
+					.fail( function  (error) {
+						console.log("error (remote HTTP call failed) while calling remote-services : post::"+this.remoteURL+ " - ", error);
+						return error;
+					});
 			}catch(error){
 				console.log("error (throw) while calling remote-store : post::"+this.remoteURL+ " - ", error);
-				return {
-					status:500,
-					body:"error (throw) while calling remote-store : post::"+this.remoteURL,
-					__isRemoteResponse__:true
-				}
-				//throw new Error("error while remote-rest.post : ", error);
+				throw error;
 			}
 		},
 		query: function(query, options){
-			//console.log("Remote query : ", query, options);
+			var self = this;
+
+			console.log("Remote query : ", query, options);
 			options = options || {};
 			try{
 
-
 				var headers =  {};
-
-				headers["Accept-Language"] = options["accept-language"];
-				headers["referer"] = options["referer"];
-				//deepCopy(this.headers, headers, false);
-				var session = Session.getCurrentSession(false);
-				if(session && session.remoteUser)
-					headers["Session-ID"] = session.id;
+				
 				if(options.start || options.end){
 					headers.range = "items=" + options.start + '-' + options.end; 
 				}
+
+				this.setRequestHeaders(options, headers);
+
 				query = query.replace(/\$[1-9]/g, function(t){
 					return JSONExt.stringify(options.parameters[t.substring(1) - 1]);
 				});
@@ -187,43 +165,31 @@ Remote.prototype = {
 						finalURL += query;
 					else
 						finalURL += "?"+query;
-				return when(request({
+
+				return deep.when(request({
 					method:"GET",
 					url:finalURL,
 					//queryString: query,
 					headers: headers
-				})).then(createParser('QUERY'),function  (error) {
-					// body...
+				})).done( createParser('QUERY', self, options) ).fail(function  (error) {
 					console.log("error (remote HTTP call failed) while calling remote-services : query::"+this.remoteURL+ " - ", error);
-					return {
-						status:503,
-						body:"error (remote HTTP call failed) while calling remote-services : query::"+this.remoteURL,
-						__isRemoteResponse__:true
-					}
-					//throw new AccessError("error while querying on store")
+					return error;
 				});
 			}catch(error){
 				console.log("error (throw) while calling remote-store : query::"+this.remoteURL+ " - ", error);
-				return {
-					status:500,
-					body:"error (throw) while calling remote-store : query::"+this.remoteURL,
-					__isRemoteResponse__:true
-				}
-				//throw new Error("error while remote-rest.query : ", e);
+				throw error;
 			}
 		},
-		"delete": function(id){
+		"delete": function(id, options){
+			var self = this;
+
 		//	console.log("Remote delete : ", id);
 			options = options || {};
 		
 			var headers = {};
 			
-			headers["Accept-Language"] = options["accept-language"];
-			headers["referer"] = options["referer"];
-			//deepCopy(this.headers, headers, false);
-			var session = Session.getCurrentSession(false);
-			if(session && session.remoteUser)
-				headers["Session-ID"] = session.id;
+			this.setRequestHeaders(options,headers);
+
 			return request({
 				method:"DELETE",
 				pathInfo: (this.remoteURL[this.remoteURL.length-1]=="/")?(this.remoteURL+id):(this.remoteURL+"/"+id),
@@ -234,21 +200,18 @@ Remote.prototype = {
 	}
 
 
-function createParser(method){
+function createParser(method, store, options){
 	return function (response)
 	{
 		
-
-		if(console && console.flags && console.flags["remote-rest"])
+		//if(console && console.flags && console.flags["remote-rest"])
 			console.log("remote-rest : "+method+" - direct response from remote  : ", response.status, " body : ", response.body);
-		var r = {
-			status:response.status,
-			body:null,
-			__isRemoteResponse__:true
-		}
+		
+		store.setResponseHeaders( options, response);
+
 		var def = deep.Deferred();
 		try{
-			when(response.body.join('')).then(function(resolved){
+			deep.when(response.body.join('')).then(function(resolved){
 				//console.log("remote "+method+" done : result : ", resolved)
 				if(typeof resolved === "string")
 				{
@@ -279,21 +242,16 @@ function createParser(method){
 							console.log("resolved gives : key ", i, " - val : ", resolved[i] )
 						}*/
 				}
-				r.body = resolved;
-				def.resolve(r);
+				def.resolve(resolved);
 			}, function(r){
 				def.reject(r);
 			});
 		}catch(e){
-				r.status = 500;
-				r.body = "remote-store : parsing failed !";
-				def.reject(r);
-				//throw new Error("error while remote-rest.createParser : ", e);
+				def.reject(e);
 			}
 		return deep.promise(def);
 	}
 }
-
 
 return Remote;
 });

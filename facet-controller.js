@@ -21,12 +21,12 @@ if(typeof define !== 'function'){
 
 define(function FacetControllerDefine(require){
 	var deep = require("deep/deep");
-	var promiseModule = require("promised-io/promise");
 	var when = deep.when;
 	var Validator = require("deep/deep-schema");
-	var FacetController = function(){}
 	var errors = require("autobahn/errors");
+	var AutobahnResponse = require("autobahn/autobahn-response");
 
+	var FacetController = function(){}
 	FacetController.prototype = {
 
 		schemas : {
@@ -133,13 +133,13 @@ define(function FacetControllerDefine(require){
 			var status = 200;
 			deep.utils.up(this.headers, infos.responseHeaders);
 
-			// console.log("FACET ANALYSE : infos : ", path, scriptName, method);
+			 console.log("FACET ANALYSE : infos : ", path, scriptName, method);
 			if(!this.schemas[infos.method])
 				throw new errors.MethodNotAllowed("method ("+infos.method+") don't allowed in model");
 	
 			if(!this[infos.method])
 				throw new errors.MethodNotAllowed("method ("+infos.method+") not founded in model");
-			// console.log("facet : this.schemas : ", this.schemas[infos.method])
+			 console.log("facet : this.schemas : ", this.schemas[infos.method])
 			var othis = this;
 			var responseValue = null;
 			infos.id = decodeURIComponent(infos.path);
@@ -172,7 +172,7 @@ define(function FacetControllerDefine(require){
 				//console.log("Method dont has body : ", method)
 				if(infos.method === "get" && (!path || path.charAt(path.length-1) == '/')){
 					
-					responseValue = this["query"](queryString, infos.responseHeaders);
+					responseValue = this["query"](queryString, infos);
 					//else
 					//	responseValue = this[method](queryString, infos);
 					
@@ -197,6 +197,10 @@ define(function FacetControllerDefine(require){
 			}
 			else // method has body
 			{
+				 console.log("Facet : method has body ", request.body, " - infos : " , infos)
+
+
+
 				if(method == "put")
 				{
 		
@@ -209,20 +213,19 @@ define(function FacetControllerDefine(require){
 						throw new errors.PreconditionFailed("Facet need id on put");
 					
 				}
-				// console.log("Facet : method has body ", request.body, " - infos : " , infos)
 				responseValue = this[method](request.body, infos);
-				//console.log("Facet : method has body : responseValue ", responseValue)
+				console.log("Facet : method has body : responseValue ", responseValue)
 
 				deep.when(responseValue)
 				.done(function(responseValue){
-				//	console.log("first responseValue handler : ", responseValue)
+					console.log("first responseValue handler : ", responseValue)
 					if(responseValue)
 					{
 						infos.responseHeaders["content-type"] = "application/javascript"
 						// include a Content-Location per http://greenbytes.de/tech/webdav/draft-ietf-httpbis-p2-semantics-08.html#rfc.section.6.1
 						infos.responseHeaders["content-location"] = request.scheme + "://" + request.headers.host + scriptName  + '/' + (othis.getId(responseValue));
 					}
-					if(promiseModule.currentContext && promiseModule.currentContext.generatedId)
+					if(deep.context && deep.context.generatedId)
 					{
 						status = 201;
 						infos.responseHeaders.location = infos.responseHeaders["content-location"]; // maybe it should come from transaction.generatedId?
@@ -232,9 +235,11 @@ define(function FacetControllerDefine(require){
 
 			return deep.when(responseValue)
 			.done(function(responseValue){
-				// console.log("second responseValue handler : ", responseValue)
+				 console.log("second responseValue handler : ", responseValue)
 				if(typeof responseValue != 'undefined' && responseValue != null)
 				{
+					infos.responseHeaders["content-type"] = "application/json;charset=utf-8;"
+
 					if(responseValue instanceof Error)
 						return responseValue;
 					return {
@@ -247,9 +252,9 @@ define(function FacetControllerDefine(require){
 			}); 
 		}
 		catch(e){
-			// console.log("FACET ANALYSE ERROR : ", JSON.stringify(e));
-			if(e instanceof Error)
-				throw error;
+			 console.log("FACET ANALYSE ERROR : ", e);
+			if(e instanceof Error && e.status)
+				throw e;
 			throw new errors.Server("Facet analyse error : "+JSON.stringify(e), 500);
 			//throw e;// new Error("error while facet.analyse : ", e);
 		}
@@ -281,7 +286,7 @@ define(function FacetControllerDefine(require){
 			return this.schemas["delete"];
 
 		if(!this.store)
-			throw new AccessError(this.name + " don't have store to get something");
+			throw new errors.Access(this.name + " don't have store to get something");
 
 		var othis = this;
 		return deep.when(this.store.get(id, options))
@@ -297,14 +302,14 @@ define(function FacetControllerDefine(require){
 		.fail(function(error){
 			if(error instanceof Error)
 				return error;
-			throw new errors.AccessError("error when getting on store. "+JSON.stringify(error));
+			throw new errors.Access("error when getting on store. "+JSON.stringify(error));
 		}); 
 	}
 
 	FacetController.prototype.post = function(object, options)
 	{
 		if(!this.store)
-			throw new AccessError(this.name + " don't have store to post something");
+			throw new errors.Access(this.name + " don't have store to post something");
 		var othis = this;
 		//console.log("facets-controller : post : ", object, options);
 		return deep.when(Validator.validate(object, othis.schemas.post))
@@ -318,7 +323,7 @@ define(function FacetControllerDefine(require){
 			return when(othis.store.post(object, options)).then(  function(obj){
 				//console.log("facet-controller : after store post  : response ", obj)
 				if(!obj)
-					return new errors.AccessError("post return nothing");
+					return new errors.Access("post return nothing");
 				if(obj.status && obj.status >= 400)
 					return obj;
 				return othis.filterProperties(obj, othis.schemas.post);
@@ -332,9 +337,10 @@ define(function FacetControllerDefine(require){
 	}
 
 	FacetController.prototype.query = function(query, options){
+		//console.log("FacetController QUERY : options = ", options);
 		var othis = this;
 		if(!this.store)
-			throw new AccessError(this.name + " don't have store to query something");
+			throw new errors.Access(this.name + " don't have store to query something");
 		return when(this.store.query(query, options)).then( function(obj){
 			if(!obj)
 				return [];
@@ -355,14 +361,14 @@ define(function FacetControllerDefine(require){
 		//console.log("FACET put : object.id ", object.id, " - id : ", options.id)
 		var id = object.id || options.id;
 		if(!this.store)
-			throw new AccessError(this.name + " don't have store to put something");
+			throw new errors.Access(this.name + " don't have store to put something");
 
 		return deep.when(Validator.validate(object, othis.schemas.put)).then( function(report){
 			if(report.valid)
 				return deep.when(othis.store.put(object, options))
 				.done(  function(obj){
 					if(!obj)
-						throw new errors.AccessError("put return nothing");
+						throw new errors.Access("put return nothing");
 					if(obj.status && obj.status >= 400)
 						return obj;
 					//if(!othis.getId(obj))
@@ -371,7 +377,10 @@ define(function FacetControllerDefine(require){
 					return othis.filterProperties(obj, othis.schemas.put);
 				});
 			else
+			{
+				console.log("PRECONDITION FAILED : ", JSON.stringify(report, null, ' '));
 				throw new errors.PreconditionFailed("put failed to be executed : precondition failed : ", report);
+			}	
 		},function(error){
 			if(error instanceof Error)
 				throw error;
@@ -386,7 +395,7 @@ define(function FacetControllerDefine(require){
 
 		var id = object.id || options.id;
 		if(!this.store)
-			throw new AccessError(this.name + " don't have store to put something");
+			throw new errors.Access(this.name + " don't have store to put something");
 
 		var updatedObject = {};
 	 	return	deep.when( this.store.get(id, options) )
@@ -406,7 +415,7 @@ define(function FacetControllerDefine(require){
 				if(report.valid)
 					return when(othis.store.put(updatedObject, options)).then(  function(obj){
 						if(!obj)
-							throw new errors.AccessError("patch return nothing");
+							throw new errors.Access("patch return nothing");
 						if(obj.status && obj.status >= 400)
 							return obj;
 						//if(!othis.getId(obj))
@@ -429,11 +438,11 @@ define(function FacetControllerDefine(require){
 	}
 	FacetController.prototype.delete = function(object, options){ // handle puts to add to history and define attribution
 		if(!this.store)
-			throw new AccessError(this.name + " don't have store to delete something");
+			throw new errors.Access(this.name + " don't have store to delete something");
 		return deep.when(this.store["delete"](object, options))
 		.done(function(obj){
 			if(!obj)
-				throw new errors.AccessError("delete return nothing");
+				throw new errors.Access("delete return nothing");
 			if(obj.status && obj.status >= 400)
 				return obj;
 			//if(!othis.getId(obj))
@@ -444,7 +453,7 @@ define(function FacetControllerDefine(require){
 		.fail(function(error){
 			if(error instanceof Error)
 				throw error;
-			var e =	new errors.AccessError("delete return error : "+JSON.stringify(error));
+			var e =	new errors.Access("delete return error : "+JSON.stringify(error));
 			throw e ;
 		});
 	}
