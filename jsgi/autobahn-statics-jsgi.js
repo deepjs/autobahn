@@ -4,7 +4,6 @@ var	Static = require("pintura/jsgi/static").Static;
 var AutobahnResponse = require("autobahn/autobahn-response");
 
 
-
 var AutobahnStaticsJSGI = exports.AutobahnStaticsJSGI = function(stats, app){
 //	console.log("AutobahnStaticsJSGI : init : statics : ", stats)
 	var statics = require("pintura/jsgi/cascade").Cascade(stats)

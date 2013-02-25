@@ -240,6 +240,8 @@ define(function FacetControllerDefine(require){
 				 console.log("second responseValue handler : ", responseValue)
 				if(typeof responseValue != 'undefined' && responseValue != null)
 				{
+					infos.responseHeaders["content-type"] = "application/json;charset=utf-8;"
+
 					if(responseValue instanceof Error)
 						return responseValue;
 					return {
@@ -286,7 +288,7 @@ define(function FacetControllerDefine(require){
 			return this.schemas["delete"];
 
 		if(!this.store)
-			throw new AccessError(this.name + " don't have store to get something");
+			throw new errors.Access(this.name + " don't have store to get something");
 
 		var othis = this;
 		return deep.when(this.store.get(id, options))
@@ -302,14 +304,14 @@ define(function FacetControllerDefine(require){
 		.fail(function(error){
 			if(error instanceof Error)
 				return error;
-			throw new errors.AccessError("error when getting on store. "+JSON.stringify(error));
+			throw new errors.Access("error when getting on store. "+JSON.stringify(error));
 		}); 
 	}
 
 	FacetController.prototype.post = function(object, options)
 	{
 		if(!this.store)
-			throw new AccessError(this.name + " don't have store to post something");
+			throw new errors.Access(this.name + " don't have store to post something");
 		var othis = this;
 		//console.log("facets-controller : post : ", object, options);
 		return deep.when(Validator.validate(object, othis.schemas.post))
@@ -323,7 +325,7 @@ define(function FacetControllerDefine(require){
 			return when(othis.store.post(object, options)).then(  function(obj){
 				//console.log("facet-controller : after store post  : response ", obj)
 				if(!obj)
-					return new errors.AccessError("post return nothing");
+					return new errors.Access("post return nothing");
 				if(obj.status && obj.status >= 400)
 					return obj;
 				return othis.filterProperties(obj, othis.schemas.post);
@@ -340,7 +342,7 @@ define(function FacetControllerDefine(require){
 		//console.log("FacetController QUERY : options = ", options);
 		var othis = this;
 		if(!this.store)
-			throw new AccessError(this.name + " don't have store to query something");
+			throw new errors.Access(this.name + " don't have store to query something");
 		return when(this.store.query(query, options)).then( function(obj){
 			if(!obj)
 				return [];
@@ -361,14 +363,14 @@ define(function FacetControllerDefine(require){
 		//console.log("FACET put : object.id ", object.id, " - id : ", options.id)
 		var id = object.id || options.id;
 		if(!this.store)
-			throw new AccessError(this.name + " don't have store to put something");
+			throw new errors.Access(this.name + " don't have store to put something");
 
 		return deep.when(Validator.validate(object, othis.schemas.put)).then( function(report){
 			if(report.valid)
 				return deep.when(othis.store.put(object, options))
 				.done(  function(obj){
 					if(!obj)
-						throw new errors.AccessError("put return nothing");
+						throw new errors.Access("put return nothing");
 					if(obj.status && obj.status >= 400)
 						return obj;
 					//if(!othis.getId(obj))
@@ -395,7 +397,7 @@ define(function FacetControllerDefine(require){
 
 		var id = object.id || options.id;
 		if(!this.store)
-			throw new AccessError(this.name + " don't have store to put something");
+			throw new errors.Access(this.name + " don't have store to put something");
 
 		var updatedObject = {};
 	 	return	deep.when( this.store.get(id, options) )
@@ -415,7 +417,7 @@ define(function FacetControllerDefine(require){
 				if(report.valid)
 					return when(othis.store.put(updatedObject, options)).then(  function(obj){
 						if(!obj)
-							throw new errors.AccessError("patch return nothing");
+							throw new errors.Access("patch return nothing");
 						if(obj.status && obj.status >= 400)
 							return obj;
 						//if(!othis.getId(obj))
@@ -438,11 +440,11 @@ define(function FacetControllerDefine(require){
 	}
 	FacetController.prototype.delete = function(object, options){ // handle puts to add to history and define attribution
 		if(!this.store)
-			throw new AccessError(this.name + " don't have store to delete something");
+			throw new errors.Access(this.name + " don't have store to delete something");
 		return deep.when(this.store["delete"](object, options))
 		.done(function(obj){
 			if(!obj)
-				throw new errors.AccessError("delete return nothing");
+				throw new errors.Access("delete return nothing");
 			if(obj.status && obj.status >= 400)
 				return obj;
 			//if(!othis.getId(obj))
@@ -453,7 +455,7 @@ define(function FacetControllerDefine(require){
 		.fail(function(error){
 			if(error instanceof Error)
 				throw error;
-			var e =	new errors.AccessError("delete return error : "+JSON.stringify(error));
+			var e =	new errors.Access("delete return error : "+JSON.stringify(error));
 			throw e ;
 		});
 	}
