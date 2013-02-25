@@ -167,6 +167,8 @@ define(function FacetControllerDefine(require){
 						}
 					}
 				}
+				if (limit !== Infinity) 
+					queryString += "&limit(" + limit + "," + start + "," + maxCount + ")";
 				if(queryString.search(/^(null)/i)>-1)
 					queryString = queryString.substring(4);
 				//console.log("Method dont has body : ", method)
