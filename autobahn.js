@@ -19,6 +19,7 @@ if(typeof define !== 'function'){
 
 define(function (require)
 {
+	var HTTPrequest = require("promised-io/http-client").request;
 	var deep = require("deep/deep");
 	var Querier = require("deep/deep-query");
 	var autobahnController = require("autobahn/autobahn-controller");
@@ -220,11 +221,32 @@ define(function (require)
 
 	autobahn.layer = autobahnController;
 	deep(deep.request).up({
-		post:function (object, uri, options) 
+		post:function  (uri, object, options) 
 		{
-			console.log("post from autobahn-plugin")
+			console.log("POST from autobahn-plugin")
+			
+			var headers = {};
+
+			//this.setRequestHeaders(options, headers);
+
+			//console.log("HEADER  : ", headers )
+			var postRequest= HTTPrequest({
+					method: "POST",
+					url:uri,
+					body: JSON.stringify(object),
+					headers: headers
+				});
+			
+			return deep.when( postRequest )
+				.done( function (results) {
+					return results
+				})
+				.fail( function  (error) {
+					console.log("error (remote HTTP call failed) while calling remote-services on autobhan post plugin : ", error);
+					return error;
+				});
 		},
-		put:function (object, uri, options) 
+		put:function ( uri, object, options) 
 		{
 			console.log("put from autobahn-plugin")
 		}
