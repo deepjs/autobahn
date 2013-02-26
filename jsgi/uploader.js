@@ -67,9 +67,9 @@ define(function (require){
             return unescape(encodeURIComponent(str));
         },
         fileServer = new nodeStatic.Server(options.publicDir, options.nodeStatic),
-        nameCountRegexp = /(?:(?: \(([\d]+)\))?(\.[^.]+))?$/,
+        nameCountRegexp = /(?:(?:\(([\d]+)\))?(\.[^.]+))?$/,
         nameCountFunc = function (s, index, ext) {
-            return ' (' + ((parseInt(index, 10) || 0) + 1) + ')' + (ext || '');
+            return '(' + ((parseInt(index, 10) || 0) + 1) + ')' + (ext || '');
         },
         FileInfo = function (file) {
             this.name = file.name;
@@ -173,11 +173,13 @@ define(function (require){
             fileInfo.safeName();
             map[path.basename(file.path)] = fileInfo;
             files.push(fileInfo);
-        }).on('field', function (name, value) {
+        })
+        .on('field', function (name, value) {
             if (name === 'redirect') {
                 redirect = value;
             }
-        }).on('file', function (name, file) {
+        })
+        .on('file', function (name, file) {
             var fileInfo = map[path.basename(file.path)];
             fileInfo.size = file.size;
             if (!fileInfo.validate()) {
@@ -193,30 +195,36 @@ define(function (require){
                         width: opts.width,
                         height: opts.height,
                         srcPath: options.uploadDir + '/' + fileInfo.name,
-                        dstPath: options.uploadDir + '/' + version + '/' +
-                            fileInfo.name
+                        dstPath: options.uploadDir + '/' + version + '/' + fileInfo.name
                     }, finish);
                 });
             }
-        }).on('aborted', function () {
+        })
+        .on('aborted', function () {
             tmpFiles.forEach(function (file) {
                 fs.unlink(file);
             });
-        }).on('error', function (e) {
+        })
+        .on('error', function (e) {
             console.log(e);
-        }).on('progress', function (bytesReceived, bytesExpected) {
-            if (bytesReceived > options.maxPostSize) {
+        })
+        .on('progress', function (bytesReceived, bytesExpected) {
+            if (bytesReceived > options.maxPostSize)
                 handler.req.connection.destroy();
-            }
-        }).on('end', finish).parse(handler.req);
+        })
+        .on('end', finish).parse(handler.req);
     };
-    UploadHandler.prototype.destroy = function () {
+    
+    UploadHandler.prototype.destroy = function () 
+    {
         var handler = this,
             fileName;
         if (handler.req.url.slice(0, options.uploadUrl.length) === options.uploadUrl) {
             fileName = path.basename(decodeURIComponent(handler.req.url));
-            fs.unlink(options.uploadDir + '/' + fileName, function (ex) {
-                Object.keys(options.imageVersions).forEach(function (version) {
+            fs.unlink(options.uploadDir + '/' + fileName, function (ex) 
+            {
+                Object.keys(options.imageVersions).forEach(function (version) 
+                {
                     fs.unlink(options.uploadDir + '/' + version + '/' + fileName);
                 });
                 handler.callback({success: !ex});
@@ -226,21 +234,21 @@ define(function (require){
         }
     };
 
-    var shared = {};
 
-    var JSGI = function (nextApp, config) {
+    var JSGI = function (nextApp, config) 
+    {
         options = deep.utils.up(config || {}, options );
         return function (req, res) 
         {
             var contentType = req.headers["content-type"] || req.headers["Content-Type"] || "application/json";
             contentType = contentType.split(";")[0];
             console.log("uploader : request.url : ", req.url);
-            if(contentType != "multipart/form-data" || req.url != "/upload/")
+            if(req.method != "POST" || contentType != "multipart/form-data" || req.url != options.uploadUrl)
             {
                 if(nextApp)
                     return nextApp(req,res);
                 else
-                    return new AutobahnResponse(404,{}, "nothing to do with : ", req.url)
+                    return new AutobahnResponse(404,{}, "nothing to do with : "+req.url)
             }
             req._uploaded = true;
             res.setHeader(
@@ -282,16 +290,16 @@ define(function (require){
                 break;
             case 'HEAD':
             case 'GET':
-                if (req.url === '/') {
+                if (req.url === '/') 
+                {
                     setNoCacheHeaders();
-                    if (req.method === 'GET') {
+                    if (req.method === 'GET') 
                         handler.get();
-                    } else {
+                    else 
                         res.end();
-                    }
-                } else {
+                } 
+                else 
                     fileServer.serve(req, res);
-                }
                 break;
             case 'POST':
                 setNoCacheHeaders();
@@ -309,8 +317,7 @@ define(function (require){
 
 
     return {
-        jsgi:JSGI,
-        shared:shared
+        jsgi:JSGI
     }
 
 });
