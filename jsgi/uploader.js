@@ -13,7 +13,53 @@
 /*jslint nomen: true, regexp: true, unparam: true, stupid: true */
 /*global require, __dirname, unescape, console */
 
+/*
 
+Gestion des roles : 
+
+    roles = {
+        admin:{
+            // full rights
+        },
+        user:{
+            backgrounds:["#../admin"]
+            // restricted user rights : sould remove or restrict admin roles
+        },
+        public:{
+            backgrounds:["#../user"]
+            // restricted public rights : sould remove or restrict user roles
+
+        },
+        traducteur:{
+            
+        }
+    }
+
+    var role = {
+        statics:[],
+        facettes:{},
+        routes:{}
+    }
+    var facette = {
+        store:{},
+        allowedMethods:["POST"]    
+        post:autobahn.facets
+        .post({ schema:{} })
+        .owner()
+        .around(function (old) {
+          return function (argument) {
+              
+          }
+        }),
+        put:autobahn
+        .put({ owner:true, schema:{} })
+        .owner(),
+        
+    }
+
+    var 
+
+*/
 
     'use strict';
 
@@ -214,7 +260,7 @@ define(function (require){
         })
         .on('end', finish).parse(handler.req);
     };
-    
+
     UploadHandler.prototype.destroy = function () 
     {
         var handler = this,

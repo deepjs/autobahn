@@ -27,10 +27,10 @@ define(function RoleControllerDefine(require){
 				});
 			this.statics = Cascade(stats);
 		},
-		getStatics:function (request, options) {
+		getStatics:function (request) {
 			return deep.when(this.statics(request));
 		},
-		analyse : function(request, options)
+		analyse : function(request)
 		{
 			var self = this;
 			var c = this.statics(request);
@@ -39,13 +39,13 @@ define(function RoleControllerDefine(require){
 
 			var noStatics = function (error) {
 				//console.log("RoleController : statics error : try next")
-				if(self.facets && self.facets[options.part]) 
+				if(self.facets && self.facets[request.autobahn.part]) 
 				{
-					console.log("try facet : ", options.part)
+					console.log("try facet : ", request.autobahn.part)
 					return deep(request.body)
 					.catchError()
 					.done(function(){
-						return self.facets[options.part].analyse(request, options);
+						return self.facets[request.autobahn.part].analyse(request);
 					})
 					.done(function (success) {
 						console.log("RoleController : facets success : ", success)
@@ -63,7 +63,7 @@ define(function RoleControllerDefine(require){
 					});
 				}
 				else if(self.routes)
-					return self.routes.analyse(request, options);
+					return self.routes.analyse(request);
 				
 				console.log("autobahn has nothing to do with request");
 				return new AutobahnResponse(404, {}, "autobahn has nothing to do with request : "+ request.url);

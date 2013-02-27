@@ -22,31 +22,36 @@ define(function (require)
 	var deep = require("deep/deep");
 	var Querier = require("deep/deep-query");
 	var autobahnController = require("autobahn/autobahn-controller");
+	var utils = require("autobahn/utils");
 	var baseHandler = {
 		session:function (session) 
 		{
 			var self = this;
 			var func = function (s,e) 
 			{
-				if(request.session)
-					self.currentSession = request.session;
+				
+				self.currentSession = session;
+				self.currentFacet = null;
+				self.currentRole = null;
+				var roles = session.remoteUser.roles || ["public"];
+				if(session.roleController)
+				{
+					self.currentRole = session.roleController();
+					self.running = false;
+					deep.chain.nextQueueItem.apply(self, [self.currentRole, null]);
+				}
 				else
-					self.currentSession = null;
-				var roles = ["public"];
-				if(self.currentSession && self.currentSession.remoteUser && self.currentSession.remoteUser.roles)
-					roles = this.currentSession.remoteUser.roles;
-				deep.when(autobahnController.compileRoles(roles)).then(function (ctrl) {
-					self.currentRole = ctrl;
-					//self._entries = [];
-					if(!ctrl)
-						throw new Error("No roles selected with : "+JSON.stringify(roles));
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [ctrl, null]);
-				},
-				function (error) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [null, error]);
-				})
+					deep.when(autobahnController.compileRoles(roles)).then(function (ctrl) {
+						self.currentRole = ctrl;
+						if(!ctrl)
+							throw new Error("No roles selected with : "+JSON.stringify(roles));
+						self.running = false;
+						deep.chain.nextQueueItem.apply(self, [ctrl, null]);
+					},
+					function (error) {
+						self.running = false;
+						deep.chain.nextQueueItem.apply(self, [null, error]);
+					});
 			}
 			deep.chain.addInQueue.apply(self, [func]);
 			return this;
@@ -113,7 +118,7 @@ define(function (require)
 			var func = function (s,e) {
 				if(!self.currentFacet)
 					throw new Error("No facet selected before get : ",id);
-				deep.when(self.currentFacet.get(id, options)).then(function (result) {
+				deep.when(self.currentFacet.accessors.get.handler(id, options)).then(function (result) {
 					self.running = false;
 					deep.chain.nextQueueItem.apply(self, [result, null]); 
 				}, function (error) {
@@ -129,7 +134,7 @@ define(function (require)
 			var func = function (s,e) {
 				if(!self.currentFacet)
 					throw new Error("No facet selected before post : ",object);
-				deep.when(self.currentFacet.post(object, options)).then(function (result) {
+				deep.when(self.currentFacet.accessors.post.handler(object, options)).then(function (result) {
 					self.running = false;
 					deep.chain.nextQueueItem.apply(self, [result, null]); 
 				}, function (error) {
@@ -147,7 +152,7 @@ define(function (require)
 					throw new Error("No facet selected before put : ",object);
 				options = options || {};
 				options.id = options.id || object.id;
-				deep.when(self.currentFacet.put(object, options)).then(function (result) {
+				deep.when(self.currentFacet.accessors.put.handler(object, options)).then(function (result) {
 					self.running = false;
 					deep.chain.nextQueueItem.apply(self, [result, null]); 
 				}, function (error) {
@@ -165,7 +170,7 @@ define(function (require)
 					throw new Error("No facet selected before patch : ",object);
 				options = options || {};
 				options.id = options.id || object.id;
-				deep.when(self.currentFacet.patch(object, options)).then(function (result) {
+				deep.when(self.currentFacet.accessors.patch.handler(object, options)).then(function (result) {
 					self.running = false;
 					deep.chain.nextQueueItem.apply(self, [result, null]); 
 				}, function (error) {
@@ -181,7 +186,7 @@ define(function (require)
 			var func = function (s,e) {
 				if(!self.currentFacet)
 					throw new Error("No facet selected before query : ",q);
-				deep.when(self.currentFacet.query(q, options)).then(function (result) {
+				deep.when(self.currentFacet.accessors.query.handler(q, options)).then(function (result) {
 					self.running = false;
 					deep.chain.nextQueueItem.apply(self, [result, null]); 
 				}, function (error) {
@@ -197,7 +202,7 @@ define(function (require)
 			var func = function (s,e) {
 				if(!self.currentFacet)
 					throw new Error("No facet selected before get : ",id);
-				deep.when(self.currentFacet["delete"](id, options)).then(function (result) {
+				deep.when(self.currentFacet.accessors["delete"].handler(id, options)).then(function (result) {
 					self.running = false;
 					deep.chain.nextQueueItem.apply(self, [result, null]); 
 				}, function (error) {
@@ -216,7 +221,7 @@ define(function (require)
 		//console.log("autobahn start : ", handler)
 		return handler; 
 	}
-
+	autobahn.utils = utils;
 
 	autobahn.layer = autobahnController;
 	deep(deep.request).up({

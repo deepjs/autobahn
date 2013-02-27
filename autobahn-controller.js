@@ -105,75 +105,10 @@ define(function (require)
 	var errors = require("autobahn/errors");
 	var AutobahnResponse = require("autobahn/autobahn-response");
 	var dicoCompiled = {};
+	var utils = require("autobahn/utils");
 
 	var AutobahnController = function(){}
 	AutobahnController.prototype = {
-		facets:{
-			get:function (id, options) {
-				if(!this.store)
-					throw new AccessError(this.name + " don't have store to get something");
-				var othis = this;
-				return deep.when(this.store.get(id, options)).then( function(obj){
-					if(!obj)
-						return obj;
-					if(obj.status && obj.status >= 400)
-						return obj;
-					return othis.filterProperties(obj, othis.schemas.get);
-				},function(error){
-					return error;// { __isErrorResponse__:true, status:400, body:"get failed on store" }
-				}); 
-			},	
-			ownerget:function(schema){
-				return deep.compose.around(function(old){
-					return function (id, options) {
-						if(!options.session)
-							throw new AccessError("error : sorry, there is no way to catch if your the owner of this object. please login.");
-						var self = this;
-						return deep.when(old.apply(this, [id, options])).then(function (obj) {
-							if(self.onwerId(instance) != options.session.remoteUser.id)
-								throw new AccessError("error : sorry, you are not the owner of this object");
-							return obj;
-						});
-					}
-				});
-			},
-			schema:deep.compose.around(function (argument) {
-				// body...
-			}),
-			forbidden:function (argument) {
-				throw new AccessError(this.uri+ " : you don't have right to access this service");
-			},
-			post:function (argument) {
-				// body...
-			},
-			put:function (argument) {
-				// body...
-			},
-			"delete":function (argument) {
-				// body...
-			}
-		},
-		
-		getFile : function(path, roles)
-		{
-			roles = roles || ["public"];
-			try{
-				return deep.when(self.compileRoles(roles))
-				.done(function (ctrl) {
-					var req ={
-						pathInfo:path,
-						headers:{},
-					}
-					ctrl.staticsController(req);
-				})
-			}
-			catch(e)
-			{
-				return e;
-			}
-	
-			return statics.getFile(path);
-		},
 		load : function (argument) 
 		{
 			if(this.loaded)
@@ -202,55 +137,29 @@ define(function (require)
 				console.log("autobahn", "getRole() : will compil roles : ", roles, this);
 			return deep.when(this.compileRoles(roles))
 			.done(function (ctrl) {
-				request.roleController = ctrl;
+				request.autobahn.roleController = ctrl;
+				if(request.autobahn.session)
+						request.autobahn.session.roleController = function(){ return ctrl };
 			});
 		},
 		analyseRequest : function(request)
 		{
-			//console.log("analyseRequest : ", request, this)
-			var path = request.pathInfo.substring(1);
-			var method = request.method.toLowerCase();
-			var scriptName = request.scriptName;
-			var headers = request.headers;
-			
+			console.log("Autobahn-Controller.analyse")
 			var ctrl = null;
-			var part, slashIndex = path.indexOf("/");
-			if(slashIndex > -1){
-				part = path.substring(0, slashIndex);
-				path = path.substring(slashIndex + 1);
-				scriptName += '/' + part;
-				//console.log("chope part : ", part, {mod:facet})
-			}
+			utils.parseRequestInfos(request);
+			console.log("Autobahn-Controller.analyse 2  ")
 
-			var infos = {
-				request:request,
-				responseHeaders:{},
-				scriptName:scriptName,
-				path:path,
-				part:part,
-				session:null,
-				query:null,
-				method:method
-			};
-
-		//	console.log("Autobahn controller : analyseRequest  : ", JSON.stringify(infos));
-
-			for(var i in headers)// for now just copy all of them, probably should do certain ones though
-				infos.responseHeaders[i] = headers[i];
-			delete infos.responseHeaders["user-agent"];
-			delete infos.responseHeaders["content-type"];
-			delete infos.responseHeaders["content-length"];
-	
 			return deep.when(this.getRequestController(request))
 			.done(function(ctrl){
 				//console.log("role compiled : ", ctrl)
 				//	console.log("role compiled : login : ", ctrl.facets.login.post)
 				try{
-					return deep.when(ctrl.analyse(request, infos))
+
+					return deep.when(ctrl.analyse(request))
 					.done(function (result) {
 						//console.log("result in autobahn controller : ", result)
 						if(!(result instanceof AutobahnResponse) )
-							return new AutobahnResponse(200, infos.responseHeaders, result);
+							return new AutobahnResponse(200, request.autobahn.response.headers, result);
 						return result;
 					})
 					.fail(function  (error) {
@@ -304,13 +213,17 @@ define(function (require)
 				//.flatten()
 				.bottom(new RoleController())
 				.query("./facets/*")
-				.bottom(new FacetController())
+				.bottom(FacetController)
 				.root()
 				.flatten()
 				.run(function () {
-					return deep(othis)
-					.query("/roles/"+joined+"/facets/*/store")
+					var d = deep(othis)
+					.query("/roles/"+joined+"/facets/*/store?_schema.type=string")
 					.load();
+					//var d2 = deep(othis)
+					//.query("/roles/"+joined+"/facets/*/store?_schema.type=object")
+					//.run("init");
+					return deep.all([d]);
 				})
 				.run("init")
 				.query("/facets/*")

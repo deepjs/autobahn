@@ -18,13 +18,11 @@ define(function (require){
 	
 	var deep = require("deep/deep");
 	//var when = require("deep/promise").when;
-	var autobahnController = require("autobahn/autobahn-controller");
-
-
 	var Session = {
 
 	};
-	Session.jsgi = function(store, options, nextApp){
+	Session.jsgi = function(store, options, nextApp)
+	{
 		if(!store)
 			store = new Memory();
 		Session.store = store;
@@ -37,7 +35,7 @@ define(function (require){
 			var session = null;
 			// try to fetch the stored session
 			var cookieId, cookie = request.headers.cookie;
-			cookieId = cookie && cookie.match(/pintura-session=([^;]+)/);
+			cookieId = cookie && cookie.match(/autobahn-session=([^;]+)/);
 			cookieId = cookieId && cookieId[1];
 			if (cookieId) 
 			{
@@ -50,16 +48,18 @@ define(function (require){
 			if(!context)
 				context = deep.context = request.context = {};
 			context.request = request;
+
+			request.autobahn = request.autobahn || {};
 			// wait for promised session
 			return deep.when(session).then(function(session){
-				// make session available as request.session
+				// make session available as request.autobahn.session
 				if(session)
 				{
 					var timeout = new Date() > new Date(session.expires);
 					if(timeout)
 					{
 						store.delete(cookieId);
-						request.session = null;
+						request.autobahn.session = null;
 						return {
 							status:403,
 							body:"session timeout. please login.",
@@ -67,22 +67,22 @@ define(function (require){
 						}
 					}
 					else
-						request.session = session;	
-				}	
+						request.autobahn.session = session;	
+				}
 				else
-					request.session = null;
-
+					request.autobahn.session = null;
+				console.log("session will call next app")
 				// process the request
 				return deep.when(nextApp(request)).then(function(response){
 					// store session cookie
 					//console.log("session next app result : ", response)
-					if(request.session) /// refresh cookies and session expiration
+					if(request.autobahn.session) /// refresh cookies and session expiration
 					{	
 						var expires = new Date().valueOf()+Session.expiresDeltaMS;
-						Session.setSessionCookie(response, request.session.id, expires);
-						request.session.expires = new Date(expires).toISOString()
+						Session.setSessionCookie(response, request.autobahn.session.id, expires);
+						request.autobahn.session.expires = new Date(expires).toISOString()
 						// save session
-						return deep.when(store.put(request.session )).then(function(){
+						return deep.when(store.put(request.autobahn.session )).then(function(){
 							return response;
 						});
 					}
@@ -114,7 +114,8 @@ define(function (require){
 
 	// gets a session, creating a new one if necessary
 	function forceSession(request, expires){
-		var session = request.session;
+		request.autobahn = request.autobahn || {};
+		var session = request.autobahn.session;
 		if(session)
 			return session;
 		var newSessionId = generateSessionKey();
@@ -124,7 +125,7 @@ define(function (require){
 		var expiration = new Date(expires);
 
 		// TODO: use add()
-		session = request.session = {
+		session = request.autobahn.session = {
 			expires: new Date(expiration).toISOString(),
 			id: newSessionId,
 			save:function(){
@@ -138,11 +139,13 @@ define(function (require){
 		});
 	};
 
-	Session.getCurrentSession = function (createIfNecessary, expiration){
+	Session.getCurrentSession = function (createIfNecessary, expiration)
+	{
 		var request = deep.context && deep.context.request;
+		request.autobahn = request.autobahn || {};
 		if(request){
-			if(request.session){
-				return request.session;
+			if(request.autobahn.session){
+				return request.autobahn.session;
 			}
 			if(createIfNecessary){
 				expiration = expiration || (new Date().valueOf()+Session.expiresDeltaMS);
@@ -153,15 +156,15 @@ define(function (require){
 	}
 
 	function cookieVerification(request){
-		var pinturaAuth = request.queryString.match(/pintura-session=(\w+)/);
+		var pinturaAuth = request.queryString.match(/autobahn-session=(\w+)/);
 		if(pinturaAuth){
-			request.queryString = request.queryString.replace(/pintura-session=\w+/,'');
+			request.queryString = request.queryString.replace(/autobahn-session=\w+/,'');
 			return pinturaAuth[1];
 		}
 	}
 	Session.setSessionCookie = function (response, sessionId, expires){
 		if (!response.headers) response.headers = {};
-		response.headers["set-cookie"] = "pintura-session=" + sessionId + ";" + (settings.security.httpOnlyCookies ? "HttpOnly;" : "") + "path=/" + (expires ? ";expires=" + new Date(expires).toUTCString() : "");
+		response.headers["set-cookie"] = "autobahn-session=" + sessionId + ";" + (settings.security.httpOnlyCookies ? "HttpOnly;" : "") + "path=/" + (expires ? ";expires=" + new Date(expires).toUTCString() : "");
 	}
 	function generateSessionKey(username, password){
 		return sha1(rnd()+rnd()+rnd()) + sha1(rnd()+rnd()+rnd());
