@@ -106,6 +106,7 @@ var Accessors  = {
 	},
 	post : function(object, options)
 	{
+		console.log("Accessors.post")
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to post something");
 
@@ -311,6 +312,7 @@ var Permissive = {
 	},
 	rpcCall:function (request) 
 	{
+		console.log("Facet.rpcCall")
 		var self = this;
 		return deep.all([this.accessors.get.handler(request.autobahn.path, request.autobahn), request.body])
 		.done(function (results) {
@@ -351,9 +353,9 @@ var Permissive = {
 		var infos = request.autobahn,
 			self = this;
 
-		//console.log("facet analyse")
+		console.log("facet analyse")
 
-		if(infos.method == "post" && infos.contentType == "application/json-rpc")
+		if(infos.method == "post" && infos.contentType.indexOf("application/json-rpc") !== -1)
 			return this.rpcCall(request);
 
 		var accessor = this.accessors[infos.method];
@@ -371,16 +373,18 @@ var Permissive = {
 			throw new errors.MethodNotAllowed();
 
 		request.autobahn.response.status = 200;
-		// console.log("facet analyse 2")
+		 console.log("facet analyse 2")
 
 		var result = null;
 		if(accessor.hasBody)
-			result = deep.when(request.body)
-			.done(function (body) 
-			{
-				// console.log("method has body : doing callFunctions")
-				return accessor.handler(body, infos);
-			});
+			if(request.body)
+				result = deep.when(request.body)
+				.done(function (body) 
+				{
+					return accessor.handler(body, infos);
+				});
+			else
+				throw new errors.Access("no body provided with ", infos.method, " on ", this.name)
 		else if(isQuery)
 		{
 			result = deep.when(accessor.handler(infos.queryString, infos))
@@ -400,7 +404,7 @@ var Permissive = {
 		}
 		else
 			result = accessor.handler(infos.path, request.autobahn);
-		// console.log("facet analyse 3")
+		console.log("facet analyse 3")
 
 		return deep.when(result)
 		.done(function (result) {
@@ -413,7 +417,6 @@ var Permissive = {
 		});
 	}
 }
-
 	
 	return Permissive;
 });

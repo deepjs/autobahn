@@ -32,13 +32,14 @@ define(function RoleControllerDefine(require){
 		},
 		analyse : function(request)
 		{
+			console.log("role analyse")
 			var self = this;
 			var c = this.statics(request);
 			//console.log("RoleController.analyse : statics : ", c);
 			//console.log("RoleController.analyse : facets : ", this);
 
 			var noStatics = function (error) {
-				//console.log("RoleController : statics error : try next")
+				console.log("RoleController : statics error : try next")
 				if(self.facets && self.facets[request.autobahn.part]) 
 				{
 					console.log("try facet : ", request.autobahn.part)

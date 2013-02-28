@@ -8,6 +8,8 @@ define(function FacetControllerDefine(require){
 	autobahn = require("autobahn/autobahn");
 	var AutobahnResponse = require("autobahn/autobahn-response");
 	var Facet = require("autobahn/Facet-controller");
+	var UploadFacet = require("autobahn/uploader-facet");
+	var UploadHandler = UploadFacet.UploadHandler;
 
 	var start = function(settings, jsgiStack)
 	{
@@ -28,13 +30,56 @@ define(function FacetControllerDefine(require){
 
 			var method = String(request.method).toLowerCase();
 			deep.context = { request:request };
+			request.autobahn = { nodeResponse:res };
 			
 			deep(request)
 			.catchError()
 			.done(function () {
 				//autobahn.utils.parseRequestInfos(request);
-				if(Facet.accessors[method] && Facet.accessors[method].hasBody)
-					autobahn.utils.createBody(request);
+				var contentType = request.headers["content-type"] || request.headers["Content-Type"] || "application/json";
+				var isForm = (contentType.indexOf("multipart/form-data") !== -1);
+				if(Facet.accessors[method] && Facet.accessors[method].hasBody )
+					if(!isForm)
+						autobahn.utils.createBody(request);
+					else
+					{
+						request.autobahn.uploadHandler = new UploadHandler(request, 
+						{
+					            tmpDir: settings.rootPath + '/tmp',
+					            publicDir: settings.rootPath + '/public',
+					            uploadDir: settings.rootPath + '/public/files',
+					            uploadUrl: '/files/',
+					            maxPostSize: 21000000, // 11 GB
+					            minFileSize: 1,
+					            maxFileSize: 20000000, // 10 GB
+					            acceptFileTypes: /\.(gif|jpe?g|png)$/i,
+					            // Files not matched by this regular expression force a download dialog,
+					            // to prevent executing any scripts in the context of the service domain:
+					            safeFileTypes: /\.(gif|jpe?g|png)$/i,
+					            imageTypes: /\.(gif|jpe?g|png)$/i,
+					            imageVersions: {
+					                'thumbnail': {
+					                    width: 80,
+					                    height: 80
+					                }
+					            },
+					            accessControl: {
+					                allowOrigin: '*',
+					                allowMethods: 'OPTIONS, HEAD, GET, POST, PUT, DELETE'
+					            },
+					            /* Uncomment and edit this section to provide the service via HTTPS:
+					            ssl: {
+					                key: fs.readFileSync('/Applications/XAMPP/etc/ssl.key/server.key'),
+					                cert: fs.readFileSync('/Applications/XAMPP/etc/ssl.crt/server.crt')
+					            },
+					            */
+					            nodeStatic: {
+					                cache: 3600 // seconds to cache served files
+					            }
+					        
+						});
+						request.body = request.autobahn.uploadHandler[request.method.toLowerCase()]()
+					}	
 			})
 			.exec(function () {
 				// console.log("launch jsgi")
@@ -44,10 +89,10 @@ define(function FacetControllerDefine(require){
 			{
 				if(response.shift)
 					response = response.shift();
-				//console.log("Response from jsgi stack : ", response)
+				// console.log("Response from jsgi stack : ", response)
 				if(typeof response === 'undefined' || response == null)
 				{
-		 			res.writeHead(404, {'content-type': 'text/html'});
+		 			res.writeHead(404, {'Content-Type': 'text/html'});
 		 			res.end("nothing returned. bye!");
 		 			return;
 				}

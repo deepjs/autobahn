@@ -8,54 +8,62 @@ if(typeof define !== 'function')
 define(function (require)
 {
 	var AutobahnResponse = require("autobahn/autobahn-response");
+	var deep = require("deep/deep");
 	var utils = {
+		setNoCacheHeaders : function (infos) {
+	        deep.utils.up( {
+	            'Pragma': 'no-cache',
+	            'Cache-Control': 'no-store, no-cache, must-revalidate',
+	            'Content-Disposition': 'inline; filename="files.json"'
+	        }, infos.response.headers);
+	    },
 		createBody : function  (request) {
-			var contentType = request.headers["Content-Type"] || "application/json";
+			var contentType = request.headers["content-type"] || request.headers["Content-Type"] || "application/json";
 			var contentType = contentType.split(";")[0];
-			return request.body = function(){
-				console.log("create body :");
-				var def = deep.Deferred();
-				var body = [];
-				request.on('data', function(chunk) {
-			      	console.log("Received body data:");
-			      	body.push(chunk);
-			    });
-			    request.on('end', function() {
-			    	if(typeof body === 'undefined' || body == null)
-			    	{
-			    		request.body = null;
-			    	}
-			    	else
-				      // empty 200 OK response for now
-				      switch(contentType)
-				      {
-				      	case "application/json" : 
-				      		var b = "";
-				      		body.forEach(function (bd) {
-				      			b += bd.toString();
-				      		})
-				      		request.body = JSON.parse(b);
-				      		break;	
-				      	case "application/javascript" : 
-				      		var b = "";
-				      		body.forEach(function (bd) {
-				      			b += bd.toString();
-				      		})
-				      		request.body = JSON.parse(b);
-				      		break;	
-				      	default :
-				      		request.body = body;
-				      }
-				      console.log("body ended : ", request.body)
-					def.resolve(request.body);
-			    });
-			    request.on('error', function(error) {
-					// empty 200 OK response for now
-					request.body = null;
-					def.reject(error);
-				});
-			  return deep.promise(def);
-			}()
+			
+				return request.body = function(){
+					console.log("create body :");
+					var def = deep.Deferred();
+					var body = [];
+					request.on('data', function(chunk) {
+				      	console.log("Received body data:");
+				      	body.push(chunk);
+				    });
+				    request.on('end', function() {
+				    	if(typeof body === 'undefined' || body == null)
+				    		request.body = null;
+				    	else
+					      // empty 200 OK response for now
+					      switch(contentType)
+					      {
+					      	case "application/json" : 
+					      		var b = "";
+					      		body.forEach(function (bd) {
+					      			b += bd.toString();
+					      		})
+					      		request.body = JSON.parse(b);
+					      		break;	
+					      	case "application/javascript" : 
+					      		var b = "";
+					      		body.forEach(function (bd) {
+					      			b += bd.toString();
+					      		})
+					      		request.body = JSON.parse(b);
+					      		break;	
+					      	default :
+					      		request.body = body;
+					      }
+					      console.log("body ended : ", request.body)
+						def.resolve(request.body);
+				    });
+				    request.on('error', function(error) {
+						// empty 200 OK response for now
+						request.body = null;
+						def.reject(error);
+					});
+				  return deep.promise(def);
+				}()
+
 		},
 		parseRange : function (request) {
 			var rangeSum = request.autobahn.range = {};
@@ -96,6 +104,7 @@ define(function (require)
 			request.autobahn.path = decodeURIComponent(request.pathInfo.substring(1));
 			request.autobahn.method = request.method.toLowerCase();
 			request.autobahn.scriptName = "";
+			request.autobahn.url = request.url;
 
 			request.autobahn.contentType = request.headers["content-type"] || request.headers["Content-Type"] || "application/json";
 			request.autobahn.contentType = request.autobahn.contentType.split(";")[0];
