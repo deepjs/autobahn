@@ -7,7 +7,7 @@ define(function FacetControllerDefine(require){
 	var deep = require("deep/deep");
 	autobahn = require("autobahn/autobahn");
 	var AutobahnResponse = require("autobahn/autobahn-response");
-	var Facet = require("autobahn/Facet-controller");
+	var Facet = require("autobahn/facet-controller");
 	var UploadFacet = require("autobahn/uploader-facet");
 	var UploadHandler = UploadFacet.UploadHandler;
 
