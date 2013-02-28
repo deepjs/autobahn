@@ -232,7 +232,7 @@ var Accessors  = {
 
 var Permissive = {
 	headers:{
-		"Content-Type":"application/javascript;charset=utf-8",
+		"Content-Type":"application/json;charset=utf-8",
 		"Accept-Ranges":"items"
 	},
 	schema:{
