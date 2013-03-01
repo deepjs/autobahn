@@ -55,6 +55,7 @@ if(typeof define !== 'function'){
 
 define(function (require){
 
+    var deep = require("deep/deep");
     var path = require('path'),
         fs = require('fs'),
         // Since Node 0.8, .existsSync() moved from path to fs:
