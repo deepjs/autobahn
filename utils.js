@@ -20,13 +20,13 @@ define(function (require)
 		createBody : function  (request) {
 			var contentType = request.headers["content-type"] || request.headers["Content-Type"] || "application/json";
 			var contentType = contentType.split(";")[0];
-			
+				//console.log("autobahn.utils.createBody : ", contentType)
 				return request.body = function(){
 					console.log("create body :");
 					var def = deep.Deferred();
 					var body = [];
 					request.on('data', function(chunk) {
-				      	console.log("Received body data:");
+				      	//console.log("Received body data:");
 				      	body.push(chunk);
 				    });
 				    request.on('end', function() {
@@ -53,7 +53,7 @@ define(function (require)
 					      	default :
 					      		request.body = body;
 					      }
-					      console.log("body ended : ", request.body)
+					     // console.log("body ended : ", request.body)
 						def.resolve(request.body);
 				    });
 				    request.on('error', function(error) {

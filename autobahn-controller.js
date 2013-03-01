@@ -99,7 +99,8 @@ define(function (require)
 {
 	var deep = require("deep/deep");
 	var RoleController = require("autobahn/role-controller");
-	var FacetController = require("autobahn/facet-controller");
+	var FacetController = require("autobahn/facet-controller").Permissive;
+	var Accessors = require("autobahn/facet-controller").Accessors;
 	var Session = require("autobahn/session");
 	var statics = require("autobahn/jsgi/autobahn-statics-jsgi").AutobahnStaticsJSGI;
 	var errors = require("autobahn/errors");

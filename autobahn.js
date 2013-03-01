@@ -30,7 +30,6 @@ define(function (require)
 			var self = this;
 			var func = function (s,e) 
 			{
-				
 				self.currentSession = session;
 				self.currentFacet = null;
 				self.currentRole = null;
@@ -56,7 +55,6 @@ define(function (require)
 			}
 			deep.chain.addInQueue.apply(self, [func]);
 			return this;
-			
 		},
 		roles:function (list) {
 			var self = this;
@@ -113,13 +111,14 @@ define(function (require)
 			return this;
 		}
 	};
-	var facetHandler = deep.utils.up(baseHandler, {
+	var facetHandler = deep.utils.bottom(baseHandler, {
 		get:function (id, options) {
 			var self = this;
 			var func = function (s,e) {
 				if(!self.currentFacet)
 					throw new Error("No facet selected before get : ",id);
 				deep.when(self.currentFacet.accessors.get.handler(id, options)).then(function (result) {
+					self._entries = deep.query(result, "/!", { schema:self.currentFacet.schema, resultType:"full"  });
 					self.running = false;
 					deep.chain.nextQueueItem.apply(self, [result, null]); 
 				}, function (error) {
@@ -127,7 +126,30 @@ define(function (require)
 					deep.chain.nextQueueItem.apply(self, [null, error]); 
 				});
 			}
+			deep.utils.up(ressourceHandler, self);
 			deep.chain.addInQueue.apply(self, [func]);
+			return this;
+		},
+		query:function (q, options) {
+			var self = this;
+			var func = function (s,e) {
+				if(!self.currentFacet)
+					throw new Error("No facet selected before query : ",q);
+				deep.when(self.currentFacet.accessors.query.handler(q, options))
+				.done(function (result) {
+					result = result.slice(0,result.length);
+					self._entries = deep.query(result, "/*", { schema:{ type:"array", items:self.currentFacet.schema }, resultType:"full" });
+					self.running = false;
+					deep.chain.nextQueueItem.apply(self, [result, null]); 
+				})
+				.fail(function (error) {
+					self.running = false;
+					deep.chain.nextQueueItem.apply(self, [null, error]); 
+				});
+			}
+			console.log("facetHandler.query : add ressource controle")
+			deep.utils.up(ressourceHandler, this);
+			deep.chain.addInQueue.apply(this, [func]);
 			return this;
 		},
 		post:function (object, options) {
@@ -149,6 +171,7 @@ define(function (require)
 		put:function (object, options) {
 			var self = this;
 			var func = function (s,e) {
+				console.log("facetHandler.put")
 				if(!self.currentFacet)
 					throw new Error("No facet selected before put : ",object);
 				options = options || {};
@@ -182,22 +205,6 @@ define(function (require)
 			deep.chain.addInQueue.apply(self, [func]);
 			return this;
 		},
-		query:function (q, options) {
-			var self = this;
-			var func = function (s,e) {
-				if(!self.currentFacet)
-					throw new Error("No facet selected before query : ",q);
-				deep.when(self.currentFacet.accessors.query.handler(q, options)).then(function (result) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [result, null]); 
-				}, function (error) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [null, error]); 
-				});
-			}
-			deep.chain.addInQueue.apply(self, [func]);
-			return this;
-		},
 		delete:function (id, options) {
 			var self = this;
 			var func = function (s,e) {
@@ -215,10 +222,112 @@ define(function (require)
 			return this;
 		}
 	});
+
+	var ressourceHandler = deep.utils.bottom(facetHandler, {
+		post:function (options) {
+			var self = this;
+			var func = function (s,e) {
+				if(!self.currentFacet)
+					throw new Error("No facet selected before post : ",object);
+
+				var alls = [];
+				options = options || {};
+				self._entries.forEach(function(e){
+					alls.push(deep.when(self.currentFacet.accessors.post.handler(e.value, options)));
+				})
+				deep.all(alls)
+				.done(function(results){
+					self.running = false;
+					deep.chain.nextQueueItem.apply(self, [results, null]); 
+				})
+				.fail(function(error){
+					self.running = false;
+					deep.chain.nextQueueItem.apply(self, [null, error]); 
+				})
+				
+			}
+			deep.chain.addInQueue.apply(self, [func]);
+			return this;
+		},
+		put:function (options) {
+			console.log("ressourceHandler.put")
+			var self = this;
+			var func = function (s,e) {
+				if(!self.currentFacet)
+					throw new Error("No facet selected before ressource.put");
+				var alls = [];
+				options = options || {};
+				console.log("before ressource.put : self._entries : ", deep.chain.values(self))
+				self._entries.forEach(function(e){
+					options.id = e.value.id;
+					alls.push(deep.when(self.currentFacet.accessors.put.handler(e.value, options)));
+				})
+				deep.all(alls)
+				.done(function(results){
+					self.running = false;
+					deep.chain.nextQueueItem.apply(self, [results, null]); 
+				})
+				.fail(function(error){
+					self.running = false;
+					deep.chain.nextQueueItem.apply(self, [null, error]); 
+				})
+			}
+			deep.chain.addInQueue.apply(self, [func]);
+			return this;
+		},
+		patch:function (options) {
+			var self = this;
+			var func = function (s,e) {
+				if(!self.currentFacet)
+					throw new Error("No facet selected before patch : ",object);
+				var alls = [];
+				options = options || {};
+				options.id = options.id || object.id;
+				dself._entries.forEach(function(e){
+					alls.push(deep.when(self.currentFacet.accessors.patch.handler(e.value, options)));
+				})
+				deep.all(alls)
+				.done(function(results){
+					self.running = false;
+					deep.chain.nextQueueItem.apply(self, [results, null]); 
+				})
+				.fail(function(error){
+					self.running = false;
+					deep.chain.nextQueueItem.apply(self, [null, error]); 
+				})
+			}
+			deep.chain.addInQueue.apply(self, [func]);
+			return this;
+		},
+		delete:function (options) {
+			var self = this;
+			var func = function (s,e) {
+				if(!self.currentFacet)
+					throw new Error("No facet selected before get : ",id);
+				var alls = [];
+				self._entries.forEach(function(e){
+					alls.push(deep.when(self.currentFacet.accessors["delete"].handler(e.value.id, options)));
+				})
+				deep.all(alls)
+				.done(function(results){
+					self.entries = [];
+					self.running = false;
+					deep.chain.nextQueueItem.apply(self, [results, null]); 
+				})
+				.fail(function(error){
+					self.running = false;
+					deep.chain.nextQueueItem.apply(self, [null, error]); 
+				})
+			}
+			deep.chain.addInQueue.apply(self, [func]);
+			return this;
+		}
+	});
 	
 	var autobahn = function () {
 		var handler = deep(autobahnController);
 		deep.utils.up(baseHandler, handler);
+
 		//console.log("autobahn start : ", handler)
 		return handler; 
 	}

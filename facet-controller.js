@@ -6,49 +6,6 @@ refactoring :
 
 each method need to be wrapped in a RessourceAcccessor
 
-GetAccessor :
-	restrictToOwner:false
-	schema:{}
-	headers:{}
-	filterProperties
-	
-
-
-utils.parseRange = function (request, infos) {
-	request.headers["content-range"]
-}
-
-utils.parseRequestInfos = function (request, infos) {
-	request.headers["content-range"]
-}
-
-
-
-
-
-Permissive = {
-	backgrounds:[Facet],
-	accessors:{
-		get:{
-			handler:autobahn.accessors.get()
-		},
-		put:Accessor.put(),
-		post:Accessor.post(),
-		del:Accessor.del(),
-		patch:Accessor.patch()
-	}
-}
-
-Restrictive = {
-	backgrounds:[Facet],
-	accessors:{
-		get:autobahn.accessors.forbidden(),
-		put:Accessor.forbidden(),
-		post:Accessor.forbidden(),
-		del:Accessor.forbidden(),
-		patch:Accessor.forbidden()
-	}
-}
 
 
  */
@@ -134,7 +91,8 @@ var Accessors  = {
 			throw new errors.Access("error when posting on store. "+JSON.stringify(error));
 		}); 
 	},
-	query : function(query, options){
+	query : function(query, options)
+	{
 		//console.log("FacetController QUERY : options = ", options);
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to query something");
@@ -153,24 +111,31 @@ var Accessors  = {
 			throw new errors.Access("error when query on store. "+JSON.stringify(error));
 		}); 
 	},
-	put : function(object, options){ 
+	put : function(object, options)
+	{ 
 		var self = this;
 		//console.log("FACET put : object.id ", object.id, " - id : ", options.id)
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to put something");
+
+		options = options || {};
+
+		options.id = options.id || object.id;
+
+		console.log("Facet::put : ", object, options)
 
 		if(!options.id || (object.id && options.id != object.id))
 			throw new errors.PreconditionFailed("FacetController::put : problem, ids in object and url dont correspond");
 
 		var report = deep.validate(object, this.schema || this.facet.schema || {});
 		if(!report.valid)
-			return new errors.PreconditionFailed("put failed!", report);
+			return new errors.PreconditionFailed("put failed!", JSON.stringify(report));
 
 		return deep.when(this.facet.store.put(object, options))
 		.done( function(obj){
 			if(!obj)
 				throw new errors.Access("put return nothing");
-			deep(result, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
+			deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
 			return obj;
 		})
 		.fail(function(error){
@@ -179,7 +144,8 @@ var Accessors  = {
 			throw new errors.Access("error when putting on store. "+JSON.stringify(error));
 		}); 
 	},
-	patch : function(object, options){ 
+	patch : function(object, options)
+	{
 		var self = this;
 		//console.log("FACET patch : object.id ", object.id, " - id : ", options.id)
 		if(!this.facet.store)
@@ -203,7 +169,7 @@ var Accessors  = {
 			.done(function(obj){
 				if(!obj)
 					throw new errors.Access("patch return nothing");
-				deep(result, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
+				deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
 				return obj;
 			});
 		})
@@ -213,7 +179,8 @@ var Accessors  = {
 			throw new errors.Access("FacetController::patch : no object found with this id");
 		})
 	},
-	"delete" : function(object, options){ // handle puts to add to history and define attribution
+	"delete" : function(object, options)
+	{ 
 		if(!this.store)
 			throw new errors.Access(this.facet.name + " don't have store to delete something");
 		return deep.when(this.store["delete"](object, options))
@@ -231,6 +198,7 @@ var Accessors  = {
 }
 
 var Permissive = {
+	roleController:null,
 	headers:{
 		"Content-Type":"application/json;charset=utf-8",
 		"Accept-Ranges":"items"
@@ -290,10 +258,13 @@ var Permissive = {
 		}
 	},
 	rpc:{
-		
+		link:function(handler, relation)
+		{
+			return handler.getLink(relation);
+		}
 	},
 	store:{
-	
+		
 	},
 	getId : function(instance){
 		return instance[this.mainId || "id"];
@@ -325,7 +296,42 @@ var Permissive = {
 			var toCall = self.rpc[body.method];
 			if(!toCall)
 				return errors.MethodNotAllowed();
-			return deep.when(toCall.apply(obj, body.params || []))
+			body.params = body.params || [];
+
+			var schema = self.facet.schema;
+			var session = request.autobahn.session;
+			var roleController = request.autobahn.roleController;
+
+			var handler = {
+				save:function()
+				{
+					return deep.when(self.accessors.put(obj, {}));
+				},
+				getLink:function(relationName)
+				{
+					var link = deep.query(schema, "/links/*?rel="+relationName).shift();
+					if(!link)
+						return new Error("no link found with : "+relationName);	
+					var interpreted = deep.interpret(link.href, obj);
+					var splitted = interpreted.split("/");
+					interpreted.shift();
+					var facetName = splitted.shift();
+					var q = splitted.shift();
+					var d = autobahn()
+					.session(session)
+					.facet(interpreted.shift());
+					if(q.indexOf("?") !== -1)
+						return d.query(q.substring(1));
+					else
+						return d.get(q);
+				},
+				facet:self,
+				schema:schema,
+				session:session,
+				roleController:roleController
+			}
+			body.params.unshift(handler)
+			return deep.when(toCall.apply(obj, body.params))
 			.done(function  (result) {
 				return {
 					id:body.id,
@@ -418,5 +424,8 @@ var Permissive = {
 	}
 }
 	
-	return Permissive;
+	return {
+		Permissive:Permissive,
+		Accessors:Accessors
+	}
 });

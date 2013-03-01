@@ -7,7 +7,7 @@ define(function FacetControllerDefine(require){
 	var deep = require("deep/deep");
 	autobahn = require("autobahn/autobahn");
 	var AutobahnResponse = require("autobahn/autobahn-response");
-	var Facet = require("autobahn/facet-controller");
+	var Facet = require("autobahn/facet-controller").Permissive;
 	var UploadFacet = require("autobahn/uploader-facet");
 	var UploadHandler = UploadFacet.UploadHandler;
 
@@ -35,14 +35,20 @@ define(function FacetControllerDefine(require){
 			deep(request)
 			.catchError()
 			.done(function () {
+				//console.log("manage body")
 				//autobahn.utils.parseRequestInfos(request);
 				var contentType = request.headers["content-type"] || request.headers["Content-Type"] || "application/json";
 				var isForm = (contentType.indexOf("multipart/form-data") !== -1);
 				if(Facet.accessors[method] && Facet.accessors[method].hasBody )
 					if(!isForm)
+					{
+						//console.log("manage simple body")
 						autobahn.utils.createBody(request);
+					}
+						
 					else
 					{
+						//console.log("create upload body")
 						request.autobahn.uploadHandler = new UploadHandler(request, 
 						{
 					            tmpDir: settings.rootPath + '/tmp',
@@ -89,7 +95,7 @@ define(function FacetControllerDefine(require){
 			{
 				if(response.shift)
 					response = response.shift();
-				// console.log("Response from jsgi stack : ", response)
+				 //console.log("Response from jsgi stack : ", response)
 				if(typeof response === 'undefined' || response == null)
 				{
 		 			res.writeHead(404, {'Content-Type': 'text/html'});
