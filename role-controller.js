@@ -8,6 +8,7 @@ if(typeof define !== 'function'){
 
 define(function RoleControllerDefine(require){
 	var deep = require("deep/deep");
+	var errors = require("autobahn/errors")
 	//var RouteNode = require("autobahn/route-node-controller");
 	var AutobahnResponse = require("autobahn/autobahn-response")
 	var Cascade = require("pintura/jsgi/cascade").Cascade;
@@ -39,20 +40,20 @@ define(function RoleControllerDefine(require){
 			//console.log("RoleController.analyse : facets : ", this);
 
 			var noStatics = function (error) {
-				console.log("RoleController : statics error : try next")
+				//console.log("RoleController : statics error : try next")
 				if(self.facets && self.facets[request.autobahn.part]) 
 				{
-					console.log("try facet : ", request.autobahn.part)
+					//console.log("try facet : ", request.autobahn.part)
 					return deep(request.body)
 					.catchError()
 					.done(function(){
 						return self.facets[request.autobahn.part].analyse(request);
 					})
 					.done(function (success) {
-						console.log("RoleController : facets success : ", success)
+						//console.log("RoleController : facets success : ", success)
 						//if(!success || success.status >= 400
 						if(typeof success === 'undefined' || success == null)
-							return new AutobahnResponse(404, {}, "facet failed to retrieve something")
+							return new errors.NotFound("facet failed to retrieve something")
 						if(success instanceof AutobahnResponse)
 							return success;
 						if(success.status)
@@ -67,7 +68,7 @@ define(function RoleControllerDefine(require){
 					return self.routes.analyse(request);
 				
 				console.log("autobahn has nothing to do with request");
-				return new AutobahnResponse(404, {}, "autobahn has nothing to do with request : "+ request.url);
+				return new errors.NotFound("autobahn has nothing to do with request : "+ request.url);
 			}
 
 			return deep.when(c)

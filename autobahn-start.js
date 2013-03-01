@@ -95,7 +95,7 @@ define(function FacetControllerDefine(require){
 			{
 				if(response.shift)
 					response = response.shift();
-				 //console.log("Response from jsgi stack : ", response)
+				// console.log("Response from jsgi stack : ", response)
 				if(typeof response === 'undefined' || response == null)
 				{
 		 			res.writeHead(404, {'Content-Type': 'text/html'});

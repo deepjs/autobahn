@@ -165,18 +165,17 @@ define(function (require)
 					})
 					.fail(function  (error) {
 						error = error || {};
-						return new AutobahnResponse(error.status || 404, error.headers || {},
-						error.toString() || "Autobahn-Controller : error when analyses request (fail 2): "+error.toString());
+						return new errors.Server(error.toString() || "Autobahn-Controller : error when analyses request (fail 2): "+error.toString(), error.status || 404);
 					});
 				}
 				catch(e){
 					e = e || {};
-					return new AutobahnResponse(e.status || 404, e.headers || {}, e.toString() ||  "Autobahn-Controller : error when analyses request (throw): "+String(e));
+					return new errors.Server(e.toString() ||  "Autobahn-Controller : error when analyses request (throw): "+String(e), 500);
 				}
 			})
 			.fail(function (error) {
 				error = error || {};
-				return new AutobahnResponse(error.status || 404, error.headers || {}, error.toString() || "Autobahn-Controller : error when analyses request (fail1) : "+String(error));
+				return new errors.Server(error.toString() || "Autobahn-Controller : error when analyses request (fail1) : "+String(error), error.status || 404);
 			});
 		},
 		compileRoles : function(roles)

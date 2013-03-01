@@ -71,7 +71,7 @@ var Accessors  = {
 		if(!report.valid)
 			return new errors.PreconditionFailed("put failed!", report);
 
-		console.log("facets-controller : post : ", object, options);
+	//	console.log("facets-controller : post : ", object, options);
 		if(typeof this.restrictToOwner === 'function' && !this.restrictToOwner(obj, this.schema || this.facet.schema, options))
 			throw new errors.Unauthorized("you're not the owner of this ressource.");
 
@@ -101,7 +101,7 @@ var Accessors  = {
 		.done(function(result){
 			if(!result)
 				return [];
-			console.log("facet.query : ", { type:"array", items:self.schema || self.facet.schema || {} })
+			//console.log("facet.query : ", { type:"array", items:self.schema || self.facet.schema || {} })
 			deep(result, { type:"array", items:self.schema || self.facet.schema || {} }).remove(".//?_schema.private=true");
 			return result;
 		})
@@ -122,7 +122,7 @@ var Accessors  = {
 
 		options.id = options.id || object.id;
 
-		console.log("Facet::put : ", object, options)
+		//console.log("Facet::put : ", object, options)
 
 		if(!options.id || (object.id && options.id != object.id))
 			throw new errors.PreconditionFailed("FacetController::put : problem, ids in object and url dont correspond");
@@ -359,7 +359,7 @@ var Permissive = {
 		var infos = request.autobahn,
 			self = this;
 
-		console.log("facet analyse")
+		// console.log("facet analyse")
 
 		if(infos.method == "post" && infos.contentType.indexOf("application/json-rpc") !== -1)
 			return this.rpcCall(request);
@@ -379,7 +379,7 @@ var Permissive = {
 			throw new errors.MethodNotAllowed();
 
 		request.autobahn.response.status = 200;
-		 console.log("facet analyse 2")
+		 // console.log("facet analyse 2")
 
 		var result = null;
 		if(accessor.hasBody)
@@ -410,7 +410,7 @@ var Permissive = {
 		}
 		else
 			result = accessor.handler(infos.path, request.autobahn);
-		console.log("facet analyse 3")
+		// console.log("facet analyse 3")
 
 		return deep.when(result)
 		.done(function (result) {

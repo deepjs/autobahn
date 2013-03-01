@@ -68,6 +68,7 @@ if(typeof define !== 'function'){
 }
 
 define(function (require){
+    var deep = require("deep/deep");
 
     var path = require('path'),
         fs = require('fs'),

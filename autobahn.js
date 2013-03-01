@@ -147,7 +147,7 @@ define(function (require)
 					deep.chain.nextQueueItem.apply(self, [null, error]); 
 				});
 			}
-			console.log("facetHandler.query : add ressource controle")
+			//console.log("facetHandler.query : add ressource controle")
 			deep.utils.up(ressourceHandler, this);
 			deep.chain.addInQueue.apply(this, [func]);
 			return this;

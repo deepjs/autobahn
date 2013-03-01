@@ -1,6 +1,7 @@
 
 var deep = require("deep/deep");
 var AutobahnResponse = require("autobahn/autobahn-response");
+var errors = require("autobahn/errors");
 var AutobahnJSGI = exports.AutobahnJSGI = function(autobahnController, app){
 	//console.log("creation of autobahn jsgi : ", autobahnController);
 	return function(request){
@@ -14,7 +15,7 @@ var AutobahnJSGI = exports.AutobahnJSGI = function(autobahnController, app){
 					return res;
 				}
 				else
-					return new AutobahnResponse(404,{}, "AutobahnJSGI 404");
+					return new errors.Server("AutobahnJSGI", 404);
 			return response;
 		});
 	};
