@@ -8,7 +8,7 @@ var when = deep.when;
 
 var DatabaseError = require("perstore/errors").DatabaseError,
 	AccessError = require("perstore/errors").AccessError,
-	MethodNotAllowedError = require("perstore/errors").MethodNotAllowedError;
+	MethodNotAllowedError = require("perstore/errors").MethodNotAllowed;
 var autobahnController = require("autobahn/autobahn-controller");
 var Memory = require("autobahn/stores/memory");
 var nodeFS = require("fs");

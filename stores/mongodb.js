@@ -7,7 +7,7 @@ var deep = require("deep/deep");
 var when = deep.when;
 var DatabaseError = require("perstore/errors").DatabaseError,
 	AccessError = require("perstore/errors").AccessError,
-	MethodNotAllowedError = require("perstore/errors").MethodNotAllowedError;
+	MethodNotAllowedError = require("perstore/errors").MethodNotAllowed;
 var Mongo = function(){}
 Mongo.prototype =  {
 		dbURL:null,

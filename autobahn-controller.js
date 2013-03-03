@@ -126,13 +126,14 @@ define(function (require)
 		},
 		getRequestController: function(request)
 		{
-			var session = request.session;
+			var session = request.autobahn.session;
 			var roles = ["public"];
 			if(session && session.remoteUser)
 			{
+
 				roles = session.remoteUser.roles || ["user"];
-				if(console.flags["autobahn"])
-					console.log("autobahn", "getRole() : request.remoteUser.login : ", session.remoteUser.login);
+				//if(console.flags["autobahn"])
+					console.log("autobahn", "getRole() : request.remoteUser : ", session.remoteUser);
 			}	
 			if(console.flags["autobahn"])
 				console.log("autobahn", "getRole() : will compil roles : ", roles, this);
@@ -145,10 +146,10 @@ define(function (require)
 		},
 		analyseRequest : function(request)
 		{
-			console.log("Autobahn-Controller.analyse")
+			//console.log("Autobahn-Controller.analyse")
 			var ctrl = null;
 			utils.parseRequestInfos(request);
-			console.log("Autobahn-Controller.analyse 2  ")
+			//console.log("Autobahn-Controller.analyse 2  ")
 
 			return deep.when(this.getRequestController(request))
 			.done(function(ctrl){
@@ -187,8 +188,8 @@ define(function (require)
 				var ctrl = this.roles[joined];
 				if(!ctrl)
 				{
-					if(console.flags["autobahn"])
-						console.log("roles (",roles,") wasn't in cache : get it : ", this)
+					//if(console.flags["autobahn"])
+						console.log("roles (",roles,") wasn't in cache : get it")
 					var ctrl = {};
 					roles.forEach(function(e){
 						//console.log("applying role : ", e)
@@ -209,6 +210,7 @@ define(function (require)
 			if(!ctrl.loaded)
 			{
 				//console.log("CONTROLLER NOT LOADED : load it : ", ctrl)
+				ctrl.name = joined;
 				var d = deep(ctrl)
 				//.flatten()
 				.bottom(new RoleController())
@@ -228,7 +230,7 @@ define(function (require)
 				.run("init")
 				.query("/facets/*")
 				.run("init")
-				.log("role flattened : "+joined);
+				.log("role "+joined+"flattened : "+joined);
 
 				return deep.when(d)
 				.done(function (success) {

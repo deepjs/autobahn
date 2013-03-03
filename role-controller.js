@@ -33,7 +33,7 @@ define(function RoleControllerDefine(require){
 		},
 		analyse : function(request)
 		{
-			console.log("role analyse")
+			console.log("role "+this.name+" analyse")
 			var self = this;
 			var c = this.statics(request);
 			//console.log("RoleController.analyse : statics : ", c);
@@ -43,14 +43,15 @@ define(function RoleControllerDefine(require){
 				//console.log("RoleController : statics error : try next")
 				if(self.facets && self.facets[request.autobahn.part]) 
 				{
-					//console.log("try facet : ", request.autobahn.part)
+					//console.log("try facet : ", request.autobahn.part, self.facets[request.autobahn.part].analyse)
 					return deep(request.body)
 					.catchError()
 					.done(function(){
 						return self.facets[request.autobahn.part].analyse(request);
 					})
 					.done(function (success) {
-						//console.log("RoleController : facets success : ", success)
+						//
+						// console.log("RoleController  "+self.name+"  : facets success : ", success)
 						//if(!success || success.status >= 400
 						if(typeof success === 'undefined' || success == null)
 							return new errors.NotFound("facet failed to retrieve something")
@@ -60,14 +61,14 @@ define(function RoleControllerDefine(require){
 							return new AutobahnResponse(success.status, success.headers, success.body || success.message || "facet return nothing");
 					})
 					.fail(function (error) {
-						console.log("RoleController : facets error : ", error)
+						console.log("RoleController  "+self.name+"  : facets error : ", error)
 						return error;
 					});
 				}
 				else if(self.routes)
 					return self.routes.analyse(request);
 				
-				console.log("autobahn has nothing to do with request");
+				console.log("autobahn ( "+self.name+" ) has nothing to do with request");
 				return new errors.NotFound("autobahn has nothing to do with request : "+ request.url);
 			}
 
@@ -76,7 +77,7 @@ define(function RoleControllerDefine(require){
 				return noStatics(error);
 			})
 			.done(function (success) {
-				console.log("RoleController : statics success : ", success);
+				// console.log("RoleController ( "+self.name+" ) : statics success : ", success);
 				if(!success || success.status >= 400)
 					return noStatics(success);
 				return success;

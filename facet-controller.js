@@ -24,7 +24,7 @@ define(function FacetControllerDefine(require){
 var Accessors  = {
 	forbidden:function(message){
 		return function(obj, options){
-			throw new errors.MethodNotAllowedError("You don't have right to perform this operation. "+message||"");
+			throw new errors.MethodNotAllowed("You don't have right to perform this operation. "+message||"");
 		}
 	},
 	get : function(id, options)
@@ -68,7 +68,7 @@ var Accessors  = {
 	},
 	post : function(object, options)
 	{
-		console.log("Accessors.post")
+		//console.log("Accessors.post : ", this.facet.store.post)
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to post something");
 
@@ -104,7 +104,7 @@ var Accessors  = {
 		var self = this;
 		return deep.when(this.facet.store.query(query, options))
 		.done(function(result){
-			console.log("facet.query : ", query, result)
+			// console.log("facet.query : ", query, result)
 			if(!result)
 				return [];
 			deep(result, { type:"array", items:self.schema || self.facet.schema || {} }).remove(".//?_schema.private=true");
@@ -397,7 +397,7 @@ var Permissive = {
 		var infos = request.autobahn,
 			self = this;
 
-		// console.log("facet analyse")
+		 // console.log("facet analyse")
 
 		if(infos.method == "post" && infos.contentType.indexOf("application/json-rpc") !== -1)
 			return this.rpcCall(request);
@@ -417,7 +417,7 @@ var Permissive = {
 			throw new errors.MethodNotAllowed();
 
 		request.autobahn.response.status = 200;
-		 // console.log("facet analyse 2")
+		  // console.log("facet analyse 2")
 
 		var result = null;
 		if(accessor.hasBody)
@@ -425,6 +425,7 @@ var Permissive = {
 				result = deep.when(request.body)
 				.done(function (body) 
 				{
+					// console.log("method hasBody : ", accessor.handler)
 					return accessor.handler(body, infos);
 				});
 			else
@@ -448,11 +449,11 @@ var Permissive = {
 		}
 		else
 			result = accessor.handler(infos.path, request.autobahn);
-		// console.log("facet analyse 3")
+		 // console.log("facet analyse 3")
 
 		return deep.when(result)
 		.done(function (result) {
-			// console.log("facet analyse 4")
+			 // console.log("facet analyse 4")
 			request.autobahn.response.body = result;
 			deep.utils.up(accessor.headers || self.headers || {}, infos.response.headers);
 			if(accessor.setCustomHeaders)
