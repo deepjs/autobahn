@@ -214,25 +214,20 @@ define(function (require)
 				var d = deep(othis)
 				.query("./roles/_"+joined)
 				.position("role")
-				//.flatten()
 				.bottom(new RoleController())
 				.query("./facets/*")
 				.bottom(FacetController)
 				.back("role")
 				.flatten()
 				.query("./facets/*")
-				.run(function(){
-					console.log("store init ? ", this.store);
-				})
-				.run(function () {
+				.run(function () 
+				{
 					var d2 = deep(this)
 					.query("./store?_schema.type=object")
 					.run("init");
-
 					var d = deep(this)
 					.query("./store?_schema.type=string")
-					.load()
-					
+					.load();
 					return deep.all([d, d2]);
 				})
 				.run("init")
@@ -240,7 +235,6 @@ define(function (require)
 				.run("init")
 				.log("role "+joined+"flattened : "+joined)
 				
-
 				return deep.when(d)
 				.done(function (success) {
 					return ctrl;
