@@ -22,6 +22,11 @@ define(function FacetControllerDefine(require){
 	//console.log("------Content-Type = ", contentType);
 
 var Accessors  = {
+	forbidden:function(message){
+		return function(obj, options){
+			throw new errors.MethodNotAllowedError("You don't have right to perform this operation. "+message||"");
+		}
+	},
 	get : function(id, options)
 	{
 		//console.log("facets-controller : get : ", id, this.facet);

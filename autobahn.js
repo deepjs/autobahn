@@ -205,7 +205,7 @@ define(function (require)
 			deep.chain.addInQueue.apply(self, [func]);
 			return this;
 		},
-		delete:function (id, options) {
+		del:function (id, options) {
 			var self = this;
 			var func = function (s,e) {
 				if(!self.currentFacet)
@@ -299,7 +299,7 @@ define(function (require)
 			deep.chain.addInQueue.apply(self, [func]);
 			return this;
 		},
-		delete:function (options) {
+		del:function (options) {
 			var self = this;
 			var func = function (s,e) {
 				if(!self.currentFacet)
