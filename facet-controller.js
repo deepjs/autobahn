@@ -185,23 +185,24 @@ var Accessors  = {
 
 	 	return	deep.when( this.facet.store.get(id, options) )
 		.done( function (success) {
-			//console.log(" PATCH GET old obect done = ", success);
+			console.log(" PATCH GET old object done = ", success);
 			
 			if(!success)
 				throw new errors.Unauthorized("no ressource to patch");
 
-			var newOnly = deep(object, this.schema || this.facet.schema )
+			var newOnly = deep(object, self.schema || self.facet.schema )
 			.query("./*?_schema.readOnly=true")
 			.nodes();
 			
 			newOnly.forEach(function(e){
-				var oldValue = deep.utils.retrieveValueByPath(oldOne, e.path, "/");
+				console.log(" READ PROPERTIES readonly : ", e)
+				var oldValue = deep.utils.retrieveValueByPath(success, e.path, "/");
 				if(typeof oldValue === 'undefined' && oldValue != e.value)
 					throw new errors.Unauthorized(e.path+" is readOnly !")
 			});
 
 			deep.utils.up(object, success);
-			delete updatedObject.getMetadata;
+			delete success.getMetadata;
 			//console.log(" PATCH updatedObject = ", updatedObject)
 			return deep.when(self.facet.store.put(success, options))
 			.done(function(obj){
@@ -419,6 +420,7 @@ var Permissive = {
 
 		request.autobahn.response.status = 200;
 		  // console.log("facet analyse 2")
+		infos.id = infos.path;
 
 		var result = null;
 		if(accessor.hasBody)
