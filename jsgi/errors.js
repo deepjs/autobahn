@@ -46,7 +46,7 @@ define(function(require){
 				if(e.status)
 					response.status = e.status;
 
-				if(e.message)
+				if(e.message && typeof e.message !== "string")
 					response.body.push(JSON.stringify(e.message));
 				else if(e.body)
 					response.body.concat(e.body);

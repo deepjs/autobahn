@@ -74,7 +74,7 @@ var Accessors  = {
 
 		var report = deep.validate(object, this.schema || this.facet.schema || {});
 		if(!report.valid)
-			return new errors.PreconditionFailed("put failed!", report);
+			throw new errors.PreconditionFailed("post failed!", report);
 
 	//	console.log("facets-controller : post : ", object, options);
 		if(typeof this.restrictToOwner === 'function' && !this.restrictToOwner(obj, this.schema || this.facet.schema, options))
@@ -86,7 +86,7 @@ var Accessors  = {
 		.done(function(obj){
 			console.log("facet-controller : after store post  : response ", obj)
 			if(typeof obj === 'undefined' || obj == null)
-				return new errors.Access("post return nothing");
+				throw new errors.Access("post return nothing");
 			deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
 			return obj;
 		})
@@ -104,9 +104,9 @@ var Accessors  = {
 		var self = this;
 		return deep.when(this.facet.store.query(query, options))
 		.done(function(result){
+			console.log("facet.query : ", query, result)
 			if(!result)
 				return [];
-			//console.log("facet.query : ", { type:"array", items:self.schema || self.facet.schema || {} })
 			deep(result, { type:"array", items:self.schema || self.facet.schema || {} }).remove(".//?_schema.private=true");
 			return result;
 		})

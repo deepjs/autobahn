@@ -31,6 +31,7 @@ define(function(require){
 	var common = { toString:toString, headers:null, body:null, message:null, status:null };
 	var AccessError = Compose( Error,function(message){ this.message = message; this.status = 404; this.headers = {}; this.body = []; }, common );
 
+	var Conflict = Compose( Error,function(message){ this.message = message; this.status = 409; }, common);
 	var Unauthorized = Compose( Error,function(message){ this.message = message; this.status = 401; }, common);
 	var TimeOutError = Compose( Error,function(message){ this.message = message; this.status = 408; }, common);
 	var ForbiddenError = Compose( Error,function(message){ this.message = message; this.status = 403; }, common);
