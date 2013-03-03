@@ -313,6 +313,7 @@ var Permissive = {
 		deep(this.accessors.patch.schema).replace("//required", false);
 		for(var i in this.accessors)
 		{
+			console.log("______________________ init accessors from facet : ", this)
 			deep.utils.up({
 				facet:this,
 				name:i

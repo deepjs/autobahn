@@ -35,7 +35,6 @@ define(function RoleControllerDefine(require){
 		{
 			console.log("role "+this.name+" analyse")
 			var self = this;
-			var c = this.statics(request);
 			//console.log("RoleController.analyse : statics : ", c);
 			//console.log("RoleController.analyse : facets : ", this);
 
@@ -72,16 +71,18 @@ define(function RoleControllerDefine(require){
 				return new errors.NotFound("autobahn has nothing to do with request : "+ request.url);
 			}
 
-			return deep.when(c)
-			.fail(function (error) {
-				return noStatics(error);
-			})
-			.done(function (success) {
-				// console.log("RoleController ( "+self.name+" ) : statics success : ", success);
-				if(!success || success.status >= 400)
-					return noStatics(success);
-				return success;
-			});
+			if(this.statics)
+				return deep.when(this.statics(request))
+				.fail(function (error) {
+					return noStatics(error);
+				})
+				.done(function (success) {
+					// console.log("RoleController ( "+self.name+" ) : statics success : ", success);
+					if(!success || success.status >= 400)
+						return noStatics(success);
+					return success;
+				});
+			return noStatics(null);
 			//return { status:404, headers:headers, body:["error 404 (RC)"]};
 		},
 		getFile : function(path, type)

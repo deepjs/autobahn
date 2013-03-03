@@ -185,20 +185,20 @@ define(function (require)
 			
 			try{
 				var joined = roles.join(".");
-				var ctrl = this.roles[joined];
+				var ctrl = this.roles["_"+joined];
 				if(!ctrl)
 				{
 					//if(console.flags["autobahn"])
 						console.log("roles (",roles,") wasn't in cache : get it")
 					var ctrl = {};
 					roles.forEach(function(e){
-						//console.log("applying role : ", e)
+						console.log("applying role : ", e)
 						if(othis.roles[e])
 							deep.utils.up(othis.roles[e], ctrl);
 						else
 							throw new Error({msg:"error while compiling roles : no role founded with : "+e, error:null});
 					});
-					this.roles[joined] = ctrl;
+					this.roles["_"+joined] = ctrl;
 				}
 			}catch(e){
 				if(e instanceof Error)
@@ -211,26 +211,36 @@ define(function (require)
 			{
 				//console.log("CONTROLLER NOT LOADED : load it : ", ctrl)
 				ctrl.name = joined;
-				var d = deep(ctrl)
+				var d = deep(othis)
+				.query("./roles/_"+joined)
+				.position("role")
 				//.flatten()
 				.bottom(new RoleController())
 				.query("./facets/*")
 				.bottom(FacetController)
-				.root()
+				.back("role")
 				.flatten()
+				.query("./facets/*")
+				.run(function(){
+					console.log("store init ? ", this.store);
+				})
 				.run(function () {
-					var d = deep(othis)
-					.query("/roles/"+joined+"/facets/*/store?_schema.type=string")
-					.load();
+					var d = deep(this)
+					.query("./store?_schema.type=string")
+					.load()
 					//var d2 = deep(othis)
 					//.query("/roles/"+joined+"/facets/*/store?_schema.type=object")
 					//.run("init");
 					return deep.all([d]);
 				})
 				.run("init")
-				.query("/facets/*")
+				/*.run(function(){
+					console.log("store initialised ? ", this.store);
+				})*/
+				.back("role")
 				.run("init")
-				.log("role "+joined+"flattened : "+joined);
+				.log("role "+joined+"flattened : "+joined)
+				
 
 				return deep.when(d)
 				.done(function (success) {
