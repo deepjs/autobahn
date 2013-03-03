@@ -136,8 +136,26 @@ var Accessors  = {
 		if(!report.valid)
 			return new errors.PreconditionFailed("put failed!", JSON.stringify(report));
 
-		return deep.when(this.facet.store.put(object, options))
-		.done( function(obj){
+		return deep.when(this.facet.accessors.get.handler(options.id, options))
+		.done(function(success){
+			if(success.length == 0)
+				throw new errors.Unauthorized("object don't exists. Please post before.");
+			return success.shift();
+		})
+		.done(function(oldOne)
+		{
+			var newOnly = deep(object, this.schema || this.facet.schema )
+			.query("./*?_schema.readOnly=true")
+			.nodes();
+
+			newOnly.forEach(function(e){
+				var oldValue = deep.utils.retrieveValueByPath(oldOne, e.path, "/");
+				if(typeof oldValue === 'undefined' && oldValue != e.value)
+					throw new errors.Unauthorized(e.path+" is readOnly !")
+			});
+			return deep.when(this.facet.store.put(object, options))
+		})
+		.done(function(obj){
 			if(!obj)
 				throw new errors.Access("put return nothing");
 			deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
@@ -155,6 +173,7 @@ var Accessors  = {
 		//console.log("FACET patch : object.id ", object.id, " - id : ", options.id)
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to put something");
+		options.id = options.id || object.id;
 
 		if(!options.id || (object.id && options.id != object.id))
 			throw new errors.PreconditionFailed("FacetController::patch : problem, ids in object and url dont correspond");
@@ -167,6 +186,20 @@ var Accessors  = {
 	 	return	deep.when( this.facet.store.get(id, options) )
 		.done( function (success) {
 			//console.log(" PATCH GET old obect done = ", success);
+			
+			if(!success)
+				throw new errors.Unauthorized("no ressource to patch");
+
+			var newOnly = deep(object, this.schema || this.facet.schema )
+			.query("./*?_schema.readOnly=true")
+			.nodes();
+			
+			newOnly.forEach(function(e){
+				var oldValue = deep.utils.retrieveValueByPath(oldOne, e.path, "/");
+				if(typeof oldValue === 'undefined' && oldValue != e.value)
+					throw new errors.Unauthorized(e.path+" is readOnly !")
+			});
+
 			deep.utils.up(object, success);
 			delete updatedObject.getMetadata;
 			//console.log(" PATCH updatedObject = ", updatedObject)
