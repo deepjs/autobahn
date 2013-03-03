@@ -225,18 +225,17 @@ define(function (require)
 					console.log("store init ? ", this.store);
 				})
 				.run(function () {
+					var d2 = deep(this)
+					.query("./store?_schema.type=object")
+					.run("init");
+
 					var d = deep(this)
 					.query("./store?_schema.type=string")
 					.load()
-					//var d2 = deep(othis)
-					//.query("/roles/"+joined+"/facets/*/store?_schema.type=object")
-					//.run("init");
-					return deep.all([d]);
+					
+					return deep.all([d, d2]);
 				})
 				.run("init")
-				/*.run(function(){
-					console.log("store initialised ? ", this.store);
-				})*/
 				.back("role")
 				.run("init")
 				.log("role "+joined+"flattened : "+joined)
