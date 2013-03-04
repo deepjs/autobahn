@@ -90,7 +90,7 @@ define(function (require)
 						if(!self.currentFacet)
 							throw new Error("No facet selected with : "+name);
 						self.running = false;
-						deep.chain.nextQueueItem.apply(self, [ctrl, null]);
+						deep.chain.nextQueueItem.apply(self, [self.currentFacet, null]);
 					},
 					function (error) {
 						self.running = false;

@@ -27,6 +27,10 @@ define(function RoleControllerDefine(require){
 					stats.push(Static(stat));
 				});
 			this.statics = Cascade(stats);
+			for(var i in this.facets)
+			{
+				this.facets[i].name = i;
+			}
 		},
 		getStatics:function (request) {
 			return deep.when(this.statics(request));

@@ -316,7 +316,7 @@ var Permissive = {
 		deep(this.accessors.patch.schema).replace("//required", false);
 		for(var i in this.accessors)
 		{
-			console.log("______________________ init accessors from facet : ", this)
+			//console.log("______________________ init accessors from facet : ", this)
 			deep.utils.up({
 				facet:this,
 				name:i
@@ -325,7 +325,7 @@ var Permissive = {
 	},
 	rpcCall:function (request) 
 	{
-		console.log("Facet.rpcCall")
+		//console.log("Facet.rpcCall : ", request.autobahn.path)
 		var self = this;
 		return deep.all([this.accessors.get.handler(request.autobahn.path, request.autobahn), request.body])
 		.done(function (results) {
@@ -336,18 +336,23 @@ var Permissive = {
 			if(typeof body === "string")
 				body = JSON.parse(body);
 			var toCall = self.rpc[body.method];
+
+			console.log("rpc : call method : ", body)
+
+
 			if(!toCall)
 				return errors.MethodNotAllowed();
 			body.params = body.params || [];
 
-			var schema = self.facet.schema;
+			var schema = self.schema;
 			var session = request.autobahn.session;
 			var roleController = request.autobahn.roleController;
 
 			var handler = {
 				save:function()
 				{
-					return deep.when(self.accessors.put(obj, {}));
+					return autobahn().roles(["admin"]).facet(self.name).put(obj);
+					//return deep.when(self.accessors.put.handler(obj, {session:session}));
 				},
 				getLink:function(relationName)
 				{
@@ -375,6 +380,7 @@ var Permissive = {
 			body.params.unshift(handler)
 			return deep.when(toCall.apply(obj, body.params))
 			.done(function  (result) {
+				console.log("rpc call : response : ", result)
 				return {
 					id:body.id,
 					error:null,

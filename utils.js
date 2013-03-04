@@ -36,6 +36,13 @@ define(function (require)
 					      // empty 200 OK response for now
 					      switch(contentType)
 					      {
+					      	case "application/json-rpc" : 
+					      		var b = "";
+					      		body.forEach(function (bd) {
+					      			b += bd.toString();
+					      		})
+					      		request.body = JSON.parse(b);
+					      		break;	
 					      	case "application/json" : 
 					      		var b = "";
 					      		body.forEach(function (bd) {

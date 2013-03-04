@@ -100,7 +100,7 @@ define(function (require){
 						return;
 					var exp = new Date(session.expires);
 					if(new Date() >= exp)
-						Session.store.delete(id);
+						Session.store["delete"](id);
 					else
 						checkTimeout(id, exp);
 				})
@@ -108,7 +108,7 @@ define(function (require){
 		else
 			deep.when(Session.store.get(id)).then(function(session){
 				if(session)
-					Session.store.delete(id);
+					Session.store["delete"](id);
 			})
 	}
 
@@ -130,6 +130,9 @@ define(function (require){
 			id: newSessionId,
 			save:function(){
 				return Session.store.put(session);
+			},
+			del:function(){
+				return Session.store["delete"](session.id);
 			}
 		}; 
 		//console.log("forceSesison : ", session)
@@ -154,6 +157,8 @@ define(function (require){
 		}
 		return null;
 	}
+
+
 
 	function cookieVerification(request){
 		var pinturaAuth = request.queryString.match(/autobahn-session=(\w+)/);
