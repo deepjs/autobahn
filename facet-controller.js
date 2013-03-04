@@ -327,7 +327,8 @@ var Permissive = {
 	{
 		//console.log("Facet.rpcCall : ", request.autobahn.path)
 		var self = this;
-		return deep.all([this.accessors.get.handler(request.autobahn.path, request.autobahn), request.body])
+		return deep(deep.all([this.accessors.get.handler(request.autobahn.path, request.autobahn), request.body]))
+		.catchError()
 		.done(function (results) {
 			var obj = results[0];
 			var body = results[1];
@@ -400,7 +401,7 @@ var Permissive = {
 			deep.utils.up(self.headers || {}, request.autobahn.response.headers);
 			request.autobahn.response.status = 200;
 			return request.autobahn.response;
-		});
+		})
 	},
 	analyse:function (request) 
 	{

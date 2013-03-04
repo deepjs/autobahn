@@ -151,7 +151,9 @@ define(function (require)
 			utils.parseRequestInfos(request);
 			//console.log("Autobahn-Controller.analyse 2  ")
 
-			return deep.when(this.getRequestController(request))
+
+			return deep(this.getRequestController(request))
+			.catchError()
 			.done(function(ctrl){
 				//console.log("role compiled : ", ctrl)
 				//	console.log("role compiled : login : ", ctrl.facets.login.post)
