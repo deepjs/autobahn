@@ -140,11 +140,11 @@ var Accessors  = {
 		.done(function(success){
 			if(success.length == 0)
 				throw new errors.Unauthorized("object don't exists. Please post before.");
-			return success.shift();
+			return success;
 		})
 		.done(function(oldOne)
 		{
-			var newOnly = deep(object, this.schema || this.facet.schema )
+			var newOnly = deep(object, self.schema || self.facet.schema )
 			.query("./*?_schema.readOnly=true")
 			.nodes();
 
@@ -153,12 +153,14 @@ var Accessors  = {
 				if(typeof oldValue === 'undefined' && oldValue != e.value)
 					throw new errors.Unauthorized(e.path+" is readOnly !")
 			});
-			return deep.when(this.facet.store.put(object, options))
+			return deep.when(self.facet.store.put(object, options))
 		})
 		.done(function(obj){
 			if(!obj)
 				throw new errors.Access("put return nothing");
 			deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
+			console.log("FACET PUT DONE obj : ", obj);
+			
 			return obj;
 		})
 		.fail(function(error){
