@@ -203,6 +203,11 @@ var Accessors  = {
 					throw new errors.Unauthorized(e.path+" is readOnly !")
 			});
 
+			//remove the field that we want to patch (to avoid array merge)
+			for(var fieldname in object) {
+				if( success[fieldname] )
+					delete success[fieldname];
+			};
 			deep.utils.up(object, success);
 			delete success.getMetadata;
 			//console.log(" PATCH updatedObject = ", updatedObject)
