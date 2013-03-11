@@ -15,7 +15,7 @@ define(function (require){
 		var settings = require("perstore/util/settings"),
 		sha1 = require("pintura/util/sha1").hex_sha1;
 	var Memory = require("autobahn/stores/memory").store;
-	
+	var AutobahnResponse = require("autobahn/autobahn-response");
 	var deep = require("deep/deep");
 	//var when = require("deep/promise").when;
 	var Session = {
@@ -32,6 +32,10 @@ define(function (require){
 		//
 		//console.log("Session.jsgi : ", store)
 		return function(request){
+
+
+
+
 			var session = null;
 			// try to fetch the stored session
 			var cookieId, cookie = request.headers.cookie;
@@ -55,22 +59,27 @@ define(function (require){
 				// make session available as request.autobahn.session
 				if(session)
 				{
-					var timeout = new Date() > new Date(session.expires);
-					if(timeout)
+					var timeout = null;
+					if(session.expires) 
+						timeout = new Date() > new Date(session.expires);
+					if(timeout != null)
 					{
 						store.delete(cookieId);
 						request.autobahn.session = null;
-						return {
-							status:403,
-							body:"session timeout. please login.",
-							headers:{}
-						}
+						return new AutobahnResponse(403,{}," session timeout : please login! ");
 					}
 					else
 						request.autobahn.session = session;	
 				}
 				else
 					request.autobahn.session = null;
+				if(request.url == "/logout/")
+				{	
+					console.log("LOG OUT !!!!!")
+					if(session)
+						session.del();
+					return new AutobahnResponse(200,{"set-cookie":"autobahn-session=null;path=/;expires=0"},{msg:"logged out!", error:null})
+				}
 				console.log("session will call next app")
 				// process the request
 				return deep.when(nextApp(request)).then(function(response){
@@ -78,9 +87,9 @@ define(function (require){
 					//console.log("session next app result : ", response)
 					if(request.autobahn.session) /// refresh cookies and session expiration
 					{	
-						var expires = new Date().valueOf()+Session.expiresDeltaMS;
+						var expires = null; //new Date().valueOf()+Session.expiresDeltaMS;
 						Session.setSessionCookie(response, request.autobahn.session.id, expires);
-						request.autobahn.session.expires = new Date(expires)
+						request.autobahn.session.expires = null;//new Date(expires)
 						// save session
 						return deep.when(store.put(request.autobahn.session )).then(function(){
 							return response;
@@ -128,7 +137,7 @@ define(function (require){
 
 		// TODO: use add()
 		session = request.autobahn.session = {
-			expires: 0,//new Date(expiration).toISOString(),
+			expires: null,//new Date(expiration).toISOString(),
 			id: newSessionId,
 			save:function(){
 				return Session.store.put(session);
@@ -138,7 +147,8 @@ define(function (require){
 			}
 		}; 
 		//console.log("forceSesison : ", session)
-		checkTimeout(session.id, expiration);
+		if(session.expires != null)
+			checkTimeout(session.id, expiration);
 		return deep.when(Session.store.put(session)).then(function(){
 			return session;
 		});
@@ -172,6 +182,11 @@ define(function (require){
 		if (!response.headers) response.headers = {};
 		expires = null;
 		response.headers["set-cookie"] = "autobahn-session=" + sessionId + ";" + (settings.security.httpOnlyCookies ? "HttpOnly;" : "") + "path=/" + (expires ? ";expires=" + new Date(expires).toUTCString() : "");
+	}
+	Session.killSessionCookie = function (response, sessionId, expires){
+		if (!response.headers) response.headers = {};
+		expires = null;
+		response.headers["set-cookie"] = "autobahn-session=null;path=/;expires=0";
 	}
 	function generateSessionKey(username, password){
 		return sha1(rnd()+rnd()+rnd()) + sha1(rnd()+rnd()+rnd());
