@@ -328,12 +328,15 @@ var Permissive = {
 			}, this.accessors[i]);
 		}
 	},
+	rpcCall2:function (id, method) {
+		// body...
+	},
 	rpcCall:function (request) 
 	{
 		//console.log("Facet.rpcCall : ", request.autobahn.path)
 		var self = this;
 		return deep(deep.all([this.accessors.get.handler(request.autobahn.path, request.autobahn), request.body]))
-		.catchError()
+		.catchError(true)
 		.done(function (results) {
 			var obj = results[0];
 			var body = results[1];

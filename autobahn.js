@@ -116,6 +116,31 @@ define(function (require)
 		}
 	};
 	var facetHandler = deep.utils.bottom(baseHandler, {
+		rpc:function (id, method, args, options) {
+			var self = this;
+			var func = function (s,e) {
+				if(!self.currentFacet)
+					throw new Error("No facet selected before rpc : post on ",id);
+				if(!self.currentFacet.rpc || !self.currentFacet.rpc[method])
+					return new errors.MethodNotAllowed("rpc call couldn't be fullfilled : no metod found with : ", method)
+
+				deep.when(self.currentFacet.rpc.get.handler(id, options))
+				.then(function (result)
+				{
+					console.log("facetHandler : get : ", result)
+					self._entries = deep.query(result, "/!", { schema:self.currentFacet.schema, resultType:"full"  });
+					self.running = false;
+					deep.chain.nextQueueItem.apply(self, [result, null]); 
+				})
+				.fail(function (error) {
+					self.running = false;
+					deep.chain.nextQueueItem.apply(self, [null, error]); 
+				});
+			}
+			deep.utils.up(ressourceHandler, self);
+			deep.chain.addInQueue.apply(self, [func]);
+			return this;
+		},
 		get:function (id, options) {
 			var self = this;
 			var func = function (s,e) {
@@ -145,8 +170,18 @@ define(function (require)
 					throw new Error("No facet selected before query : ",q);
 				deep.when(self.currentFacet.accessors.query.handler(q, options))
 				.done(function (result) {
-					result = result.slice(0,result.length);
-					self._entries = deep.query(result, "/*", { schema:{ type:"array", items:self.currentFacet.schema }, resultType:"full" });
+					console.log("autobahn.query : result : ", result)
+					if(!result || !result.slice)
+					{
+						result = [];
+						self._entries = [];
+					}
+					else
+					{
+						result = result.slice(0,result.length);
+						self._entries = deep.query(result, "/*", { schema:{ type:"array", items:self.currentFacet.schema }, resultType:"full" });
+					}
+
 					self.running = false;
 					deep.chain.nextQueueItem.apply(self, [result, null]); 
 				})

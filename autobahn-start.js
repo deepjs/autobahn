@@ -33,7 +33,7 @@ define(function FacetControllerDefine(require){
 			request.autobahn = { nodeResponse:res };
 			
 			deep(request)
-			.catchError()
+			.catchError(true)
 			.done(function () {
 				//console.log("manage body")
 				//autobahn.utils.parseRequestInfos(request);

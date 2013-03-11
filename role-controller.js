@@ -51,7 +51,7 @@ define(function RoleControllerDefine(require){
 				{
 					//console.log("try facet : ", request.autobahn.part, self.facets[request.autobahn.part].analyse)
 					return deep(request.body)
-					.catchError()
+					.catchError(true)
 					.done(function(){
 						return self.facets[request.autobahn.part].analyse(request);
 					})

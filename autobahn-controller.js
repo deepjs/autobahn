@@ -153,7 +153,7 @@ define(function (require)
 
 
 			return deep(this.getRequestController(request))
-			.catchError()
+			.catchError(true)
 			.done(function(ctrl){
 				//console.log("role compiled : ", ctrl)
 				//	console.log("role compiled : login : ", ctrl.facets.login.post)

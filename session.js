@@ -170,6 +170,7 @@ define(function (require){
 	}
 	Session.setSessionCookie = function (response, sessionId, expires){
 		if (!response.headers) response.headers = {};
+		expires = null;
 		response.headers["set-cookie"] = "autobahn-session=" + sessionId + ";" + (settings.security.httpOnlyCookies ? "HttpOnly;" : "") + "path=/" + (expires ? ";expires=" + new Date(expires).toUTCString() : "");
 	}
 	function generateSessionKey(username, password){
