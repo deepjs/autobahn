@@ -19,7 +19,9 @@ define(function RoleControllerDefine(require){
 
 	RoleController.prototype = {
 		
-		init:function () {
+		init:function () 
+		{
+			console.log("Role Controller init")
 			this.loaded = true;
 			var stats = [];
 			if(this.statics)
@@ -30,6 +32,7 @@ define(function RoleControllerDefine(require){
 			for(var i in this.facets)
 			{
 				this.facets[i].name = i;
+				//console.log("Role Give name to facet : ", this.facets[i].name)
 			}
 		},
 		getStatics:function (request) {
@@ -37,7 +40,7 @@ define(function RoleControllerDefine(require){
 		},
 		analyse : function(request)
 		{
-			console.log("role "+this.name+" analyse")
+			console.log("role "+this.name+" analyse ( "+request.method+" ) : ", request.url);
 			var self = this;
 			//console.log("RoleController.analyse : statics : ", c);
 			//console.log("RoleController.analyse : facets : ", this);
@@ -61,7 +64,7 @@ define(function RoleControllerDefine(require){
 						if(success instanceof AutobahnResponse)
 							return success;
 						if(success.status)
-							return new AutobahnResponse(success.status, success.headers, success.body || success.message || "facet return nothing");
+							return new AutobahnResponse(success.status, success.headers, success.body || "facet return nothing");
 					})
 					.fail(function (error) {
 						console.log("RoleController  "+self.name+"  : facets error : ", error)
@@ -71,8 +74,8 @@ define(function RoleControllerDefine(require){
 				else if(self.routes)
 					return self.routes.analyse(request);
 				
-				console.log("autobahn ( "+self.name+" ) has nothing to do with request");
-				return new errors.NotFound("autobahn has nothing to do with request : "+ request.url);
+				console.log("autobahn ( "+self.name+" ) has nothing to do with request : ", request.url);
+				return new errors.NotFound("autobahn ( "+self.name+" ) has nothing to do with request : "+ request.url);
 			}
 
 			if(this.statics)

@@ -13,6 +13,10 @@ if(typeof define !== 'function'){
 
 		put:stock.allowCreate().onwerput(),
 		patch:stock.ownerpatch()
+
+
+
+	autobahn().......close() : end chain
 */
 
 
@@ -117,11 +121,15 @@ define(function (require)
 			var func = function (s,e) {
 				if(!self.currentFacet)
 					throw new Error("No facet selected before get : ",id);
-				deep.when(self.currentFacet.accessors.get.handler(id, options)).then(function (result) {
+				deep.when(self.currentFacet.accessors.get.handler(id, options))
+				.then(function (result)
+				{
+					console.log("facetHandler : get : ", result)
 					self._entries = deep.query(result, "/!", { schema:self.currentFacet.schema, resultType:"full"  });
 					self.running = false;
 					deep.chain.nextQueueItem.apply(self, [result, null]); 
-				}, function (error) {
+				})
+				.fail(function (error) {
 					self.running = false;
 					deep.chain.nextQueueItem.apply(self, [null, error]); 
 				});

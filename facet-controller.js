@@ -53,7 +53,7 @@ var Accessors  = {
 		return deep.when(this.facet.store.get(id, options))
 		.done(function(obj){
 			if(typeof obj === 'undefined' || obj == null)
-				return new errors.NotFound("facet return nothing");
+				throw new errors.NotFound("facet return nothing");
 			if(typeof self.restrictToOwner === 'function' && !self.restrictToOwner(obj, self.schema || schema, options))
 				throw new errors.Unauthorized("you're not the owner of this ressource.");
 			// filter privates props
@@ -64,7 +64,7 @@ var Accessors  = {
 			if(error instanceof Error)
 				throw error;
 			throw new errors.Access("error when getting on store. "+JSON.stringify(error));
-		}); 
+		});
 	},
 	post : function(object, options)
 	{

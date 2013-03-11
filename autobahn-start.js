@@ -51,9 +51,9 @@ define(function FacetControllerDefine(require){
 						//console.log("create upload body")
 						request.autobahn.uploadHandler = new UploadHandler(request, 
 						{
-					            tmpDir: settings.rootPath + '/tmp',
-					            publicDir: settings.rootPath + '/public',
-					            uploadDir: settings.rootPath + '/public/files',
+					            tmpDir: settings.rootPath + '/tmpfiles',
+					            publicDir: settings.rootPath + '/files/profile',
+					            uploadDir: settings.rootPath + '/www/files/profile',
 					            uploadUrl: '/files/',
 					            maxPostSize: 21000000, // 11 GB
 					            minFileSize: 1,

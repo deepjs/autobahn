@@ -160,25 +160,30 @@ define(function (require)
 				try{
 
 					return deep.when(ctrl.analyse(request))
-					.done(function (result) {
+					.done(function (result) 
+					{
 						//console.log("result in autobahn controller : ", result)
 						if(!(result instanceof AutobahnResponse) )
 							return new AutobahnResponse(200, request.autobahn.response.headers, result);
 						return result;
 					})
-					.fail(function  (error) {
-						error = error || {};
-						return new errors.Server(error.toString() || "Autobahn-Controller : error when analyses request (fail 2): "+error.toString(), error.status || 404);
+					.fail(function  (error) 
+					{
+						if(error instanceof Error)
+							return error;
+						return new errors.Server(error, error.status || 404);
 					});
 				}
 				catch(e){
-					e = e || {};
-					return new errors.Server(e.toString() ||  "Autobahn-Controller : error when analyses request (throw): "+String(e), 500);
+					if(error instanceof Error)
+						return error;
+					return new errors.Server(e, 500);
 				}
 			})
 			.fail(function (error) {
-				error = error || {};
-				return new errors.Server(error.toString() || "Autobahn-Controller : error when analyses request (fail1) : "+String(error), error.status || 404);
+				if(error instanceof Error)
+					return error;
+				return new errors.Server(error, error.status || 404);
 			});
 		},
 		compileRoles : function(roles)
@@ -190,7 +195,7 @@ define(function (require)
 				var ctrl = this.roles["_"+joined];
 				if(!ctrl)
 				{
-					//if(console.flags["autobahn"])
+					if(console.flags["autobahn"])
 						console.log("roles (",roles,") wasn't in cache : get it")
 					var ctrl = {};
 					roles.forEach(function(e){
@@ -198,14 +203,14 @@ define(function (require)
 						if(othis.roles[e])
 							deep.utils.up(othis.roles[e], ctrl);
 						else
-							throw new Error({msg:"error while compiling roles : no role founded with : "+e, error:null});
+							throw new Error("error while compiling roles : no role founded with : "+e);
 					});
 					this.roles["_"+joined] = ctrl;
 				}
 			}catch(e){
 				if(e instanceof Error)
 					throw e;
-				throw new Error({msg:"error while compiling roles", error:e});
+				throw new Error("error while compiling roles");
 			}
 			
 
@@ -242,7 +247,7 @@ define(function (require)
 					return ctrl;
 				})
 				.fail(function (argument) {
-					throw new Error({msg:"error while compiling roles", error:e});
+					throw new Error("error while compiling roles");
 				})
 			}
 

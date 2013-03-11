@@ -12,7 +12,7 @@ if(typeof define !== 'function'){
 
 define(function (require){
 	//var promiseModule = require("promised-io/promise"),
-		settings = require("perstore/util/settings"),
+		var settings = require("perstore/util/settings"),
 		sha1 = require("pintura/util/sha1").hex_sha1;
 	var Memory = require("autobahn/stores/memory").store;
 	
@@ -80,7 +80,7 @@ define(function (require){
 					{	
 						var expires = new Date().valueOf()+Session.expiresDeltaMS;
 						Session.setSessionCookie(response, request.autobahn.session.id, expires);
-						request.autobahn.session.expires = new Date(expires).toISOString()
+						request.autobahn.session.expires = new Date(expires)
 						// save session
 						return deep.when(store.put(request.autobahn.session )).then(function(){
 							return response;
@@ -118,15 +118,17 @@ define(function (require){
 		var session = request.autobahn.session;
 		if(session)
 			return session;
+		
 		var newSessionId = generateSessionKey();
-		if (!expires) expires = -Session.expires;
+		if (typeof expires === 'undefined' && expires !== 0) 
+			expires = - Session.expires;
 		if (expires < 0)
 			expires = ((new Date()).valueOf())-expires*1000;
 		var expiration = new Date(expires);
 
 		// TODO: use add()
 		session = request.autobahn.session = {
-			expires: new Date(expiration).toISOString(),
+			expires: 0,//new Date(expiration).toISOString(),
 			id: newSessionId,
 			save:function(){
 				return Session.store.put(session);
@@ -144,6 +146,7 @@ define(function (require){
 
 	Session.getCurrentSession = function (createIfNecessary, expiration)
 	{
+		expiration = 0;
 		var request = deep.context && deep.context.request;
 		request.autobahn = request.autobahn || {};
 		if(request){
@@ -151,14 +154,12 @@ define(function (require){
 				return request.autobahn.session;
 			}
 			if(createIfNecessary){
-				expiration = expiration || (new Date().valueOf()+Session.expiresDeltaMS);
+				expiration = (typeof expiration !== 'undefined')?expiration:(new Date().valueOf()+Session.expiresDeltaMS);
 				return forceSession(request, expiration);
 			}
 		}
 		return null;
 	}
-
-
 
 	function cookieVerification(request){
 		var pinturaAuth = request.queryString.match(/autobahn-session=(\w+)/);

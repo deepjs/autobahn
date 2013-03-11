@@ -18,15 +18,14 @@ define(function(require){
 					//console.log("JSGI Errors : direct response : ",response )
 					if(response instanceof Error)
 					{
-						errorHandler(response);
+						return errorHandler(response);
 					}
 					return response;
 				})
 				.fail(errorHandler);
 			}
 			catch(e){
-			//	console.log("JSGI ERRORS : catch ", e);
-
+				console.log("JSGI ERRORS : catch ", e);
 				return errorHandler(e);
 			}
 			finally{
@@ -39,19 +38,19 @@ define(function(require){
 					headers:{
 						"content-type":"application/json"
 					},
-					body:[],
+					body:"",
 					status:500
 				};
 
 				if(e.status)
 					response.status = e.status;
 
-				if(e.message && typeof e.message !== "string")
-					response.body.push(JSON.stringify(e.message));
-				else if(e.body)
-					response.body.concat(e.body);
+				if(typeof e.body === 'string')
+					response.body += e.body;
 				else
-					response.body.push(JSON.stringify(e));
+					response.body += (JSON.stringify(e));
+				
+				response.body = response.body || "error";
 
 
 				if(e.headers)

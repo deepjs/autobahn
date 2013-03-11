@@ -78,6 +78,10 @@ define(function (require){
             this.options = options;
             this.delete_type = 'DELETE';
             this.req = req;
+            this.extension = file.name.split(".").pop();
+            this.urls = {
+
+            }
         };
         var Facet = require("autobahn/facet-controller");
         var utils = require("autobahn/utils");
@@ -119,33 +123,36 @@ define(function (require){
         while (_existsSync(uploadDir + '/' + this.name)) 
             this.name = this.name.replace(nameCountRegexp, nameCountFunc);
     };
-    FileInfo.prototype.initUrls = function (options) {
+    FileInfo.prototype.initUrls = function (options) 
+    {
         if (!this.error) {
             var that = this,
-                baseUrl = (options.ssl ? 'https:' : 'http:') + '//' + this.req.headers.host + options.uploadUrl;
-            this.url = this.delete_url = baseUrl + encodeURIComponent(this.name);
+                baseUrl = /*(options.ssl ? 'https:' : 'http:') + '//' + this.req.headers.host +*/ options.uploadUrl;
+            this.urls.main = baseUrl + encodeURIComponent(this.name);
             Object.keys(options.imageVersions).forEach(function (version) 
             {
                 if (_existsSync( options.uploadDir + '/' + version + '/' + that.name )) 
-                    that[version + '_url'] = baseUrl + version + '/' + encodeURIComponent(that.name);
+                    that.urls[version] = baseUrl + version + '/' + encodeURIComponent(that.name);
             });
         }
     };
     FileInfo.prototype.destroy = function(){
         fs.unlink(this.file.path);
     }
-    FileInfo.prototype.moveAndResize = function (options) 
+    FileInfo.prototype.moveAndResize = function (options, newName, safe) 
     {
         var self = this;
-        console.log("FileInfo.prototype.moveAndResize : ", options)
+       // console.log("FileInfo.prototype.moveAndResize : ", options)
+      //  console.log("FileInfo.prototype.moveAndResize : file.type : ", this.type);
+        if(newName)
+            this.name = newName + "." + this.extension;
         var def = deep.Deferred();
-        this.safeName(options.uploadDir);
-        fs.renameSync(this.file.path, options.uploadDir + '/' + this.name);
+        if(safe)
+            this.safeName(options.uploadDir);
+        var newPath = path.join(path.normalize(options.uploadDir), this.name);
+        fs.renameSync(this.file.path,newPath);
         var count = 0;
-        var res = {
-            fileInfo:this,
-            main:options.uploadDir + '/' + this.name
-         }
+
          var finished = function (err, stdoutContent, stderrContent) {
             if(err)
                 console.log("WARNING : error while resizing : ", err, stdoutContent,stderrContent )
@@ -153,25 +160,26 @@ define(function (require){
             if(count <= 0)
             {
                 self.initUrls(options);
-                def.resolve(res);
+                def.resolve(self);
             }
          }
         if (options.imageTypes.test(this.name)) 
         {
             var vers = Object.keys(options.imageVersions);
             count = vers.length;
+
             if(count > 0)
                 vers.forEach(function (version) 
                 {   
-                    console.log("do resize : ", version)
+                  //  console.log("do resize : ", version)
+                    var dstPath = path.join(path.normalize(options.uploadDir),  version, self.name);
                     var opts = options.imageVersions[version];
                     imageMagick.resize({
                         width: opts.width,
                         height: opts.height,
-                        srcPath: options.uploadDir + '/' + self.name,
-                        dstPath: options.uploadDir + '/' + version + '/' + self.name
+                        srcPath: newPath,
+                        dstPath: dstPath
                     }, finished);
-                    res[version] = options.uploadDir + '/' + version + '/' + self.name;
                 });
             else
                 finished();
@@ -212,98 +220,105 @@ define(function (require){
     };*/
 
     UploadHandler.prototype.post = function () {
+        //console.log("UploadHandler : post ")
         var def = this.deferred = deep.Deferred();
         var response = {
             files:this.files,
             fields:this.fields,
             errors:[]
         }
-        var handler = this,
-            form = new formidable.IncomingForm(),
-            tmpFiles = this.tmpFiles,
-            files = this.files,
-            fields = this.fields,
-            map = {},
-            redirect,
-            finish = function () {
-                console.log("on finish")
+        try{
+            var handler = this,
+                form = new formidable.IncomingForm(),
+                tmpFiles = this.tmpFiles,
+                files = this.files,
+                fields = this.fields,
+                map = {},
+                redirect,
+                finish = function () {
+                    console.log("on finish")
+                    if(handler.aborted)
+                        return;
+                    def.resolve(response);
+                };
+
+            form.uploadDir = this.options.tmpDir;
+            form.on('fileBegin', function (name, file) {
+               // console.log("on file begin : ", name, file)
                 if(handler.aborted)
                     return;
-                def.resolve(response);
-            };
+                tmpFiles.push(file.path);
+                var fileInfo = new FileInfo(file, handler.options, handler.req);
+                
+                map[path.basename(file.path)] = fileInfo;
+                files.push(fileInfo);
+            })
+            .on('field', function (name, value) {
+               // console.log("on field")
+                if(handler.aborted)
+                    return;
+                fields[name] = value;
+            })
+            .on('file', function (name, file) {
+               // console.log("on file")
+                if(handler.aborted)
+                    return;
+                var fileInfo = map[path.basename(file.path)];
+                fileInfo.size = file.size;
 
-        form.uploadDir = this.options.tmpDir;
-        form.on('fileBegin', function (name, file) {
-            console.log("on file begin")
-            if(handler.aborted)
-                return;
-            tmpFiles.push(file.path);
-            var fileInfo = new FileInfo(file, handler.options, handler.req);
-            
-            map[path.basename(file.path)] = fileInfo;
-            files.push(fileInfo);
-        })
-        .on('field', function (name, value) {
-            console.log("on field")
-            if(handler.aborted)
-                return;
-            fields[name] = value;
-        })
-        .on('file', function (name, file) {
-            console.log("on file")
-            if(handler.aborted)
-                return;
-            var fileInfo = map[path.basename(file.path)];
-            fileInfo.size = file.size;
-
-            if (!fileInfo.validate()) 
-            {
-                fileInfo.error = "file validation failed : unlink file !"
-                response.errors.push(fileInfo.error )
-                fs.unlink(file.path);
-                return;
-            }
-        })
-        .on('aborted', function () {
-            if(handler.aborted)
-                return;
-            handler.aborted = true;
-            console.log("on aborted")
-            tmpFiles.forEach(function (file) {
-                fs.unlink(file);
-            });
-            def.reject("aborted");
-        })
-        .on('error', function (e) {
-            response.errors.push("upload error : unlink files and aborting !")
-            console.log("on error")
-            if(handler.aborted)
-                return;
-            handler.error = e;
-            console.log("UploadHandler : errorr : ", e);
-            tmpFiles.forEach(function (file) {
-                fs.unlink(file);
-            });
-            //this.req.connection.destroy();
-            handler.aborted = true;
-            def.reject(e);
-        })
-        .on('progress', function (bytesReceived, bytesExpected) {
-            if(handler.aborted)
-                return;
-            console.log("on progress",bytesReceived, "/", bytesExpected)
-            if (bytesReceived > handler.options.maxPostSize)
-            {
+                if (!fileInfo.validate()) 
+                {
+                    fileInfo.error = "file validation failed : unlink file !"
+                    response.errors.push(fileInfo.error )
+                    fs.unlink(file.path);
+                    return;
+                }
+            })
+            .on('aborted', function () {
+                if(handler.aborted)
+                    return;
+                handler.aborted = true;
+                //console.log("on aborted")
                 tmpFiles.forEach(function (file) {
                     fs.unlink(file);
                 });
-                handler.req.connection.destroy();
+                def.reject("aborted");
+            })
+            .on('error', function (e) {
+                response.errors.push("upload error : unlink files and aborting !")
+               // console.log("on upload error : ",e);
+                if(handler.aborted)
+                    return;
+                handler.error = e;
+               // console.log("UploadHandler : error : ", e);
+                tmpFiles.forEach(function (file) {
+                    fs.unlink(file);
+                });
+                //this.req.connection.destroy();
                 handler.aborted = true;
-                 def.reject("bytes exceed");
-            }
-        })
-        .on('end', finish)
-        .parse(handler.req);
+                def.reject(e);
+            })
+            .on('progress', function (bytesReceived, bytesExpected) {
+                if(handler.aborted)
+                    return;
+                console.log("on progress",bytesReceived, "/", bytesExpected)
+                if (bytesReceived > handler.options.maxPostSize)
+                {
+                    tmpFiles.forEach(function (file) {
+                        fs.unlink(file);
+                    });
+                    handler.req.connection.destroy();
+                    handler.aborted = true;
+                     def.reject("bytes exceed");
+                }
+            })
+            .on('end', finish)
+            .parse(handler.req);
+        }
+        catch(e)
+        {
+            def.reject(e);
+        }
         return deep.promise(def);
     };
 
@@ -323,19 +338,18 @@ define(function (require){
         var handler = this,
             fileName;
         var def = deep.Deferred();
-        if (handler.req.url.slice(0, handler.options.uploadUrl.length) === this.options.uploadUrl) {
-            fileName = path.basename(decodeURIComponent(handler.req.url));
-            fs.unlink(this.options.uploadDir + '/' + fileName, function (ex) 
+        fileName = path.basename(decodeURIComponent(handler.req.url));
+        fs.unlink(this.options.uploadDir + '/' + fileName, function (error) 
+        {
+            Object.keys(handler.options.imageVersions).forEach(function (version) 
             {
-                Object.keys(handler.options.imageVersions).forEach(function (version) 
-                {
-                    fs.unlink(handler.options.uploadDir + '/' + version + '/' + fileName);
-                });
-                def.resolve({success: !ex});
+                fs.unlink(handler.options.uploadDir + '/' + version + '/' + fileName);
             });
-        } else {
-            def.reject({success: false});
-        }
+            if(error)
+                def.reject(error);
+            else
+                def.resolve({success: !error});
+        });
         return deep.promise(def);
     };
 
