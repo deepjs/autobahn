@@ -12,8 +12,8 @@ if(typeof define !== 'function'){
 
 define(function (require){
 	//var promiseModule = require("promised-io/promise"),
-		var settings = require("perstore/util/settings"),
-		sha1 = require("pintura/util/sha1").hex_sha1;
+	var settings = require("perstore/util/settings"),
+	sha1 = require("pintura/util/sha1").hex_sha1;
 	var Memory = require("autobahn/stores/memory").store;
 	var AutobahnResponse = require("autobahn/autobahn-response");
 	var deep = require("deep/deep");
@@ -80,7 +80,7 @@ define(function (require){
 						session.del();
 					return new AutobahnResponse(200,{"set-cookie":"autobahn-session=null;path=/;expires=0"},{msg:"logged out!", error:null})
 				}
-				console.log("session will call next app")
+				//console.log("session will call next app")
 				// process the request
 				return deep.when(nextApp(request)).then(function(response){
 					// store session cookie
