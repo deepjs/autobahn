@@ -128,6 +128,8 @@ define(function (require)
 			if(request.autobahn.queryString.search(/^(null)/i)> -1)
 				request.autobahn.queryString = request.autobahn.queryString.substring(4);
 
+			request.autobahn.contentType =  request.headers["content-type"] || request.headers["Content-Type"] || "application/json";
+
 			//	console.log("Autobahn controller : analyseRequest  : ", JSON.stringify(infos));
 
 			/*for(var i in request.headers)// for now just copy all of them, probably should do certain ones though

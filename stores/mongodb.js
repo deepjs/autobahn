@@ -22,7 +22,7 @@ Mongo.prototype =  {
 				console.log("Mongo : get : ", url);//
 			var headers = options || {};
 			if(this.headers)
-				deepCopy(this.headers, headers, false);
+				deep.utils.deepCopy(this.headers, headers, false);
 		
 			return when(this.mongo.get(id, headers)).then(function(res){
 				return res;
@@ -105,7 +105,7 @@ Mongo.prototype =  {
 		"delete": function(id, options){
 		//	console.log("Remote delete : ", id);
 			var headers = options || {};
-			deepCopy(this.headers, headers, false);
+			deep.utils.deepCopy(this.headers, headers, false);
 			return this.mongo.delete(id);
 		}
 	}
