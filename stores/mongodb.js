@@ -79,7 +79,7 @@ Mongo.prototype =  {
 			//headers["Accept-Language"] = options["accept-language"];
 			deep.utils.bottom(this.headers, headers);
 			if(headers.start || headers.end){
-				headers.range = "items=" + headers.start + '-' + headers.end; 
+				headers.range = "items=" + headers.start + '-' + headers.end;
 			}
 			query = query.replace(/\$[1-9]/g, function(t){
 				return JSONExt.stringify(headers.parameters[t.substring(1) - 1]);
@@ -90,8 +90,8 @@ Mongo.prototype =  {
 				query = query.substring(0, query.length - 5);
 
 			//console.log("Mongo will do query : ", query, options);
-			return when(this.mongo.query(query, headers)).then(function(res){ 
-				// console.log("Mongo query res : ", res);
+			return when(this.mongo.query(query, headers)).then(function(res){
+				//console.log("Mongo query res : ", res);
 				return res;
 			},function  (error) {
 				console.log("error while calling (query) Mongoservices :  - ", error);

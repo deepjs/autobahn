@@ -80,10 +80,10 @@ define(function (require)
 			rangeSum.maxCount = 0; // don't trigger totalCount evaluation unless a valid Range: is seen
 			rangeSum.start = 0;
 			rangeSum.end = Infinity;
-			if (request.autobahn.response.headers.range) 
+			if (request.headers.range) 
 			{
 				// invalid "Range:" are ignored
-				var range = request.autobahn.response.headers.range.match(/^items=(\d+)-(\d+)?$/);
+				var range = request.headers.range.match(/^items=(\d+)-(\d+)?$/);
 				if (range) 
 				{
 					rangeSum.start = +range[1] || 0;
@@ -100,6 +100,7 @@ define(function (require)
 			}
 			if (rangeSum.limit !== Infinity) 
 				request.autobahn.queryString += "&limit(" + rangeSum.limit + "," + rangeSum.start + "," + rangeSum.maxCount + ")";
+			//console.log("autobahn.utils : parserange : ", request.autobahn.range)
 		},
 		parseRequestInfos : function (request) 
 		{

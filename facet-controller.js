@@ -334,7 +334,7 @@ var Permissive = {
 	rpcCall2:function (id, method) {
 		// body...
 	},
-	rpcCall:function (request) 
+	rpcCall:function (request)
 	{
 		//console.log("Facet.rpcCall : ", request.autobahn.path)
 		var self = this;
@@ -343,13 +343,13 @@ var Permissive = {
 		.done(function (results) {
 			var obj = results[0];
 			var body = results[1];
-			if(body == "")
+			if(body === "")
 				body = {};
 			if(typeof body === "string")
 				body = JSON.parse(body);
 			var toCall = self.rpc[body.method];
 
-			console.log("rpc : call method : ", body)
+			//console.log("rpc : call method : ", body)
 
 
 			if(!toCall)
@@ -370,7 +370,7 @@ var Permissive = {
 				{
 					var link = deep.query(schema, "/links/*?rel="+relationName).shift();
 					if(!link)
-						return new Error("no link found with : "+relationName);	
+						return new Error("no link found with : "+relationName);
 					var interpreted = deep.interpret(link.href, obj);
 					var splitted = interpreted.split("/");
 					interpreted.shift();
@@ -392,7 +392,7 @@ var Permissive = {
 			body.params.unshift(handler)
 			return deep.when(toCall.apply(obj, body.params))
 			.done(function  (result) {
-				console.log("rpc call : response : ", result)
+				//console.log("rpc call : response : ", result)
 				return {
 					id:body.id,
 					error:null,
