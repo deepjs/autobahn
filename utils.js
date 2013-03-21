@@ -14,7 +14,6 @@ define(function (require)
 	        deep.utils.up( {
 	            'Pragma': 'no-cache',
 	            'Cache-Control': 'no-store, no-cache, must-revalidate',
-	            'Content-Disposition': 'inline; filename="files.json"'
 	        }, infos.response.headers);
 	    },
 		createBody : function  (request) {
@@ -127,6 +126,13 @@ define(function (require)
 			request.autobahn.queryString = request.queryString.replace(/\?.*/,'');
 			if(request.autobahn.queryString.search(/^(null)/i)> -1)
 				request.autobahn.queryString = request.autobahn.queryString.substring(4);
+
+
+			  request.autobahn.scheme = "http";
+			  request.autobahn.host =  request.headers.host ? request.headers.host.split(":")[0] : "";
+			  request.autobahn.port = request.headers.host ? (request.headers.host.split(":")[1] || 80) : 80;
+			  request.autobahn.remoteAddr = request.connection.remoteAddress;
+			  request.autobahn.version = [ request.httpVersionMajor, request.httpVersionMinor ];
 
 			//	console.log("Autobahn controller : analyseRequest  : ", JSON.stringify(infos));
 

@@ -257,7 +257,7 @@ var Permissive = {
 			facet:null,
 			handler:Accessors.get,
 			setCustomHeaders:function (response, request) {
-				request.autobahn.response.headers["Content-Location"] = request.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
+				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			},
 			negociation:{
 				"text/html":{
@@ -279,7 +279,7 @@ var Permissive = {
 			hasBody:true,
 			facet:null,
 			setCustomHeaders:function (response, request) {
-				request.autobahn.response.headers["Content-Location"] = request.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
+				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			},
 			handler:Accessors.post
 		},
@@ -288,7 +288,7 @@ var Permissive = {
 			facet:null,
 			handler:Accessors.put,
 			setCustomHeaders:function (response, request) {
-				request.autobahn.response.headers["Content-Location"] = request.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
+				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			}
 		},
 		patch:{
@@ -299,7 +299,7 @@ var Permissive = {
 				backgrounds:["#../../../schema"]
 			},
 			setCustomHeaders:function (response, request) {
-				request.autobahn.response.headers["Content-Location"] = request.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
+				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			}
 		}
 	},
