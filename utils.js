@@ -79,10 +79,10 @@ define(function (require)
 			rangeSum.maxCount = 0; // don't trigger totalCount evaluation unless a valid Range: is seen
 			rangeSum.start = 0;
 			rangeSum.end = Infinity;
-			if (request.autobahn.response.headers.range) 
+			if (request.headers.range) 
 			{
 				// invalid "Range:" are ignored
-				var range = request.autobahn.response.headers.range.match(/^items=(\d+)-(\d+)?$/);
+				var range = request.headers.range.match(/^items=(\d+)-(\d+)?$/);
 				if (range) 
 				{
 					rangeSum.start = +range[1] || 0;
@@ -99,6 +99,7 @@ define(function (require)
 			}
 			if (rangeSum.limit !== Infinity) 
 				request.autobahn.queryString += "&limit(" + rangeSum.limit + "," + rangeSum.start + "," + rangeSum.maxCount + ")";
+			//console.log("autobahn.utils : parserange : ", request.autobahn.range)
 		},
 		parseRequestInfos : function (request) 
 		{
@@ -126,13 +127,12 @@ define(function (require)
 			request.autobahn.queryString = request.queryString.replace(/\?.*/,'');
 			if(request.autobahn.queryString.search(/^(null)/i)> -1)
 				request.autobahn.queryString = request.autobahn.queryString.substring(4);
-
-
-			  request.autobahn.scheme = "http";
-			  request.autobahn.host =  request.headers.host ? request.headers.host.split(":")[0] : "";
-			  request.autobahn.port = request.headers.host ? (request.headers.host.split(":")[1] || 80) : 80;
-			  request.autobahn.remoteAddr = request.connection.remoteAddress;
-			  request.autobahn.version = [ request.httpVersionMajor, request.httpVersionMinor ];
+			request.autobahn.scheme = "http";
+			request.autobahn.host =  request.headers.host ? request.headers.host.split(":")[0] : "";
+			request.autobahn.port = request.headers.host ? (request.headers.host.split(":")[1] || 80) : 80;
+			request.autobahn.remoteAddr = request.connection.remoteAddress;
+			request.autobahn.version = [ request.httpVersionMajor, request.httpVersionMinor ];
+			request.autobahn.contentType =  request.headers["content-type"] || request.headers["Content-Type"] || "application/json";
 
 			//	console.log("Autobahn controller : analyseRequest  : ", JSON.stringify(infos));
 

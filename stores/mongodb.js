@@ -22,7 +22,7 @@ Mongo.prototype =  {
 				console.log("Mongo : get : ", url);//
 			var headers = options || {};
 			if(this.headers)
-				deepCopy(this.headers, headers, false);
+				deep.utils.deepCopy(this.headers, headers, false);
 		
 			return when(this.mongo.get(id, headers)).then(function(res){
 				return res;
@@ -79,7 +79,7 @@ Mongo.prototype =  {
 			//headers["Accept-Language"] = options["accept-language"];
 			deep.utils.bottom(this.headers, headers);
 			if(headers.start || headers.end){
-				headers.range = "items=" + headers.start + '-' + headers.end; 
+				headers.range = "items=" + headers.start + '-' + headers.end;
 			}
 			query = query.replace(/\$[1-9]/g, function(t){
 				return JSONExt.stringify(headers.parameters[t.substring(1) - 1]);
@@ -90,8 +90,8 @@ Mongo.prototype =  {
 				query = query.substring(0, query.length - 5);
 
 			//console.log("Mongo will do query : ", query, options);
-			return when(this.mongo.query(query, headers)).then(function(res){ 
-				// console.log("Mongo query res : ", res);
+			return when(this.mongo.query(query, headers)).then(function(res){
+				//console.log("Mongo query res : ", res);
 				return res;
 			},function  (error) {
 				console.log("error while calling (query) Mongoservices :  - ", error);
@@ -105,7 +105,7 @@ Mongo.prototype =  {
 		"delete": function(id, options){
 		//	console.log("Remote delete : ", id);
 			var headers = options || {};
-			deepCopy(this.headers, headers, false);
+			deep.utils.deepCopy(this.headers, headers, false);
 			return this.mongo.delete(id);
 		}
 	}

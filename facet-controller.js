@@ -227,15 +227,18 @@ var Accessors  = {
 	},
 	"delete" : function(object, options)
 	{ 
-		if(!this.store)
+		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to delete something");
-		return deep.when(this.store["delete"](object, options))
+		console.log("delete : ", object, options, this.facet.store)
+		return deep.when(this.facet.store["delete"](object, options))
 		.done(function(obj){
+			console.log("delete success : ", obj);
 			if(!obj)
 				throw new errors.Access("delete return nothing");
 			return true;
 		})
 		.fail(function(error){
+			console.log("delete error : ", error);
 			if(error instanceof Error)
 				throw error;
 			throw new errors.Access("delete return error : "+JSON.stringify(error));
@@ -331,7 +334,7 @@ var Permissive = {
 	rpcCall2:function (id, method) {
 		// body...
 	},
-	rpcCall:function (request) 
+	rpcCall:function (request)
 	{
 		//console.log("Facet.rpcCall : ", request.autobahn.path)
 		var self = this;
@@ -340,13 +343,13 @@ var Permissive = {
 		.done(function (results) {
 			var obj = results[0];
 			var body = results[1];
-			if(body == "")
+			if(body === "")
 				body = {};
 			if(typeof body === "string")
 				body = JSON.parse(body);
 			var toCall = self.rpc[body.method];
 
-			console.log("rpc : call method : ", body)
+			//console.log("rpc : call method : ", body)
 
 
 			if(!toCall)
@@ -367,7 +370,7 @@ var Permissive = {
 				{
 					var link = deep.query(schema, "/links/*?rel="+relationName).shift();
 					if(!link)
-						return new Error("no link found with : "+relationName);	
+						return new Error("no link found with : "+relationName);
 					var interpreted = deep.interpret(link.href, obj);
 					var splitted = interpreted.split("/");
 					interpreted.shift();
@@ -389,7 +392,7 @@ var Permissive = {
 			body.params.unshift(handler)
 			return deep.when(toCall.apply(obj, body.params))
 			.done(function  (result) {
-				console.log("rpc call : response : ", result)
+				//console.log("rpc call : response : ", result)
 				return {
 					id:body.id,
 					error:null,
@@ -443,8 +446,39 @@ var Permissive = {
 		if(accessor.hasBody)
 			if(request.body)
 				result = deep.when(request.body)
-				.done(function (body) 
+				.done(function (body)
 				{
+					if(request.autobahn.method == "post" && request.autobahn.contentType.match("^(message/)"))
+					{
+						if(!(body instanceof Array))
+							throw errors.Access("trying to send message but body isn't array!");
+						var alls = [];
+						body.forEach(function (message) {
+							console.log("BULK UPDATE : message : ", message);
+							var acc = self.accessors[message.method.toLowerCase()];
+							if(!acc)
+								throw errors.Access("trying to send message with method unrecognised or unauthorised : "+message.method);
+							if(acc.hasBody)
+								alls.push(acc.handler(message.body, {id:message.to}));
+							else
+								alls.push(acc.handler(message.to, {id:message.to}));
+						});
+						return deep.all(alls)
+						.done(function (results) {
+							var res = [];
+							body.forEach(function (message) {
+								var r = results.shift();
+								res.push({
+									from:message.to,
+									body:r,
+									id:message.id,
+									type:message.method
+								});
+							});
+							return res;
+						});
+					}
+					else
 					// console.log("method hasBody : ", accessor.handler)
 					return accessor.handler(body, infos);
 				});
