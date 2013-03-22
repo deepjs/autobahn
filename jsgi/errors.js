@@ -44,17 +44,14 @@ define(function(require){
 
 				if(e.status)
 					response.status = e.status;
-
-				if(typeof e.body === 'string')
-					response.body += e.body;
-				else
-					response.body += (JSON.stringify(e));
-				
-				response.body = response.body || "error";
-
-
 				if(e.headers)
 					deep.utils.up(e.headers, response.headers);
+				
+				delete e.headers;
+				
+				response.body = (JSON.stringify(e));
+				
+				response.body = response.body || "error";
 				
 				return response;
 			}
