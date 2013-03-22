@@ -79,7 +79,7 @@ define(function RoleControllerDefine(require){
 			}
 
 			if(this.statics)
-				return deep.when(this.statics(request))
+				return deep(this.statics(request))
 				.fail(function (error) {
 					return noStatics(error);
 				})
