@@ -107,6 +107,7 @@ define(function (require){
     };*/
     FileInfo.prototype.validate = function () 
     {
+        console.log("validate file uplpad");
         if (this.options.minFileSize && this.options.minFileSize > this.size) 
             this.error = 'File is too small';
         else if (this.options.maxFileSize && this.options.maxFileSize < this.size) 
