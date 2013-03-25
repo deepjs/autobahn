@@ -84,8 +84,8 @@ var Accessors  = {
 
 		return deep.when(this.facet.store.post(object, options))
 		.done(function(obj){
-			console.log("facet-controller : after store post  : response ", obj)
-			if(typeof obj === 'undefined' || obj == null)
+			console.log("facet-controller : after store post  : response ", obj);
+			if(typeof obj === 'undefined' || obj === null)
 				throw new errors.Access("post return nothing");
 			deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
 			return obj;
@@ -94,11 +94,11 @@ var Accessors  = {
 			if(error instanceof Error)
 				throw error;
 			throw new errors.Access("error when posting on store. "+JSON.stringify(error));
-		}); 
+		});
 	},
 	query : function(query, options)
 	{
-		//console.log("FacetController QUERY : options = ", options);
+		//console.log("FacetController QUERY  : "+query+": options = ", this.facet.store);
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to query something");
 		var self = this;
@@ -114,10 +114,10 @@ var Accessors  = {
 			if(error instanceof Error)
 				throw error;
 			throw new errors.Access("error when query on store. "+JSON.stringify(error));
-		}); 
+		});
 	},
 	put : function(object, options)
-	{ 
+	{
 		var self = this;
 		//console.log("FACET put : object.id ", object.id, " - id : ", options.id)
 		if(!this.facet.store)
@@ -486,10 +486,11 @@ var Permissive = {
 				throw new errors.Access("no body provided with ", infos.method, " on ", this.name);
 		else if(isQuery)
 		{
-			result = deep.when(accessor.handler(infos.queryString, infos))
+			//console.log("will do query : ", accessor);
+			result = deep(accessor.handler(infos.queryString, infos))
 			.done(function (result)
 			{
-				//console.log("query result : range ?", infos.range, " - ", result)
+				console.log("query result : range ?", infos.range, " - ", result)
 				if(infos.range && result)
 				{
 					var end = result.end;

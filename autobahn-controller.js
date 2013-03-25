@@ -121,7 +121,11 @@ define(function (require)
 			//.log("autobahn flatten 1")
 			.flatten()
 			.query("/stores/*")
+			.log("_____________________________ autobahn stores to load")
+			.logValues()
 			.run("init")
+			.log("_____________________________ autobahn stores loaded")
+			.logValues()
 			.log("autobahn loaded");
 		},
 		getRequestController: function(request)
@@ -227,21 +231,24 @@ define(function (require)
 				.back("role")
 				.flatten()
 				.query("./facets/*")
-				.run(function () 
+				.run(function ()
 				{
 					var d2 = deep(this)
 					.query("./store?_schema.type=object")
 					.run("init");
 					var d = deep(this)
 					.query("./store?_schema.type=string")
-					.load();
+					.log("_________________________________ store to load")
+					.logValues()
+					.load()
+					.log("_________________________________ store loaded")
+					.logValues();
 					return deep.all([d, d2]);
 				})
 				.run("init")
 				.back("role")
 				.run("init")
-				.log("role "+joined+"flattened : "+joined)
-				
+				.log("role "+joined+" : flattened...");
 				return deep.when(d)
 				.done(function (success) {
 					return ctrl;
