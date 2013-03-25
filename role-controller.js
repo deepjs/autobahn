@@ -21,7 +21,7 @@ define(function RoleControllerDefine(require){
 		
 		init:function () 
 		{
-			console.log("Role Controller init")
+			console.log("Role Controller init : ", this.name)
 			this.loaded = true;
 			var stats = [];
 			if(this.statics)
@@ -40,7 +40,7 @@ define(function RoleControllerDefine(require){
 		},
 		analyse : function(request)
 		{
-			console.log("role "+this.name+" analyse ( "+request.method+" ) : ", request.url);
+			//console.log("role "+this.name+" analyse ( "+request.method+" ) : ", request.url);
 			var self = this;
 			//console.log("RoleController.analyse : statics : ", c);
 			//console.log("RoleController.analyse : facets : ", this);

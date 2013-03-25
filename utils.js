@@ -21,7 +21,7 @@ define(function (require)
 			var contentType = contentType.split(";")[0];
 				//console.log("autobahn.utils.createBody : ", contentType)
 				return request.body = function(){
-					console.log("create body :");
+					//console.log("create body :");
 					var def = deep.Deferred();
 					var body = [];
 					request.on('data', function(chunk) {
@@ -97,6 +97,8 @@ define(function (require)
 					}
 				}
 			}
+			else
+				delete request.autobahn.range;
 			if (rangeSum.limit !== Infinity) 
 				request.autobahn.queryString += "&limit(" + rangeSum.limit + "," + rangeSum.start + "," + rangeSum.maxCount + ")";
 			//console.log("autobahn.utils : parserange : ", request.autobahn.range)
@@ -133,7 +135,7 @@ define(function (require)
 			request.autobahn.remoteAddr = request.connection.remoteAddress;
 			request.autobahn.version = [ request.httpVersionMajor, request.httpVersionMinor ];
 			request.autobahn.contentType =  request.headers["content-type"] || request.headers["Content-Type"] || "application/json";
-
+			request.autobahn.requestHeaders = request.headers || {};
 			//	console.log("Autobahn controller : analyseRequest  : ", JSON.stringify(infos));
 
 			/*for(var i in request.headers)// for now just copy all of them, probably should do certain ones though

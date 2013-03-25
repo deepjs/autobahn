@@ -433,13 +433,13 @@ var Permissive = {
 			isQuery = true;
 			accessor = this.accessors.query;
 			utils.parseRange(request);
-		}	
+		}
 
 		if(!accessor)
 			throw new errors.MethodNotAllowed();
 
 		request.autobahn.response.status = 200;
-		  // console.log("facet analyse 2")
+		// console.log("facet analyse 2")
 		infos.id = infos.path;
 
 		var result = null;
@@ -454,7 +454,7 @@ var Permissive = {
 							throw errors.Access("trying to send message but body isn't array!");
 						var alls = [];
 						body.forEach(function (message) {
-							console.log("BULK UPDATE : message : ", message);
+							//console.log("BULK UPDATE : message : ", message);
 							var acc = self.accessors[message.method.toLowerCase()];
 							if(!acc)
 								throw errors.Access("trying to send message with method unrecognised or unauthorised : "+message.method);
@@ -483,27 +483,28 @@ var Permissive = {
 					return accessor.handler(body, infos);
 				});
 			else
-				throw new errors.Access("no body provided with ", infos.method, " on ", this.name)
+				throw new errors.Access("no body provided with ", infos.method, " on ", this.name);
 		else if(isQuery)
 		{
 			result = deep.when(accessor.handler(infos.queryString, infos))
-			.done(function (result) 
+			.done(function (result)
 			{
-				if(infos.range)
-					return result && deep.when(result.totalCount)
-					.done(function(count){
-						delete result.totalCount;
-						var end = infos.range.start + (result.length || 0) - 1;
-						infos.response.headers["Content-Range"] = "items " + infos.range.start + '-' + end + '/' + (count || '*');
-						infos.response.status = (infos.range.start === 0 && count -1 === end) ? 200 : 206;
-						return result;
-					});
+				//console.log("query result : range ?", infos.range, " - ", result)
+				if(infos.range && result)
+				{
+					var end = result.end;
+					infos.response.headers["Content-Range"] = "items " + result.start + '-' + end + '/' + (result.total || '*');
+					infos.response.status = (result.start === 0 && result.total -1 === end) ? 200 : 206;
+					return result.results;
+				}
+				else if(result && result._range_object_)
+					return result.results;
 				return result;
 			});
 		}
 		else
 			result = accessor.handler(infos.path, request.autobahn);
-		 // console.log("facet analyse 3")
+		// console.log("facet analyse 3")
 
 		return deep.when(result)
 		.done(function (result) {

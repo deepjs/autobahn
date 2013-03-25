@@ -72,9 +72,10 @@ Mongo.prototype =  {
 		},
 		query: function(query, options){
 			//console.log("Remote query : ", query, options);
+			options = options || {};
 			try{
 
-			var headers = (options && options.responseHeaders) || {};
+			var headers = (options.response && options.response.headers) || {};
 
 			//headers["Accept-Language"] = options["accept-language"];
 			deep.utils.bottom(this.headers, headers);
@@ -90,9 +91,25 @@ Mongo.prototype =  {
 				query = query.substring(0, query.length - 5);
 
 			//console.log("Mongo will do query : ", query, options);
-			return when(this.mongo.query(query, headers)).then(function(res){
-				//console.log("Mongo query res : ", res);
-				return res;
+			return when(this.mongo.query(query, headers)).then(function(results){
+				if(!options.range)
+					if(results && results._range_object_)
+						return results.results;
+					else
+						return results;
+				return deep(results.totalCount)
+				.done(function (count) {
+					//console.log("Mongo query res : ", results);
+					var res = deep.utils.createStartEndRangeObject(results.start, results.end, count);
+					delete results.count;
+					delete results.start;
+					delete results.end;
+					delete results.schema;
+					delete results.totalCount;
+					res.results = results;
+					res._range_object_ = true;
+					return res;
+				});
 			},function  (error) {
 				console.log("error while calling (query) Mongoservices :  - ", error);
 				return  { status:500, headers:{}, body:["error 500 (Mongo store query)", JSON.stringify(error)]};

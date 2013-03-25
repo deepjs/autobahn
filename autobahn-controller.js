@@ -132,7 +132,7 @@ define(function (require)
 			{
 
 				roles = session.remoteUser.roles || ["user"];
-				//if(console.flags["autobahn"])
+				if(console.flags["autobahn"])
 					console.log("autobahn", "getRole() : request.remoteUser : ", session.remoteUser);
 			}	
 			if(console.flags["autobahn"])
@@ -146,7 +146,7 @@ define(function (require)
 		},
 		analyseRequest : function(request)
 		{
-			console.log("Autobahn-Controller.analyse")
+			//console.log("Autobahn-Controller.analyse")
 			var ctrl = null;
 			utils.parseRequestInfos(request);
 			//console.log("Autobahn-Controller.analyse 2  ")
@@ -216,7 +216,7 @@ define(function (require)
 
 			if(!ctrl.loaded)
 			{
-				console.log("CONTROLLER NOT LOADED : load it : ", ctrl)
+				//console.log("CONTROLLER NOT LOADED : load it : ", ctrl)
 				ctrl.name = joined;
 				var d = deep(othis)
 				.query("./roles/_"+joined)
