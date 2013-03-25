@@ -490,7 +490,7 @@ var Permissive = {
 			result = deep(accessor.handler(infos.queryString, infos))
 			.done(function (result)
 			{
-				console.log("query result : range ?", infos.range, " - ", result)
+				//console.log("query result : range ?", infos.range, " - ", result)
 				if(infos.range && result)
 				{
 					var end = result.end;
