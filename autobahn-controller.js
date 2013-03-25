@@ -121,11 +121,7 @@ define(function (require)
 			//.log("autobahn flatten 1")
 			.flatten()
 			.query("/stores/*")
-			.log("_____________________________ autobahn stores to load")
-			.logValues()
 			.run("init")
-			.log("_____________________________ autobahn stores loaded")
-			.logValues()
 			.log("autobahn loaded");
 		},
 		getRequestController: function(request)
@@ -203,7 +199,7 @@ define(function (require)
 						console.log("roles (",roles,") wasn't in cache : get it")
 					var ctrl = {};
 					roles.forEach(function(e){
-						console.log("applying role : ", e)
+						//console.log("applying role : ", e)
 						if(othis.roles[e])
 							deep.utils.up(othis.roles[e], ctrl);
 						else
@@ -238,11 +234,7 @@ define(function (require)
 					.run("init");
 					var d = deep(this)
 					.query("./store?_schema.type=string")
-					.log("_________________________________ store to load")
-					.logValues()
-					.load()
-					.log("_________________________________ store loaded")
-					.logValues();
+					.load();
 					return deep.all([d, d2]);
 				})
 				.run("init")
