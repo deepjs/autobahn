@@ -8,6 +8,7 @@ var when = deep.when;
 var DatabaseError = require("perstore/errors").DatabaseError,
 	AccessError = require("perstore/errors").AccessError,
 	MethodNotAllowedError = require("perstore/errors").MethodNotAllowed;
+	var errors = require("autobahn/errors");
 var Mongo = function(){}
 Mongo.prototype =  {
 		dbURL:null,
@@ -25,14 +26,16 @@ Mongo.prototype =  {
 				deep.utils.deepCopy(this.headers, headers, false);
 		
 			return when(this.mongo.get(id, headers)).then(function(res){
+				if(res.headers && res.status && res.body)
+					return new errors.Server(res.body, res.status);
 				return res;
 			}, function(error){
 				console.log("error while calling (get)  Mongoservices - ", error);
-				return { status:500, headers:{}, body:["error 500 (Mongo store get)"]};
+				return new errors.Server(error, 500);
 			});
 			}catch(error){
 				console.log("error (throw) while calling (get) Mongostore : - ", error);
-				return { status:500, headers:{}, body:["error 500 (Mongo store get)"]};
+				return new errors.Server(error, 500);
 			}
 		},
 		put: function(object, options){
@@ -41,15 +44,19 @@ Mongo.prototype =  {
 				console.log("Mongo : post : ", object)
 
 			return when(this.mongo.put(object, options)).then(function (res){
+				if(res.headers && res.status && res.body)
+					return new errors.Server(res.body, res.status);
 				return res;
 			},function  (error) {
 				// body...
 				console.log("error while calling Mongoservices : - ", error);
-				return  { status:500, headers:{}, body:["error 500 (Mongo store put)"]};
+				return new errors.Server(error, 500);
+				//return  { status:500, headers:{}, body:["error 500 (Mongo store put)"]};
 			});
 			}catch(error){
 				console.log("error (throw) while calling Mongostore :  - ", error);
-				return  { status:500, headers:{}, body:["error 500 (Mongo store put)"]};
+				return new errors.Server(error, 500);
+				//return  { status:500, headers:{}, body:["error 500 (Mongo store put)"]};
 			}
 		},
 		post: function(object, options){
@@ -59,14 +66,16 @@ Mongo.prototype =  {
 				console.log("REMOTE STORE : post : ", object)
 
 			return when(this.mongo.put(object, options)).then(function(res){
+				if(res.headers && res.status && res.body)
+					return new errors.Server(res.body, res.status);
 				return res;
 			}, function  (error) {
 				console.log("error while calling Mongoservices :  - ", error);
-				return  { status:500, headers:{}, body:["error 500 (Mongo store post)"]};
+				return new errors.Server(error, 500);
 			});
 			}catch(error){
 				console.log("error (throw) while calling Mongostore :  - ", error);
-				return  { status:500, headers:{}, body:["error 500 (Mongo store post)"]};
+				return new errors.Server(error, 500);
 				//throw new Error("error while Mongorest.post : ", error);
 			}
 		},
@@ -92,6 +101,8 @@ Mongo.prototype =  {
 
 			//console.log("Mongo will do query : ", query, options);
 			return when(this.mongo.query(query, headers)).then(function(results){
+				if(results.headers && results.status && results.body)
+					return new errors.Server(results.body, results.status);
 				if(!options.range)
 					if(results && results._range_object_)
 						return results.results;
@@ -112,11 +123,11 @@ Mongo.prototype =  {
 				});
 			},function  (error) {
 				console.log("error while calling (query) Mongoservices :  - ", error);
-				return  { status:500, headers:{}, body:["error 500 (Mongo store query)", JSON.stringify(error)]};
+				return new errors.Server(error, 500);
 			});
 			}catch(error){
 				console.log("error (throw) while calling  (query)  Mongostore :  - ", error);
-				return  { status:500, headers:{}, body:["error 500 (Mongo store query)", JSON.stringify(error)]};
+				return new errors.Server(error, 500);
 			}
 		},
 		"delete": function(id, options){

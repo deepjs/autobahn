@@ -505,22 +505,19 @@ var Permissive = {
 		}
 		else
 			result = accessor.handler(infos.path, request.autobahn);
-		// console.log("facet analyse 3")
 
 		return deep.when(result)
 		.done(function (result) {
-			 // console.log("facet analyse 4")
-			request.autobahn.response.body = result;
+			infos.response.body = result;
 			deep.utils.up(accessor.headers || self.headers || {}, infos.response.headers);
 			if(accessor.setCustomHeaders)
 				accessor.setCustomHeaders(result, request);
 			return infos.response;
 		});
 	}
-}
-	
+};
 	return {
 		Permissive:Permissive,
 		Accessors:Accessors
-	}
+	};
 });

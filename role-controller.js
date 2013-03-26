@@ -53,11 +53,14 @@ define(function RoleControllerDefine(require){
 					return deep(request.body)
 					.catchError(true)
 					.done(function(){
-						return self.facets[request.autobahn.part].analyse(request);
+						//console.log("role.try facet : ", request.autobahn.part);
+						var res = self.facets[request.autobahn.part].analyse(request);
+						//console.log("role.facet success : ",res);
+						return res;
 					})
 					.done(function (success) {
 						//
-						// console.log("RoleController  "+self.name+"  : facets success : ", success)
+						 //console.log("RoleController  "+self.name+"  : facets success : ", success)
 						//if(!success || success.status >= 400
 						if(typeof success === 'undefined' || success == null)
 							return new errors.NotFound("facet failed to retrieve something")

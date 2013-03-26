@@ -37,7 +37,7 @@ define(function(require){
 	var TimeOutError = Compose( Error,function(body){ this.body = body; this.status = 408; }, common);
 	var ForbiddenError = Compose( Error,function(body){ this.body = body; this.status = 403; }, common);
 	var ClientError = Compose( Error,function(body, status){ this.body = body; this.status = status; }, common);
-	var ServerError = Compose( Error,function(body, status){ this.body = body; this.status = status; }, common);
+	var ServerError = Compose( Error,function(body, status){ this.body = body; this.status = status || 500; }, common);
 
 	var MethodNotAllowedError = Compose(Error, function(body){ this.body = body; this.status = 405; }, common);
 

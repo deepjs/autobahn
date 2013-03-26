@@ -25,7 +25,7 @@ define(function(require){
 				.fail(errorHandler);
 			}
 			catch(e){
-				console.log("JSGI ERRORS : catch ", e);
+				//console.log("JSGI ERRORS : catch ", e);
 				return errorHandler(e);
 			}
 			finally{
