@@ -105,9 +105,9 @@ Mongo.prototype =  {
 					return new errors.Server(results.body, results.status);
 				if(!options.range)
 					if(results && results._range_object_)
-						return results.results;
+						return Array.prototype.slice.apply(results.results);
 					else
-						return results;
+						return Array.prototype.slice.apply(results);
 				return deep(results.totalCount)
 				.done(function (count) {
 					//console.log("Mongo query res : ", results);
@@ -117,7 +117,7 @@ Mongo.prototype =  {
 					delete results.end;
 					delete results.schema;
 					delete results.totalCount;
-					res.results = results;
+					res.results = Array.prototype.slice.apply(results);
 					res._range_object_ = true;
 					return res;
 				});
