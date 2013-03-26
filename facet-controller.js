@@ -145,7 +145,7 @@ var Accessors  = {
 		.done(function(oldOne)
 		{
 			var newOnly = deep(object, self.schema || self.facet.schema )
-			.query("./*?_schema.readOnly=true")
+			.query(".//*?_schema.readOnly=true")
 			.nodes();
 
 			newOnly.forEach(function(e){
@@ -193,7 +193,7 @@ var Accessors  = {
 				throw new errors.Unauthorized("no ressource to patch");
 
 			var newOnly = deep(object, self.schema || self.facet.schema )
-			.query("./*?_schema.readOnly=true")
+			.query(".//*?_schema.readOnly=true")
 			.nodes();
 			
 			newOnly.forEach(function(e){
