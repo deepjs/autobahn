@@ -120,6 +120,7 @@ define(function (require)
 			return deep(this)
 			//.log("autobahn flatten 1")
 			.flatten()
+			.log("______________________ autobahn flattened")
 			.query("/stores/*")
 			.run("init")
 			.log("autobahn loaded");

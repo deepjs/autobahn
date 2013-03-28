@@ -486,14 +486,15 @@ var Permissive = {
 				throw new errors.Access("no body provided with ", infos.method, " on ", this.name);
 		else if(isQuery)
 		{
-			//console.log("will do query : ", accessor);
+			console.log("will do query : ", accessor);
 			result = deep(accessor.handler(infos.queryString, infos))
 			.done(function (result)
 			{
-				//console.log("query result : range ?", infos.range, " - ", result)
+				console.log("query result : range ?", infos.range, " - ", result)
 				if(infos.range && result)
 				{
 					var end = result.end;
+					console.log("facet : range response : ",infos.response);
 					infos.response.headers["Content-Range"] = "items " + result.start + '-' + end + '/' + (result.total || '*');
 					infos.response.status = (result.start === 0 && result.total -1 === end) ? 200 : 206;
 					return result.results;

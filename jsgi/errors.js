@@ -7,8 +7,6 @@
 }
 define(function(require){
 	 var deep = require("deep/deep");
-
-
 	var ErrorHandler = function(nextApp){
 		return function(request, autobahnResponse){
 			//console.log("JSGI Errors : will call next app ")
@@ -33,7 +31,7 @@ define(function(require){
 
 			}
 			function errorHandler(e){
-				//console.log("JSGI ERRORS : ", e);
+				console.log("\n\n***************** ERRORS (catched in errors jsgi) : \n", e, "\n*************************************\n");
 				var response = {
 					headers:{
 						"content-type":"application/json"

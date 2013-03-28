@@ -16,5 +16,5 @@ define(function (require){
 			});
 			return deep.promise(def);
 		}
-	}
+	};
 });
