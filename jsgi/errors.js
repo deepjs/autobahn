@@ -24,6 +24,7 @@ define(function(require){
 			}
 			catch(e){
 				//console.log("JSGI ERRORS : catch ", e);
+				console.log("\n\n***************** ERRORS (catched in errors jsgi) : \n", e, "\n*************************************\n");
 				return errorHandler(e);
 			}
 			finally{
@@ -31,7 +32,6 @@ define(function(require){
 
 			}
 			function errorHandler(e){
-				console.log("\n\n***************** ERRORS (catched in errors jsgi) : \n", e, "\n*************************************\n");
 				var response = {
 					headers:{
 						"content-type":"application/json"

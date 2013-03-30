@@ -363,7 +363,14 @@ var Permissive = {
 			var handler = {
 				save:function()
 				{
-					return autobahn().roles(["admin"]).facet(self.name).put(obj);
+					return autobahn()
+					.roles(["admin"])
+					.facet(self.name)
+					.put(obj)
+					.done(function ()
+					{
+						return true;
+					});
 					//return deep.when(self.accessors.put.handler(obj, {session:session}));
 				},
 				getLink:function(relationName)
@@ -444,6 +451,7 @@ var Permissive = {
 
 		var result = null;
 		if(accessor.hasBody)
+		{
 			if(request.body)
 				result = deep.when(request.body)
 				.done(function (body)
@@ -480,21 +488,22 @@ var Permissive = {
 					}
 					else
 					// console.log("method hasBody : ", accessor.handler)
-					return accessor.handler(body, infos);
+						return accessor.handler(body, infos);
 				});
 			else
 				throw new errors.Access("no body provided with ", infos.method, " on ", this.name);
+		}
 		else if(isQuery)
 		{
 			console.log("will do query : ", accessor);
 			result = deep(accessor.handler(infos.queryString, infos))
 			.done(function (result)
 			{
-				console.log("query result : range ?", infos.range, " - ", result)
+				//console.log("query result : range ?", infos.range, " - ", result);
 				if(infos.range && result)
 				{
 					var end = result.end;
-					console.log("facet : range response : ",infos.response);
+					//console.log("facet : range response : ",infos.response);
 					infos.response.headers["Content-Range"] = "items " + result.start + '-' + end + '/' + (result.total || '*');
 					infos.response.status = (result.start === 0 && result.total -1 === end) ? 200 : 206;
 					return result.results;
