@@ -140,6 +140,7 @@ define(function (require){
     FileInfo.prototype.destroy = function(){
         fs.unlink(this.file.path);
     }
+    
     FileInfo.prototype.moveAndResize = function (options, newName, safe) 
     {
         var self = this;
@@ -176,6 +177,56 @@ define(function (require){
                     var dstPath = path.join(path.normalize(options.uploadDir),  version, self.name);
                     var opts = options.imageVersions[version];
                     imageMagick.resize({
+                        width: opts.width,
+                        height: opts.height,
+                        srcPath: newPath,
+                        dstPath: dstPath
+                    }, finished);
+                });
+            else
+                finished();
+        }
+        else
+            finished();
+        return deep.promise(def);
+    }
+
+    FileInfo.prototype.moveAndCrop = function (options, newName, safe) 
+    {
+        var self = this;
+       // console.log("FileInfo.prototype.moveAndResize : ", options)
+      //  console.log("FileInfo.prototype.moveAndResize : file.type : ", this.type);
+        if(newName)
+            this.name = newName + "." + this.extension;
+        var def = deep.Deferred();
+        if(safe)
+            this.safeName(options.uploadDir);
+        var newPath = path.join(path.normalize(options.uploadDir), this.name);
+        fs.renameSync(this.file.path,newPath);
+        var count = 0;
+
+         var finished = function (err, stdoutContent, stderrContent) {
+            if(err)
+                console.log("WARNING : error while resizing : ", err, stdoutContent,stderrContent )
+            count--;
+            if(count <= 0)
+            {
+                self.initUrls(options);
+                def.resolve(self);
+            }
+         }
+        if (options.imageTypes.test(this.name)) 
+        {
+            var vers = Object.keys(options.imageVersions);
+            count = vers.length;
+
+            if(count > 0)
+                vers.forEach(function (version) 
+                {   
+                  //  console.log("do resize : ", version)
+                    var dstPath = path.join(path.normalize(options.uploadDir),  version, self.name);
+                    var opts = options.imageVersions[version];
+                    imageMagick.crop({
                         width: opts.width,
                         height: opts.height,
                         srcPath: newPath,
