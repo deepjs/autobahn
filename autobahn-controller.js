@@ -196,8 +196,8 @@ define(function (require)
 				var ctrl = this.roles["_"+joined];
 				if(!ctrl)
 				{
-					if(console.flags["autobahn"])
-						console.log("roles (",roles,") wasn't in cache : get it")
+					if(console.flags["autobahn-roles-cache"])
+						console.log("roles (",roles,") wasn't in cache : create it");
 					var ctrl = {};
 					roles.forEach(function(e){
 						//console.log("applying role : ", e)
@@ -208,47 +208,30 @@ define(function (require)
 					});
 					this.roles["_"+joined] = ctrl;
 				}
-			}catch(e){
-				if(e instanceof Error)
-					throw e;
-				throw new Error("error while compiling roles");
 			}
-			
+			catch(e){
+				if(e instanceof Error)
+					return e;
+				return new Error("error while compiling roles : "+String(e));
+			}
 
 			if(!ctrl.loaded)
 			{
 				//console.log("CONTROLLER NOT LOADED : load it : ", ctrl)
 				ctrl.name = joined;
 				var d = deep(othis)
+				.catchError()
 				.query("./roles/_"+joined)
 				.position("role")
-				.bottom(new RoleController())
-				.query("./facets/*")
-				.bottom(FacetController)
-				.back("role")
-				.flatten()
-				.query("./facets/*")
-				.run(function ()
-				{
-					var d2 = deep(this)
-					.query("./store?_schema.type=object")
-					.run("init");
-					var d = deep(this)
-					.query("./store?_schema.type=string")
-					.load();
-					return deep.all([d, d2]);
-				})
+				.bottom(RoleController)
 				.run("init")
-				.back("role")
-				.run("init")
-				.log("role "+joined+" : flattened...");
-				return deep.when(d)
+				.log("role "+joined+" : flattened...")
 				.done(function (success) {
 					return ctrl;
 				})
-				.fail(function (argument) {
-					throw new Error("error while compiling roles");
-				})
+				.fail(function (error) {
+					console.log("error while compiling roles : ", error);
+				});
 			}
 
 			return ctrl;

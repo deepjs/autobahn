@@ -9,34 +9,61 @@ if(typeof define !== 'function'){
 define(function RoleControllerDefine(require){
 	var deep = require("deep/deep");
 	var errors = require("autobahn/errors")
+	var FacetController = require("autobahn/facet-controller").Permissive;
 	//var RouteNode = require("autobahn/route-node-controller");
 	var AutobahnResponse = require("autobahn/autobahn-response")
 	var Cascade = require("pintura/jsgi/cascade").Cascade;
 	var	Static = require("pintura/jsgi/static").Static;
-	var RoleController = function (argument) {
-		// body...
-	}
-
-	RoleController.prototype = {
+	var RoleController = {
 		
 		init:function () 
 		{
-			console.log("Role Controller init : ", this.name)
+			console.log("Role Controller init : ", this.name);
 			this.loaded = true;
+			/*********************************************
+			*  init statics cascade jsgi
+			**********************************************/
 			var stats = [];
 			if(this.statics)
 				this.statics.forEach(function (stat) {
 					stats.push(Static(stat));
 				});
 			this.statics = Cascade(stats);
+
+			/*********************************************
+			*  INIT FACETS
+			**********************************************/
+
 			for(var i in this.facets)
 			{
 				this.facets[i].name = i;
 				//console.log("Role Give name to facet : ", this.facets[i].name)
 			}
-		},
-		getStatics:function (request) {
-			return deep.when(this.statics(request));
+
+			return deep(this)
+			.position("role")
+			.query("./facets/*")
+			.position("facets")
+			.bottom(FacetController)
+			.back("role")
+			.flatten()
+			.back("facets")
+			.done(function (success, handler, brancher)
+			{
+				brancher.branch()
+				.query("./store?_schema.type=object")
+				.run("init");
+
+				brancher.branch()
+				.query("./store?_schema.type=string")
+				.load();
+
+				return brancher;
+			})
+			.run("init")
+			.fail(function (error) {
+				// body...
+			});
 		},
 		analyse : function(request)
 		{
@@ -53,15 +80,11 @@ define(function RoleControllerDefine(require){
 					return deep(request.body)
 					.catchError(true)
 					.done(function(){
-						//console.log("role.try facet : ", request.autobahn.part);
 						var res = self.facets[request.autobahn.part].analyse(request);
-						//console.log("role.facet success : ",res);
 						return res;
 					})
-					.done(function (success) {
-						//
-						 //console.log("RoleController  "+self.name+"  : facets success : ", success)
-						//if(!success || success.status >= 400
+					.done(function (success) 
+					{
 						if(typeof success === 'undefined' || success == null)
 							return new errors.NotFound("facet failed to retrieve something")
 						if(success instanceof AutobahnResponse)
@@ -77,7 +100,8 @@ define(function RoleControllerDefine(require){
 				else if(self.routes)
 					return self.routes.analyse(request);
 				
-				console.log("autobahn ( "+self.name+" ) has nothing to do with request : ", request.url);
+				if(console.flags["log-facet-404"])
+					console.log("autobahn ( "+self.name+" ) has nothing to do with request : ", request.url);
 				return new errors.NotFound("autobahn ( "+self.name+" ) has nothing to do with request : "+ request.url);
 			}
 
@@ -93,7 +117,6 @@ define(function RoleControllerDefine(require){
 					return success;
 				});
 			return noStatics(null);
-			//return { status:404, headers:headers, body:["error 404 (RC)"]};
 		},
 		getFile : function(path, type)
 		{

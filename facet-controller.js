@@ -24,7 +24,8 @@ define(function FacetControllerDefine(require){
 var Accessors  = {
 	forbidden:function(message){
 		return function(obj, options){
-			throw new errors.MethodNotAllowed("You don't have right to perform this operation. "+message||"");
+			message = message || "";
+			throw new errors.MethodNotAllowed("You don't have right to perform this operation. "+message);
 		}
 	},
 	get : function(id, options)
@@ -72,9 +73,14 @@ var Accessors  = {
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to post something");
 
-		var report = deep.validate(object, this.schema || this.facet.schema || {});
-		if(!report.valid)
-			throw new errors.PreconditionFailed("post failed!", report);
+		var schem = this.schema || this.facet.schema ;
+		var report = null;
+		if(schem)
+		{
+			report = deep.validate(object, schem);
+			if(report && !report.valid)
+				return new errors.PreconditionFailed("put failed!", JSON.stringify(report));
+		}	
 
 	//	console.log("facets-controller : post : ", object, options);
 		if(typeof this.restrictToOwner === 'function' && !this.restrictToOwner(obj, this.schema || this.facet.schema, options))
@@ -132,9 +138,14 @@ var Accessors  = {
 		if(!options.id || (object.id && options.id != object.id))
 			throw new errors.PreconditionFailed("FacetController::put : problem, ids in object and url dont correspond");
 
-		var report = deep.validate(object, this.schema || this.facet.schema || {});
-		if(!report.valid)
-			return new errors.PreconditionFailed("put failed!", JSON.stringify(report));
+		var schem = this.schema || this.facet.schema ;
+		var report = null;
+		if(schem)
+		{
+			report = deep.validate(object, schem);
+			if(report && !report.valid)
+				return new errors.PreconditionFailed("put failed!", JSON.stringify(report));
+		}	
 
 		return deep.when(this.facet.accessors.get.handler(options.id, options))
 		.done(function(success){
@@ -159,8 +170,7 @@ var Accessors  = {
 			if(!obj)
 				throw new errors.Access("put return nothing");
 			deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
-			console.log("FACET PUT DONE obj : ", obj);
-			
+			//console.log("FACET PUT DONE obj : ", obj);
 			return obj;
 		})
 		.fail(function(error){
@@ -181,9 +191,14 @@ var Accessors  = {
 			throw new errors.PreconditionFailed("FacetController::patch : problem, ids in object and url dont correspond");
 		var id = object.id || options.id;
 
-		var report = deep.validate(object, this.schema || this.facet.schema || {});
-		if(!report.valid)
-			return new errors.PreconditionFailed("patch failed!", report);
+		var schem = this.schema || this.facet.schema ;
+		var report = null;
+		if(schem)
+		{
+			report = deep.validate(object, schem);
+			if(report && !report.valid)
+				return new errors.PreconditionFailed("put failed!", JSON.stringify(report));
+		}	
 
 	 	return	deep.when( this.facet.store.get(id, options) )
 		.done( function (success) {
@@ -320,8 +335,13 @@ var Permissive = {
 	},
 	init : function(request, infos)
 	{
-		console.log("facet-controller.init()")
-		deep(this.accessors.patch.schema).replace("//required", false);
+		console.log("facet-controller.init() : ", this.name);
+
+		if(!this.accessors.patch.schema && this.schema)
+			this.accessors.patch.schema = deep.utils.copy(this.schema);
+		if(this.accessors.patch.schema)
+			deep(this.accessors.patch.schema).replace(".//required", false);
+
 		for(var i in this.accessors)
 		{
 			//console.log("______________________ init accessors from facet : ", this)
@@ -330,6 +350,7 @@ var Permissive = {
 				name:i
 			}, this.accessors[i]);
 		}
+
 	},
 	rpcCall2:function (id, method) {
 		// body...
@@ -350,7 +371,6 @@ var Permissive = {
 			var toCall = self.rpc[body.method];
 
 			//console.log("rpc : call method : ", body)
-
 
 			if(!toCall)
 				return errors.MethodNotAllowed();
@@ -495,7 +515,7 @@ var Permissive = {
 		}
 		else if(isQuery)
 		{
-			console.log("will do query : ", accessor);
+			//console.log("will do query : ", accessor);
 			result = deep(accessor.handler(infos.queryString, infos))
 			.done(function (result)
 			{
