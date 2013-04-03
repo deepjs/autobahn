@@ -134,7 +134,6 @@ define(function (require)
 			request.autobahn.port = request.headers.host ? (request.headers.host.split(":")[1] || 80) : 80;
 			request.autobahn.remoteAddr = request.connection.remoteAddress;
 			request.autobahn.version = [ request.httpVersionMajor, request.httpVersionMinor ];
-			request.autobahn.contentType =  request.headers["content-type"] || request.headers["Content-Type"] || "application/json";
 			request.autobahn.requestHeaders = request.headers || {};
 			//	console.log("Autobahn controller : analyseRequest  : ", JSON.stringify(infos));
 

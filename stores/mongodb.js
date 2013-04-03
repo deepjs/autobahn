@@ -19,14 +19,19 @@ Mongo.prototype =  {
 		},
 		get: function(id, options){
 			try{
-			if(console && console.flags && console.flags["Mongorest"])
-				console.log("Mongo : get : ", url);//
-			var headers = options || {};
+			//if(console && console.flags && console.flags["Mongorest"])
+			//console.log("Mongo : get : ", id, options);//
+			options = options || {};
+
+			var headers = {};
+			if(options.response)
+				headers = options.response.headers || {};
 			if(this.headers)
 				deep.utils.deepCopy(this.headers, headers, false);
-		
+			//console.log("mongo after set headers : ", headers);
 			return when(this.mongo.get(id, headers)).then(function(res){
-				if(res.headers && res.status && res.body)
+				//console.log("mongstore (real) response : ",res);
+				if(res && res.headers && res.status && res.body)
 					return new errors.Server(res.body, res.status);
 				return res;
 			}, function(error){
@@ -44,7 +49,7 @@ Mongo.prototype =  {
 				console.log("Mongo : post : ", object)
 
 			return when(this.mongo.put(object, options)).then(function (res){
-				if(res.headers && res.status && res.body)
+				if(res && res.headers && res.status && res.body)
 					return new errors.Server(res.body, res.status);
 				return res;
 			},function  (error) {
@@ -66,7 +71,7 @@ Mongo.prototype =  {
 				console.log("REMOTE STORE : post : ", object)
 
 			return when(this.mongo.put(object, options)).then(function(res){
-				if(res.headers && res.status && res.body)
+				if(res && res.headers && res.status && res.body)
 					return new errors.Server(res.body, res.status);
 				return res;
 			}, function  (error) {
@@ -87,7 +92,8 @@ Mongo.prototype =  {
 			var headers = (options.response && options.response.headers) || {};
 
 			//headers["Accept-Language"] = options["accept-language"];
-			deep.utils.bottom(this.headers, headers);
+			if(this.headers)
+				deep.utils.bottom(this.headers, headers);
 			if(headers.start || headers.end){
 				headers.range = "items=" + headers.start + '-' + headers.end;
 			}
@@ -101,7 +107,7 @@ Mongo.prototype =  {
 
 			//console.log("Mongo will do query : ", query, options);
 			return when(this.mongo.query(query, headers)).then(function(results){
-				if(results.headers && results.status && results.body)
+				if(results && results.headers && results.status && results.body)
 					return new errors.Server(results.body, results.status);
 				if(!options.range)
 					if(results && results._range_object_)
@@ -131,9 +137,7 @@ Mongo.prototype =  {
 			}
 		},
 		"delete": function(id, options){
-		//	console.log("Remote delete : ", id);
-			var headers = options || {};
-			deep.utils.deepCopy(this.headers, headers, false);
+			
 			return this.mongo.delete(id);
 		}
 	}

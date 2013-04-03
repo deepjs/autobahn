@@ -25,12 +25,12 @@ var Accessors  = {
 	forbidden:function(message){
 		return function(obj, options){
 			message = message || "";
-			throw new errors.MethodNotAllowed("You don't have right to perform this operation. "+message);
+			throw new errors.MethodNotAllowed(" ("+self.facet.name+") You don't have right to perform this operation. "+message);
 		}
 	},
 	get : function(id, options)
 	{
-		//console.log("facets-controller : get : ", id, this.facet);
+		//console.log("facets-controller ("+this.facet.name+") : get : ", id);
 
 		var accessors = this.facet.accessors;
 		var schema = this.facet.schema;
@@ -50,13 +50,15 @@ var Accessors  = {
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to get something");
 
+		//console.log("facet : ("+this.facet.name+") : get  : "+id+" : will call store. ")
 		var self = this;
 		return deep.when(this.facet.store.get(id, options))
 		.done(function(obj){
+			//console.log("facet get stroe response")
 			if(typeof obj === 'undefined' || obj == null)
-				throw new errors.NotFound("facet return nothing");
+				throw new errors.NotFound("("+self.facet.name+") facet return nothing");
 			if(typeof self.restrictToOwner === 'function' && !self.restrictToOwner(obj, self.schema || schema, options))
-				throw new errors.Unauthorized("you're not the owner of this ressource.");
+				throw new errors.Unauthorized("("+self.facet.name+") you're not the owner of this ressource.");
 			// filter privates props
 			deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
 			return obj;
@@ -64,7 +66,7 @@ var Accessors  = {
 		.fail(function(error){
 			if(error instanceof Error)
 				throw error;
-			throw new errors.Access("error when getting on store. "+JSON.stringify(error));
+			throw new errors.Access("("+self.facet.name+") error when getting on store. "+JSON.stringify(error));
 		});
 	},
 	post : function(object, options)
@@ -79,27 +81,27 @@ var Accessors  = {
 		{
 			report = deep.validate(object, schem);
 			if(report && !report.valid)
-				return new errors.PreconditionFailed("put failed!", JSON.stringify(report));
+				return new errors.PreconditionFailed("("+self.facet.name+") put failed!", JSON.stringify(report));
 		}	
 
 	//	console.log("facets-controller : post : ", object, options);
 		if(typeof this.restrictToOwner === 'function' && !this.restrictToOwner(obj, this.schema || this.facet.schema, options))
-			throw new errors.Unauthorized("you're not the owner of this ressource.");
+			throw new errors.Unauthorized("("+self.facet.name+") you're not the owner of this ressource.");
 
 		var self = this;
 
 		return deep.when(this.facet.store.post(object, options))
 		.done(function(obj){
-			console.log("facet-controller : after store post  : response ", obj);
+			console.log("("+self.facet.name+") facet-controller : after store post  : response ", obj);
 			if(typeof obj === 'undefined' || obj === null)
-				throw new errors.Access("post return nothing");
+				throw new errors.Access("("+self.facet.name+") post return nothing");
 			deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
 			return obj;
 		})
 		.fail(function(error){
 			if(error instanceof Error)
 				throw error;
-			throw new errors.Access("error when posting on store. "+JSON.stringify(error));
+			throw new errors.Access("("+self.facet.name+") error when posting on store. "+JSON.stringify(error));
 		});
 	},
 	query : function(query, options)
@@ -119,7 +121,7 @@ var Accessors  = {
 		.fail(function(error){
 			if(error instanceof Error)
 				throw error;
-			throw new errors.Access("error when query on store. "+JSON.stringify(error));
+			throw new errors.Access("("+self.facet.name+") error when query on store. "+JSON.stringify(error));
 		});
 	},
 	put : function(object, options)
@@ -136,7 +138,7 @@ var Accessors  = {
 		//console.log("Facet::put : ", object, options)
 
 		if(!options.id || (object.id && options.id != object.id))
-			throw new errors.PreconditionFailed("FacetController::put : problem, ids in object and url dont correspond");
+			throw new errors.PreconditionFailed("FacetController::put ("+self.facet.name+") : problem, ids in object and url dont correspond");
 
 		var schem = this.schema || this.facet.schema ;
 		var report = null;
@@ -144,13 +146,13 @@ var Accessors  = {
 		{
 			report = deep.validate(object, schem);
 			if(report && !report.valid)
-				return new errors.PreconditionFailed("put failed!", JSON.stringify(report));
+				return new errors.PreconditionFailed("("+self.facet.name+") put failed!", JSON.stringify(report));
 		}	
 
 		return deep.when(this.facet.accessors.get.handler(options.id, options))
 		.done(function(success){
 			if(success.length == 0)
-				throw new errors.Unauthorized("object don't exists. Please post before.");
+				throw new errors.Unauthorized("("+self.facet.name+") object don't exists. Please post before.");
 			return success;
 		})
 		.done(function(oldOne)
@@ -168,7 +170,7 @@ var Accessors  = {
 		})
 		.done(function(obj){
 			if(!obj)
-				throw new errors.Access("put return nothing");
+				throw new errors.Access("("+self.facet.name+") put return nothing");
 			deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
 			//console.log("FACET PUT DONE obj : ", obj);
 			return obj;
@@ -176,7 +178,7 @@ var Accessors  = {
 		.fail(function(error){
 			if(error instanceof Error)
 				throw error;
-			throw new errors.Access("error when putting on store. "+JSON.stringify(error));
+			throw new errors.Access("("+self.facet.name+") error when putting on store. "+JSON.stringify(error));
 		}); 
 	},
 	patch : function(object, options)
@@ -188,7 +190,7 @@ var Accessors  = {
 		options.id = options.id || object.id;
 
 		if(!options.id || (object.id && options.id != object.id))
-			throw new errors.PreconditionFailed("FacetController::patch : problem, ids in object and url dont correspond");
+			throw new errors.PreconditionFailed("FacetController::patch ("+self.facet.name+") : problem, ids in object and url dont correspond");
 		var id = object.id || options.id;
 
 		var schem = this.schema || this.facet.schema ;
@@ -197,12 +199,12 @@ var Accessors  = {
 		{
 			report = deep.validate(object, schem);
 			if(report && !report.valid)
-				return new errors.PreconditionFailed("put failed!", JSON.stringify(report));
+				return new errors.PreconditionFailed(" ("+self.facet.name+") put failed!", JSON.stringify(report));
 		}	
 
 	 	return	deep.when( this.facet.store.get(id, options) )
 		.done( function (success) {
-			console.log(" PATCH GET old object done = ", success);
+			console.log("("+self.facet.name+") PATCH GET old object done = ", success);
 			
 			if(!success)
 				throw new errors.Unauthorized("no ressource to patch");
@@ -212,10 +214,10 @@ var Accessors  = {
 			.nodes();
 			
 			newOnly.forEach(function(e){
-				console.log(" READ PROPERTIES readonly : ", e)
+				console.log("("+self.facet.name+") READ PROPERTIES readonly : ", e)
 				var oldValue = deep.utils.retrieveValueByPath(success, e.path, "/");
 				if(typeof oldValue === 'undefined' && oldValue != e.value)
-					throw new errors.Unauthorized(e.path+" is readOnly !")
+					throw new errors.Unauthorized(" ("+self.facet.name+") "+e.path+" is readOnly !")
 			});
 
 			//remove the field that we want to patch (to avoid array merge)
@@ -229,7 +231,7 @@ var Accessors  = {
 			return deep.when(self.facet.store.put(success, options))
 			.done(function(obj){
 				if(!obj)
-					throw new errors.Access("patch return nothing");
+					throw new errors.Access("("+self.facet.name+") patch return nothing");
 				deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
 				return obj;
 			});
@@ -237,26 +239,26 @@ var Accessors  = {
 		.fail( function (error) {
 			if(error instanceof Error)
 				throw error;
-			throw new errors.Access("FacetController::patch : no object found with this id");
+			throw new errors.Access("FacetController::patch ("+self.facet.name+"): no object found with this id");
 		})
 	},
 	"delete" : function(object, options)
 	{ 
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to delete something");
-		console.log("delete : ", object, options, this.facet.store)
+		console.log("("+self.facet.name+") delete : ", object, options, this.facet.store)
 		return deep.when(this.facet.store["delete"](object, options))
 		.done(function(obj){
-			console.log("delete success : ", obj);
+			//console.log("delete success : ", obj);
 			if(!obj)
-				throw new errors.Access("delete return nothing");
+				throw new errors.Access("("+self.facet.name+") delete return nothing");
 			return true;
 		})
 		.fail(function(error){
-			console.log("delete error : ", error);
+			console.log("("+self.facet.name+") delete error : ", error);
 			if(error instanceof Error)
 				throw error;
-			throw new errors.Access("delete return error : "+JSON.stringify(error));
+			throw new errors.Access("("+self.facet.name+") delete return error : "+JSON.stringify(error));
 		});
 	}
 }
@@ -275,6 +277,7 @@ var Permissive = {
 			facet:null,
 			handler:Accessors.get,
 			setCustomHeaders:function (response, request) {
+				console.log("facet  get setCustomHandler")
 				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			},
 			negociation:{
@@ -297,6 +300,7 @@ var Permissive = {
 			hasBody:true,
 			facet:null,
 			setCustomHeaders:function (response, request) {
+				console.log("facet  post setCustomHandler")
 				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			},
 			handler:Accessors.post
@@ -306,6 +310,7 @@ var Permissive = {
 			facet:null,
 			handler:Accessors.put,
 			setCustomHeaders:function (response, request) {
+				console.log("facet  put setCustomHandler")
 				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			}
 		},
@@ -317,6 +322,7 @@ var Permissive = {
 				backgrounds:["#../../../schema"]
 			},
 			setCustomHeaders:function (response, request) {
+				console.log("facet  patch setCustomHandler")
 				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			}
 		}
@@ -357,7 +363,7 @@ var Permissive = {
 	},
 	rpcCall:function (request)
 	{
-		//console.log("Facet.rpcCall : ", request.autobahn.path)
+		console.log("Facet.rpcCall : ", request.autobahn.path)
 		var self = this;
 		return deep(deep.all([this.accessors.get.handler(request.autobahn.path, request.autobahn), request.body]))
 		.catchError(true)
@@ -370,7 +376,7 @@ var Permissive = {
 				body = JSON.parse(body);
 			var toCall = self.rpc[body.method];
 
-			//console.log("rpc : call method : ", body)
+			console.log("rpc : call method : ", body)
 
 			if(!toCall)
 				return errors.MethodNotAllowed();
@@ -397,7 +403,7 @@ var Permissive = {
 				{
 					var link = deep.query(schema, "/links/*?rel="+relationName).shift();
 					if(!link)
-						return new Error("no link found with : "+relationName);
+						return new Error("("+self.name+") no link found with : "+relationName);
 					var interpreted = deep.interpret(link.href, obj);
 					var splitted = interpreted.split("/");
 					interpreted.shift();
@@ -419,7 +425,7 @@ var Permissive = {
 			body.params.unshift(handler)
 			return deep.when(toCall.apply(obj, body.params))
 			.done(function  (result) {
-				//console.log("rpc call : response : ", result)
+				console.log("rpc call : response : ", result);
 				return {
 					id:body.id,
 					error:null,
@@ -427,6 +433,7 @@ var Permissive = {
 				}
 			})
 			.fail(function (error) {
+				console.log("rpc failed : response : ", error);
 				return {
 					id:body.id,
 					error:JSON.stringify(error),
@@ -446,10 +453,13 @@ var Permissive = {
 		var infos = request.autobahn,
 			self = this;
 
-		 // console.log("facet analyse")
+		console.log("facet analyse : ", infos.contentType);
 
 		if(infos.method == "post" && infos.contentType.indexOf("application/json-rpc") !== -1)
+		{
+			console.log("will call rpc");
 			return this.rpcCall(request);
+		}	
 
 		var accessor = this.accessors[infos.method];
 
@@ -463,7 +473,7 @@ var Permissive = {
 		}
 
 		if(!accessor)
-			throw new errors.MethodNotAllowed();
+			throw new errors.MethodNotAllowed(self.name+"."+infos.method);
 
 		request.autobahn.response.status = 200;
 		// console.log("facet analyse 2")
@@ -479,13 +489,13 @@ var Permissive = {
 					if(request.autobahn.method == "post" && request.autobahn.contentType.match("^(message/)"))
 					{
 						if(!(body instanceof Array))
-							throw errors.Access("trying to send message but body isn't array!");
+							throw errors.Access("trying to send message but body isn't array! ("+self.name+")");
 						var alls = [];
 						body.forEach(function (message) {
 							//console.log("BULK UPDATE : message : ", message);
 							var acc = self.accessors[message.method.toLowerCase()];
 							if(!acc)
-								throw errors.Access("trying to send message with method unrecognised or unauthorised : "+message.method);
+								throw errors.Access("trying to send message with method unrecognised or unauthorised ("+self.name+"): "+message.method);
 							if(acc.hasBody)
 								alls.push(acc.handler(message.body, {id:message.to}));
 							else
@@ -511,7 +521,7 @@ var Permissive = {
 						return accessor.handler(body, infos);
 				});
 			else
-				throw new errors.Access("no body provided with ", infos.method, " on ", this.name);
+				throw new errors.Access("("+self.name+") no body provided with ", infos.method, " on ", this.name);
 		}
 		else if(isQuery)
 		{
@@ -534,11 +544,16 @@ var Permissive = {
 			});
 		}
 		else
+		{
+			//console.log("facet : "+self.name+" : simple call");
 			result = accessor.handler(infos.path, request.autobahn);
+		}
+		//console.log("facet call done");
 
 		return deep.when(result)
 		.done(function (result) {
 			infos.response.body = result;
+			//console.log("facet will add headers on response")
 			deep.utils.up(accessor.headers || self.headers || {}, infos.response.headers);
 			if(accessor.setCustomHeaders)
 				accessor.setCustomHeaders(result, request);

@@ -77,10 +77,11 @@ define(function RoleControllerDefine(require){
 				if(self.facets && self.facets[request.autobahn.part]) 
 				{
 					//console.log("try facet : ", request.autobahn.part, self.facets[request.autobahn.part].analyse)
+					var facet = self.facets[request.autobahn.part];
 					return deep(request.body)
 					.catchError(true)
 					.done(function(){
-						var res = self.facets[request.autobahn.part].analyse(request);
+						var res = facet.analyse(request);
 						return res;
 					})
 					.done(function (success) 
@@ -93,7 +94,7 @@ define(function RoleControllerDefine(require){
 							return new AutobahnResponse(success.status, success.headers, success.body || "facet return nothing");
 					})
 					.fail(function (error) {
-						console.log("RoleController  "+self.name+"  : facets error : ", error)
+						console.log("RoleController  "+self.name+"  : facets ("+facet.name+") error : ", error)
 						return error;
 					});
 				}
