@@ -115,7 +115,14 @@ var Accessors  = {
 			// console.log("facet.query : ", query, result)
 			if(!result)
 				return [];
-			deep(result, { type:"array", items:self.schema || self.facet.schema || {} }).remove(".//?_schema.private=true");
+			var schema = self.schema || self.facet.schema;
+			if(schema)
+			{
+				var toTest = result;
+				if(result._range_object_)
+					toTest = result.results;
+				deep(toTest, { type:"array", items:schema }).remove(".//?_schema.private=true");
+			}
 			return result;
 		})
 		.fail(function(error){
@@ -141,10 +148,9 @@ var Accessors  = {
 			throw new errors.PreconditionFailed("FacetController::put ("+self.facet.name+") : problem, ids in object and url dont correspond");
 
 		var schem = this.schema || this.facet.schema ;
-		var report = null;
 		if(schem)
 		{
-			report = deep.validate(object, schem);
+			var report = deep.validate(object, schem);
 			if(report && !report.valid)
 				return new errors.PreconditionFailed("("+self.facet.name+") put failed!", JSON.stringify(report));
 		}	
@@ -166,7 +172,7 @@ var Accessors  = {
 				if(typeof oldValue === 'undefined' && oldValue != e.value)
 					throw new errors.Unauthorized(e.path+" is readOnly !")
 			});
-			return deep.when(self.facet.store.put(object, options))
+			return self.facet.store.put(object, options);
 		})
 		.done(function(obj){
 			if(!obj)
@@ -204,7 +210,7 @@ var Accessors  = {
 
 	 	return	deep.when( this.facet.store.get(id, options) )
 		.done( function (success) {
-			console.log("("+self.facet.name+") PATCH GET old object done = ", success);
+			//console.log("("+self.facet.name+") PATCH GET old object done = ", success);
 			
 			if(!success)
 				throw new errors.Unauthorized("no ressource to patch");
@@ -214,7 +220,7 @@ var Accessors  = {
 			.nodes();
 			
 			newOnly.forEach(function(e){
-				console.log("("+self.facet.name+") READ PROPERTIES readonly : ", e)
+				//console.log("("+self.facet.name+") READ PROPERTIES readonly : ", e)
 				var oldValue = deep.utils.retrieveValueByPath(success, e.path, "/");
 				if(typeof oldValue === 'undefined' && oldValue != e.value)
 					throw new errors.Unauthorized(" ("+self.facet.name+") "+e.path+" is readOnly !")
@@ -453,7 +459,7 @@ var Permissive = {
 		var infos = request.autobahn,
 			self = this;
 
-		console.log("facet analyse : ", infos.contentType);
+		//console.log("facet analyse : ", infos.contentType);
 
 		if(infos.method == "post" && infos.contentType.indexOf("application/json-rpc") !== -1)
 		{
@@ -533,8 +539,8 @@ var Permissive = {
 				if(infos.range && result)
 				{
 					var end = result.end;
-					//console.log("facet : range response : ",infos.response);
-					infos.response.headers["Content-Range"] = "items " + result.start + '-' + end + '/' + (result.total || '*');
+					//console.log("facet : range response : ",result);
+					infos.response.headers["Content-Range"] = "items " + result.start + '-' + result.end + '/' + (result.total || '*');
 					infos.response.status = (result.start === 0 && result.total -1 === end) ? 200 : 206;
 					return result.results;
 				}

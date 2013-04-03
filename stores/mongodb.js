@@ -117,7 +117,7 @@ Mongo.prototype =  {
 				return deep(results.totalCount)
 				.done(function (count) {
 					//console.log("Mongo query res : ", results);
-					var res = deep.utils.createStartEndRangeObject(results.start, results.end, count);
+					var res = deep.utils.createRangeObject(results.start, results.end-1, count);
 					delete results.count;
 					delete results.start;
 					delete results.end;
