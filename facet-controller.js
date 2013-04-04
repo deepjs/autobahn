@@ -24,13 +24,15 @@ define(function FacetControllerDefine(require){
 var Accessors  = {
 	forbidden:function(message){
 		return function(obj, options){
+			var self = this;
 			message = message || "";
-			throw new errors.MethodNotAllowed(" ("+self.facet.name+") You don't have right to perform this operation. "+message);
+			throw new errors.MethodNotAllowed(" ("+self.facet.name+"."+options.method+") You don't have right to perform this operation. "+message);
 		}
 	},
 	get : function(id, options)
 	{
 		//console.log("facets-controller ("+this.facet.name+") : get : ", id);
+		var self = this;
 
 		var accessors = this.facet.accessors;
 		var schema = this.facet.schema;
@@ -51,7 +53,6 @@ var Accessors  = {
 			throw new errors.Access(this.facet.name + " don't have store to get something");
 
 		//console.log("facet : ("+this.facet.name+") : get  : "+id+" : will call store. ")
-		var self = this;
 		return deep.when(this.facet.store.get(id, options))
 		.done(function(obj){
 			//console.log("facet get stroe response")
@@ -74,6 +75,7 @@ var Accessors  = {
 		//console.log("Accessors.post : ", this.facet.store.post)
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to post something");
+		var self = this;
 
 		var schem = this.schema || this.facet.schema ;
 		var report = null;
@@ -88,7 +90,6 @@ var Accessors  = {
 		if(typeof this.restrictToOwner === 'function' && !this.restrictToOwner(obj, this.schema || this.facet.schema, options))
 			throw new errors.Unauthorized("("+self.facet.name+") you're not the owner of this ressource.");
 
-		var self = this;
 
 		return deep.when(this.facet.store.post(object, options))
 		.done(function(obj){
@@ -252,6 +253,7 @@ var Accessors  = {
 	{ 
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to delete something");
+		var self = this;
 		console.log("("+self.facet.name+") delete : ", object, options, this.facet.store)
 		return deep.when(this.facet.store["delete"](object, options))
 		.done(function(obj){

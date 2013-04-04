@@ -43,11 +43,10 @@ define(function RoleControllerDefine(require){
 			return deep(this)
 			.position("role")
 			.query("./facets/*")
-			.position("facets")
 			.bottom(FacetController)
 			.back("role")
 			.flatten()
-			.back("facets")
+			.query("./facets/*")
 			.done(function (success, handler, brancher)
 			{
 				brancher.branch()
@@ -94,7 +93,7 @@ define(function RoleControllerDefine(require){
 							return new AutobahnResponse(success.status, success.headers, success.body || "facet return nothing");
 					})
 					.fail(function (error) {
-						console.log("RoleController  "+self.name+"  : facets ("+facet.name+") error : ", error)
+						console.log("RoleController  "+self.name+"  : facets ("+facet.name+"."+request.autobahn.method+") error : ", error);
 						return error;
 					});
 				}
