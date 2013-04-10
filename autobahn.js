@@ -28,6 +28,7 @@ define(function (require)
 	var Querier = require("deep/deep-query");
 	var autobahnController = require("autobahn/autobahn-controller");
 	var utils = require("autobahn/utils");
+	var errors = require("autobahn/errors");
 	var baseHandler = {
 		session:function (session) 
 		{
@@ -124,7 +125,7 @@ define(function (require)
 				if(!self.currentFacet.rpc || !self.currentFacet.rpc[method])
 					return new errors.MethodNotAllowed("rpc call couldn't be fullfilled : no metod found with : ", method)
 
-				deep.when(self.currentFacet.rpc.get.handler(id, options))
+				deep.when(self.currentFacet.rpc["method"](id, options))
 				.then(function (result)
 				{
 					console.log("facetHandler : get : ", result)

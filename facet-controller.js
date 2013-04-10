@@ -565,17 +565,45 @@ var Permissive = {
 		{
 			//console.log("facet : "+self.name+" : simple call");
 			result = accessor.handler(infos.path, request.autobahn);
+
 		}
 		//console.log("facet call done");
 
 		return deep.when(result)
 		.done(function (result) {
+			console.log("facet result : request.headers.Accept : ", request.headers);
+
+
+			var asked = request.headers["accept"];
+			if(asked && accessor && accessor.negociation)
+			{	
+				var tmp = [];
+				for( var i in accessor.negociation )
+				{
+					var io = asked.indexOf(i);
+					if(io > -1)
+						tmp.push({ index:io, negociator:i  })
+				}
+				if(tmp.length > 0)
+				{
+					//console.log("all negoc match : ", tmp);
+					var nego = deep(tmp).query("./!?sort(index)").val();
+					//console.log("nego : ", nego)
+					var negociatorHandler = accessor.negociation[nego.negociator].handler;
+					//console.log("have found negociator : ",nego.negociator, " - ", accessor.negociation[nego.negociator])
+					return negociatorHandler(result, request);
+				}
+				
+			}
+			
 			infos.response.body = result;
 			//console.log("facet will add headers on response")
 			deep.utils.up(accessor.headers || self.headers || {}, infos.response.headers);
 			if(accessor.setCustomHeaders)
 				accessor.setCustomHeaders(result, request);
 			return infos.response;
+			
+	
 		});
 	}
 };
