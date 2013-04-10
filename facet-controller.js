@@ -61,7 +61,8 @@ var Accessors  = {
 			if(typeof self.restrictToOwner === 'function' && !self.restrictToOwner(obj, self.schema || schema, options))
 				throw new errors.Unauthorized("("+self.facet.name+") you're not the owner of this ressource.");
 			// filter privates props
-			deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
+			if(self.hasPrivates)
+				deep(obj, self.schema || self.facet.schema).remove(".//?_schema.private=true");
 			return obj;
 		})
 		.fail(function(error){
@@ -90,13 +91,13 @@ var Accessors  = {
 		if(typeof this.restrictToOwner === 'function' && !this.restrictToOwner(obj, this.schema || this.facet.schema, options))
 			throw new errors.Unauthorized("("+self.facet.name+") you're not the owner of this ressource.");
 
-
 		return deep.when(this.facet.store.post(object, options))
 		.done(function(obj){
 			console.log("("+self.facet.name+") facet-controller : after store post  : response ", obj);
 			if(typeof obj === 'undefined' || obj === null)
 				throw new errors.Access("("+self.facet.name+") post return nothing");
-			deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
+			if(self.hasPrivates)
+				deep(obj, schem).remove(".//?_schema.private=true");
 			return obj;
 		})
 		.fail(function(error){
@@ -117,7 +118,7 @@ var Accessors  = {
 			if(!result)
 				return [];
 			var schema = self.schema || self.facet.schema;
-			if(schema)
+			if(self.hasPrivates && schema)
 			{
 				var toTest = result;
 				if(result._range_object_)
@@ -164,21 +165,25 @@ var Accessors  = {
 		})
 		.done(function(oldOne)
 		{
-			var newOnly = deep(object, self.schema || self.facet.schema )
-			.query(".//*?_schema.readOnly=true")
-			.nodes();
+			if(self.hasReadOnly)
+			{
+				var newOnly = deep( object, schem )
+				.query(".//*?_schema.readOnly=true")
+				.nodes();
 
-			newOnly.forEach(function(e){
-				var oldValue = deep.utils.retrieveValueByPath(oldOne, e.path, "/");
-				if(typeof oldValue === 'undefined' && oldValue != e.value)
-					throw new errors.Unauthorized(e.path+" is readOnly !")
-			});
+				newOnly.forEach(function(e){
+					var oldValue = deep.utils.retrieveValueByPath(oldOne, e.path, "/");
+					if(typeof oldValue === 'undefined' && oldValue != e.value)
+						throw new errors.Unauthorized(e.path+" is readOnly !")
+				});
+			}
 			return self.facet.store.put(object, options);
 		})
 		.done(function(obj){
 			if(!obj)
 				throw new errors.Access("("+self.facet.name+") put return nothing");
-			deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
+			if(self.hasPrivates)
+				deep(obj, schem).remove(".//?_schema.private=true");
 			//console.log("FACET PUT DONE obj : ", obj);
 			return obj;
 		})
@@ -216,22 +221,24 @@ var Accessors  = {
 			if(!success)
 				throw new errors.Unauthorized("no ressource to patch");
 
-			var newOnly = deep(object, self.schema || self.facet.schema )
-			.query(".//*?_schema.readOnly=true")
-			.nodes();
-			
-			newOnly.forEach(function(e){
-				//console.log("("+self.facet.name+") READ PROPERTIES readonly : ", e)
-				var oldValue = deep.utils.retrieveValueByPath(success, e.path, "/");
-				if(typeof oldValue === 'undefined' && oldValue != e.value)
-					throw new errors.Unauthorized(" ("+self.facet.name+") "+e.path+" is readOnly !")
-			});
+			if(self.hasReadOnly)
+			{
+				var newOnly = deep( object, schem )
+				.query(".//*?_schema.readOnly=true")
+				.nodes();
+				
+				newOnly.forEach(function(e){
+					//console.log("("+self.facet.name+") READ PROPERTIES readonly : ", e)
+					var oldValue = deep.utils.retrieveValueByPath(success, e.path, "/");
+					if(typeof oldValue === 'undefined' && oldValue != e.value)
+						throw new errors.Unauthorized(" ("+self.facet.name+") "+e.path+" is readOnly !")
+				});
+			}
 
 			//remove the field that we want to patch (to avoid array merge)
-			for(var fieldname in object) {
+			for(var fieldname in object)
 				if( success[fieldname] )
 					delete success[fieldname];
-			};
 			deep.utils.up(object, success);
 			delete success.getMetadata;
 			//console.log(" PATCH updatedObject = ", updatedObject)
@@ -239,7 +246,8 @@ var Accessors  = {
 			.done(function(obj){
 				if(!obj)
 					throw new errors.Access("("+self.facet.name+") patch return nothing");
-				deep(obj, self.schema || self.facet.schema || {}).remove(".//?_schema.private=true");
+				if(self.hasPrivates)
+					deep(obj, schem).remove(".//?_schema.private=true");
 				return obj;
 			});
 		})
@@ -359,12 +367,14 @@ var Permissive = {
 		for(var i in this.accessors)
 		{
 			//console.log("______________________ init accessors from facet : ", this)
+			var schema = this.accessors[i].schema || this.schema;
 			deep.utils.up({
 				facet:this,
-				name:i
+				name:i,
+				hasPrivates:deep(schema).query(".//?private=true").values().length>0,
+				hasReadOnly:deep(schema).query(".//?readOnly=true").values().length>0
 			}, this.accessors[i]);
 		}
-
 	},
 	rpcCall2:function (id, method) {
 		// body...
