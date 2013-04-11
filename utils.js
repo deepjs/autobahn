@@ -17,9 +17,6 @@ define(function (require)
 	        }, infos.response.headers);
 	    },
 		createBody : function  (request) {
-			var contentType = request.headers["content-type"] || request.headers["Content-Type"] || "application/json";
-			var contentType = contentType.split(";")[0];
-				//console.log("autobahn.utils.createBody : ", contentType)
 				return request.body = function(){
 					//console.log("create body :");
 					var def = deep.Deferred();
@@ -29,37 +26,7 @@ define(function (require)
 				      	body.push(chunk);
 				    });
 				    request.on('end', function() {
-				    	if(typeof body === 'undefined' || body == null)
-				    		request.body = null;
-				    	else
-					      // empty 200 OK response for now
-					      switch(contentType)
-					      {
-					      	case "application/json-rpc" : 
-					      		var b = "";
-					      		body.forEach(function (bd) {
-					      			b += bd.toString();
-					      		})
-					      		request.body = JSON.parse(b);
-					      		break;	
-					      	case "application/json" : 
-					      		var b = "";
-					      		body.forEach(function (bd) {
-					      			b += bd.toString();
-					      		})
-					      		request.body = JSON.parse(b);
-					      		break;	
-					      	case "application/javascript" : 
-					      		var b = "";
-					      		body.forEach(function (bd) {
-					      			b += bd.toString();
-					      		})
-					      		request.body = JSON.parse(b);
-					      		break;	
-					      	default :
-					      		request.body = body;
-					      }
-					     // console.log("body ended : ", request.body)
+				    	request.body = deep.utils.parseBody(body, request.headers);
 						def.resolve(request.body);
 				    });
 				    request.on('error', function(error) {
@@ -68,8 +35,7 @@ define(function (require)
 						def.reject(error);
 					});
 				  return deep.promise(def);
-				}()
-
+				}();
 		},
 		parseRange : function (request) {
 			var rangeSum = request.autobahn.range = {};
