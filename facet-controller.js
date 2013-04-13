@@ -278,6 +278,24 @@ var Accessors  = {
 		});
 	}
 }
+var sanitizer = require("sanitizer");
+var createSanitizer = function (schema) {
+	var toSanitize = deep(schema).query(".//*?sanitize=true").nodes();
+	if(toSanitize.length == 0)
+		return null;
+	var queries = [];
+	toSanitize.forEach(function (node) {
+		var path = node.path.replace("/properties/","/").replace("/items/","/*/");
+		queries.push(path);
+	})
+	return function (object) {
+		queries.forEach(function (q) {
+			deep(object).query("."+q).transform(function(value){
+				return sanitizer.sanitize(value); 
+			});
+		});
+	}
+}
 
 var Permissive = {
 	roleController:null,
@@ -368,12 +386,15 @@ var Permissive = {
 		{
 			//console.log("______________________ init accessors from facet : ", this)
 			var schema = this.accessors[i].schema || this.schema;
-			deep.utils.up({
+			var setuObject = {
 				facet:this,
 				name:i,
 				hasPrivates:deep(schema).query(".//?private=true").values().length>0,
 				hasReadOnly:deep(schema).query(".//?readOnly=true").values().length>0
-			}, this.accessors[i]);
+			};
+			if(this.accessors[i].hasBody)
+				setupObject.sanitize = createSanitizer(schema);
+			deep.utils.up(setupObject, this.accessors[i]);
 		}
 	},
 	rpcCall2:function (id, method) {
@@ -411,9 +432,9 @@ var Permissive = {
 					.roles(["admin"])
 					.facet(self.name)
 					.put(obj)
-					.done(function ()
+					.done(function (success)
 					{
-						return true;
+						return success;
 					});
 					//return deep.when(self.accessors.put.handler(obj, {session:session}));
 				},
@@ -443,7 +464,7 @@ var Permissive = {
 			body.params.unshift(handler)
 			return deep.when(toCall.apply(obj, body.params))
 			.done(function  (result) {
-				console.log("rpc call : response : ", result);
+				// console.log("rpc call : response : ", result);
 				return {
 					id:body.id,
 					error:null,
@@ -504,6 +525,7 @@ var Permissive = {
 				result = deep.when(request.body)
 				.done(function (body)
 				{
+					
 					if(request.autobahn.method == "post" && request.autobahn.contentType.match("^(message/)"))
 					{
 						if(!(body instanceof Array))
@@ -515,7 +537,11 @@ var Permissive = {
 							if(!acc)
 								throw errors.Access("trying to send message with method unrecognised or unauthorised ("+self.name+"): "+message.method);
 							if(acc.hasBody)
+							{
+								if(acc.sanitize)
+									accessor.sanitize(message.body);
 								alls.push(acc.handler(message.body, {id:message.to}));
+							}
 							else
 								alls.push(acc.handler(message.to, {id:message.to}));
 						});
@@ -534,9 +560,13 @@ var Permissive = {
 							return res;
 						});
 					}
-					else
-					// console.log("method hasBody : ", accessor.handler)
+					else{
+						if(accessor.sanitize)
+							accessor.sanitize(body);
 						return accessor.handler(body, infos);
+
+					}
+					// console.log("method hasBody : ", accessor.handler)
 				});
 			else
 				throw new errors.Access("("+self.name+") no body provided with ", infos.method, " on ", this.name);
@@ -572,8 +602,6 @@ var Permissive = {
 		return deep.when(result)
 		.done(function (result) {
 			console.log("facet result : request.headers.Accept : ", request.headers);
-
-
 			var asked = request.headers["accept"];
 			if(asked && accessor && accessor.negociation)
 			{	
@@ -593,7 +621,6 @@ var Permissive = {
 					//console.log("have found negociator : ",nego.negociator, " - ", accessor.negociation[nego.negociator])
 					return negociatorHandler(result, request);
 				}
-				
 			}
 			
 			infos.response.body = result;

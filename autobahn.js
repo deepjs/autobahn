@@ -378,6 +378,8 @@ define(function (require)
 	autobahn.utils = utils;
 
 	autobahn.layer = autobahnController;
+
+
 	deep(deep.request).up({
 		post:function  (uri, object, options) 
 		{
