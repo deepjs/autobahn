@@ -4,7 +4,34 @@
 
 refactoring : 
 
-each method need to be wrapped in a RessourceAcccessor
+need to match deep stores API.
+will wrap methods (get/post/put/del) directly on root of facet
+
+rpc need to match accessors(methods) pattern
+
+need to provide wrap mecanims for methods and rpc restriction
+
+	as : 
+
+		clearPrivates	(all - output)
+		matchReadOnly (put,patch - input)
+		sanitize (put/post/patch - input)
+
+		restrictOutputToOwner (  output for get/query )
+		restrictToOwner ( input for patch/put/del )
+		restrictOutputOnProperty : add rql close that perform filter for properties (as status enum, etc))
+			could be provided from schema : 
+
+		associateUser : add userId from session.remoteUser.id in object in post (input)
+
+		restriction : 
+			a composition that on collision : 
+				- try to find in functions stack if there is other restrictions
+				- add it's own restriction
+				
+	
+	need to add from schema : avoid duplicate (on unique schema prop)
+		: look in store if there is no duplicate before insertion (post/patch/put - input)
 
 
 
@@ -36,7 +63,7 @@ var Accessors  = {
 
 		var accessors = this.facet.accessors;
 		var schema = this.facet.schema;
-		if(id == "schema" || id == "schema.get")
+		/*if(id == "schema" || id == "schema.get")
 			return (accessors.get && accessors.get.schema)?accessors.get.schema:schema;
 		else if(id == "schema.put")
 			return (accessors.put && accessors.put.schema)?accessors.put.schema:schema;
@@ -47,7 +74,7 @@ var Accessors  = {
 		else if(id == "schema.patch")
 			return (accessors.patch && accessors.patch.schema)?accessors.patch.schema:schema;
 		else if(id == "schema.delete")
-			return (accessors["delete"] && accessors["delete"].schema)?accessors["delete"].schema:schema;
+			return (accessors["delete"] && accessors["delete"].schema)?accessors["delete"].schema:schema;*/
 
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to get something");
@@ -62,7 +89,7 @@ var Accessors  = {
 				throw new errors.Unauthorized("("+self.facet.name+") you're not the owner of this ressource.");
 			// filter privates props
 			if(self.hasPrivates)
-				deep(obj, self.schema || self.facet.schema).remove(".//?_schema.private=true");
+				deep(obj, self.schema || schema).remove(".//?_schema.private=true");
 			return obj;
 		})
 		.fail(function(error){
@@ -306,6 +333,22 @@ var Permissive = {
 	schema:{
 		
 	},
+	serveSchema:function (id) {
+		var accessors = this.accessors;
+		var schema = this.schema;
+		if(id == "schema" || id == "schema.get")
+			return (accessors.get && accessors.get.schema)?accessors.get.schema:schema;
+		else if(id == "schema.put")
+			return (accessors.put && accessors.put.schema)?accessors.put.schema:schema;
+		else if(id == "schema.post")
+			return (accessors.post && accessors.post.schema)?accessors.post.schema:schema;
+		else if(id == "schema.query")
+			return (accessors.query && accessors.query.schema)?accessors.query.schema:schema;
+		else if(id == "schema.patch")
+			return (accessors.patch && accessors.patch.schema)?accessors.patch.schema:schema;
+		else if(id == "schema.delete")
+			return (accessors["delete"] && accessors["delete"].schema)?accessors["delete"].schema:schema;
+	},
 	accessors:{
 		get:{
 			facet:null,
@@ -386,7 +429,7 @@ var Permissive = {
 		{
 			//console.log("______________________ init accessors from facet : ", this)
 			var schema = this.accessors[i].schema || this.schema;
-			var setuObject = {
+			var setupObject = {
 				facet:this,
 				name:i,
 				hasPrivates:deep(schema).query(".//?private=true").values().length>0,
@@ -499,6 +542,12 @@ var Permissive = {
 			console.log("will call rpc");
 			return this.rpcCall(request);
 		}	
+		if(infos.method == 'get' && this.serveSchema)
+		{
+			var sch = this.serveSchema(infos.path);
+			if(sch)
+				return sch;
+		}
 
 		var accessor = this.accessors[infos.method];
 
@@ -564,7 +613,6 @@ var Permissive = {
 						if(accessor.sanitize)
 							accessor.sanitize(body);
 						return accessor.handler(body, infos);
-
 					}
 					// console.log("method hasBody : ", accessor.handler)
 				});
@@ -601,7 +649,7 @@ var Permissive = {
 
 		return deep.when(result)
 		.done(function (result) {
-			console.log("facet result : request.headers.Accept : ", request.headers);
+			//console.log("facet result : request.headers.Accept : ", request.headers);
 			var asked = request.headers["accept"];
 			if(asked && accessor && accessor.negociation)
 			{	
@@ -610,16 +658,13 @@ var Permissive = {
 				{
 					var io = asked.indexOf(i);
 					if(io > -1)
-						tmp.push({ index:io, negociator:i  })
+						tmp.push({ index:io, negociator:accessor.negociation[i].handler  })
 				}
 				if(tmp.length > 0)
 				{
 					//console.log("all negoc match : ", tmp);
-					var nego = deep(tmp).query("./!?sort(index)").val();
-					//console.log("nego : ", nego)
-					var negociatorHandler = accessor.negociation[nego.negociator].handler;
-					//console.log("have found negociator : ",nego.negociator, " - ", accessor.negociation[nego.negociator])
-					return negociatorHandler(result, request);
+					var nego = deep(tmp).query("./!?sort(index)").val().negociator;
+					return nego(result, request);
 				}
 			}
 			

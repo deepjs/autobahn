@@ -30,7 +30,7 @@ define(function(require){
 		return JSON.stringify(this);
 	}
 	var common = { toString:toString, headers:null, body:null, body:null, status:null };
-	var AccessError = Compose( Error,function(body){ this.body = body; this.status = 404; this.headers = {}; this.body = []; }, common );
+	var AccessError = Compose( Error,function(body){ this.body = body; this.status = 404; this.headers = {}; }, common );
 
 	var Conflict = Compose( Error,function(body){ this.body = body; this.status = 409; }, common);
 	var Unauthorized = Compose( Error,function(body){ this.body = body; this.status = 401; }, common);

@@ -32,6 +32,7 @@ define(function(require){
 
 			}
 			function errorHandler(e){
+				//console.log("\n\n***************** ERRORS HANDLER (errors jsgi) : \n", e, "\n*************************************\n");
 				var response = {
 					headers:{
 						"content-type":"application/json"
@@ -46,10 +47,8 @@ define(function(require){
 					deep.utils.up(e.headers, response.headers);
 				
 				delete e.headers;
-				
-				response.body = (JSON.stringify(e));
-				
-				response.body = response.body || "error";
+								
+				response.body = e.body || "error";
 				
 				return response;
 			}
