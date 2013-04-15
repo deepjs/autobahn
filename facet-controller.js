@@ -674,8 +674,6 @@ var Permissive = {
 			if(accessor.setCustomHeaders)
 				accessor.setCustomHeaders(result, request);
 			return infos.response;
-			
-	
 		});
 	}
 };
