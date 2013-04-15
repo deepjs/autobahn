@@ -428,16 +428,22 @@ var Permissive = {
 		for(var i in this.accessors)
 		{
 			//console.log("______________________ init accessors from facet : ", this)
-			var schema = this.accessors[i].schema || this.schema;
+			var accessor = this.accessors[i];
+			var schema = accessor.schema || this.schema;
 			var setupObject = {
 				facet:this,
 				name:i,
 				hasPrivates:deep(schema).query(".//?private=true").values().length>0,
 				hasReadOnly:deep(schema).query(".//?readOnly=true").values().length>0
 			};
-			if(this.accessors[i].hasBody)
+			if(accessor.hasBody)
 				setupObject.sanitize = createSanitizer(schema);
-			deep.utils.up(setupObject, this.accessors[i]);
+			deep.utils.up(setupObject, accessor);
+			var name = i + "";
+			this[i] = function(arg1, options)
+			{
+				return accessor[i](arg1, options);
+			}
 		}
 	},
 	rpcCall2:function (id, method) {
