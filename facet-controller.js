@@ -354,7 +354,7 @@ var Permissive = {
 			facet:null,
 			handler:Accessors.get,
 			setCustomHeaders:function (response, request) {
-				console.log("facet  get setCustomHandler")
+				// console.log("facet  get setCustomHandler")
 				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			},
 			negociation:{
@@ -377,7 +377,7 @@ var Permissive = {
 			hasBody:true,
 			facet:null,
 			setCustomHeaders:function (response, request) {
-				console.log("facet  post setCustomHandler")
+				// console.log("facet  post setCustomHandler")
 				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			},
 			handler:Accessors.post
@@ -387,7 +387,7 @@ var Permissive = {
 			facet:null,
 			handler:Accessors.put,
 			setCustomHeaders:function (response, request) {
-				console.log("facet  put setCustomHandler")
+				// console.log("facet  put setCustomHandler")
 				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			}
 		},
@@ -399,7 +399,7 @@ var Permissive = {
 				backgrounds:["#../../../schema"]
 			},
 			setCustomHeaders:function (response, request) {
-				console.log("facet  patch setCustomHandler")
+				// console.log("facet  patch setCustomHandler")
 				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			}
 		}
