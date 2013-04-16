@@ -354,7 +354,7 @@ var Permissive = {
 			facet:null,
 			handler:Accessors.get,
 			setCustomHeaders:function (response, request) {
-				console.log("facet  get setCustomHandler")
+				// console.log("facet  get setCustomHandler")
 				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			},
 			negociation:{
@@ -377,7 +377,7 @@ var Permissive = {
 			hasBody:true,
 			facet:null,
 			setCustomHeaders:function (response, request) {
-				console.log("facet  post setCustomHandler")
+				// console.log("facet  post setCustomHandler")
 				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			},
 			handler:Accessors.post
@@ -387,7 +387,7 @@ var Permissive = {
 			facet:null,
 			handler:Accessors.put,
 			setCustomHeaders:function (response, request) {
-				console.log("facet  put setCustomHandler")
+				// console.log("facet  put setCustomHandler")
 				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			}
 		},
@@ -399,7 +399,7 @@ var Permissive = {
 				backgrounds:["#../../../schema"]
 			},
 			setCustomHeaders:function (response, request) {
-				console.log("facet  patch setCustomHandler")
+				// console.log("facet  patch setCustomHandler")
 				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			}
 		}
@@ -428,16 +428,22 @@ var Permissive = {
 		for(var i in this.accessors)
 		{
 			//console.log("______________________ init accessors from facet : ", this)
-			var schema = this.accessors[i].schema || this.schema;
+			var accessor = this.accessors[i];
+			var schema = accessor.schema || this.schema;
 			var setupObject = {
 				facet:this,
 				name:i,
 				hasPrivates:deep(schema).query(".//?private=true").values().length>0,
 				hasReadOnly:deep(schema).query(".//?readOnly=true").values().length>0
 			};
-			if(this.accessors[i].hasBody)
+			if(accessor.hasBody)
 				setupObject.sanitize = createSanitizer(schema);
-			deep.utils.up(setupObject, this.accessors[i]);
+			deep.utils.up(setupObject, accessor);
+			var name = i + "";
+			this[i] = function(arg1, options)
+			{
+				return accessor[i](arg1, options);
+			}
 		}
 	},
 	rpcCall2:function (id, method) {
