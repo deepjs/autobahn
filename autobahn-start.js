@@ -8,7 +8,7 @@
  *   	- a first plugin (deep-facets) that add .roles in deep chain and manage roles through deep.roles and deep.stores/facets
  *   		+ facet model
  *   		
- *   	- a second plugin (deep-ui) that gives .route(...), views, app, binder
+ *   	- a second plugin (deep-ui) that gives .route(...), views, app, binder 
  *
  *   	- a third plugin (autobahn) that give a nodejs driver that provides
  *   		- jsgi stack with session, or index management, or...
