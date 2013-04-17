@@ -1,3 +1,37 @@
+/**
+ * @author gilles.coomans@gmail.com
+ *
+ * 
+ * refactoring : 
+ *
+ *   we need :
+ *   	- a first plugin (deep-facets) that add .roles in deep chain and manage roles through deep.roles and deep.stores/facets
+ *   		+ facet model
+ *   		
+ *   	- a second plugin (deep-ui) that gives .route(...), views, app, binder
+ *
+ *   	- a third plugin (autobahn) that give a nodejs driver that provides
+ *   		- jsgi stack with session, or index management, or...
+ *   		- an .analyse function that gives a request descriptor
+ *   			which  give an unique function 'run' that gives a deep chain based on stores/facet/routes 
+ *   			and that returns an AutobahnResponse
+ *   		- a bunch of nodejs related stores/driver (as mongo, fs, sql, ...)
+ *   		- add statics and routes management in roles
+ *
+ * 		- + deep-jquery : 
+ * 			that gives ajax/jquery stores + dom.appendTo familly stores + .deeplink
+ * 			
+ * 
+ * 	http.createServer(function (request, res) 
+ * 	{
+ * 		deep
+ * 		.analyse(request)
+ * 		.run()
+ * 		.done(function (response) {
+ * 			res.write(...)
+ * 		})
+ * 	})
+ */
 if(typeof define !== 'function')
 	var define = require('amdefine')(module);
 

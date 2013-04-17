@@ -2,11 +2,17 @@
 /**
  * @author Gilles Coomans <gilles.coomans@gmail.com>
  */
+ /**
+  * refactpring :
+  * 	rename roles.xxx.facets by roles.xxx.stores (as in deep)
+  * 	
+ */
 if(typeof define !== 'function'){
 	var define = require('amdefine')(module);
 }
 
-define(function RoleControllerDefine(require){
+define(function RoleControllerDefine(require)
+{
 	var deep = require("deep/deep");
 	var errors = require("autobahn/errors")
 	var FacetController = require("autobahn/facet-controller").Permissive;
@@ -18,7 +24,7 @@ define(function RoleControllerDefine(require){
 		
 		init:function () 
 		{
-			console.log("Role Controller init : ", this.name);
+			console.log( "Role Controller init : ", this.name);
 			this.loaded = true;
 			/*********************************************
 			*  init statics cascade jsgi
