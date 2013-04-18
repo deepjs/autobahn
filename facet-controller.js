@@ -105,15 +105,9 @@ var Accessors  = {
 			throw new errors.Access(this.facet.name + " don't have store to post something");
 		var self = this;
 
-		var schem = this.schema || this.facet.schema ;
-		var report = null;
-		if(schem)
-		{
-			report = deep.validate(object, schem);
-			if(report && !report.valid)
-				return new errors.PreconditionFailed("("+self.facet.name+") put failed!", JSON.stringify(report));
-		}	
 
+		var schem = this.schema || this.facet.schema ;
+		
 	//	console.log("facets-controller : post : ", object, options);
 		if(typeof this.restrictToOwner === 'function' && !this.restrictToOwner(obj, this.schema || this.facet.schema, options))
 			throw new errors.Unauthorized("("+self.facet.name+") you're not the owner of this ressource.");
@@ -177,12 +171,6 @@ var Accessors  = {
 			throw new errors.PreconditionFailed("FacetController::put ("+self.facet.name+") : problem, ids in object and url dont correspond");
 
 		var schem = this.schema || this.facet.schema ;
-		if(schem)
-		{
-			var report = deep.validate(object, schem);
-			if(report && !report.valid)
-				return new errors.PreconditionFailed("("+self.facet.name+") put failed!", JSON.stringify(report));
-		}	
 
 		return deep.when(this.facet.accessors.get.handler(options.id, options))
 		.done(function(success){
@@ -233,13 +221,7 @@ var Accessors  = {
 		var id = object.id || options.id;
 
 		var schem = this.schema || this.facet.schema ;
-		var report = null;
-		if(schem)
-		{
-			report = deep.validate(object, schem);
-			if(report && !report.valid)
-				return new errors.PreconditionFailed(" ("+self.facet.name+") put failed!", JSON.stringify(report));
-		}	
+
 
 	 	return	deep.when( this.facet.store.get(id, options) )
 		.done( function (success) {
@@ -548,14 +530,21 @@ var Permissive = {
 			console.log("will call rpc");
 			return this.rpcCall(request);
 		}	
+		var accessor = this.accessors[infos.method];
 		if(infos.method == 'get' && this.serveSchema)
 		{
 			var sch = this.serveSchema(infos.path);
 			if(sch)
-				return sch;
+			{
+				infos.response.body = sch;
+				//console.log("facet will add headers on response")
+				infos.response.headers["Content-Type"] = "application/json;charset=utf-8";
+				//if(accessor.setCustomHeaders)
+				//	accessor.setCustomHeaders(sch, request);
+				return infos.response;
+			}
 		}
 
-		var accessor = this.accessors[infos.method];
 
 		// QUERY case :
 		var isQuery = false;
@@ -581,6 +570,8 @@ var Permissive = {
 				.done(function (body)
 				{
 					
+
+
 					if(request.autobahn.method == "post" && request.autobahn.contentType.match("^(message/)"))
 					{
 						if(!(body instanceof Array))
@@ -593,8 +584,17 @@ var Permissive = {
 								throw errors.Access("trying to send message with method unrecognised or unauthorised ("+self.name+"): "+message.method);
 							if(acc.hasBody)
 							{
+								
 								if(acc.sanitize)
 									accessor.sanitize(message.body);
+								var schem = acc.schema || self.schema ;
+								var report = null;
+								if(schem)
+								{
+									report = deep.validate(message.body, schem);
+									if(report && !report.valid)
+										return new errors.PreconditionFailed("("+self.name+") "+message.method+" failed!", JSON.stringify(report));
+								}	
 								alls.push(acc.handler(message.body, {id:message.to}));
 							}
 							else
@@ -618,6 +618,14 @@ var Permissive = {
 					else{
 						if(accessor.sanitize)
 							accessor.sanitize(body);
+						var schem = accessor.schema || self.schema ;
+						var report = null;
+						if(schem)
+						{
+							report = deep.validate(body, schem);
+							if(report && !report.valid)
+								return new errors.PreconditionFailed("("+self.name+") put failed!", JSON.stringify(report));
+						}	
 						return accessor.handler(body, infos);
 					}
 					// console.log("method hasBody : ", accessor.handler)

@@ -32,7 +32,9 @@ define(function(require){
 
 			}
 			function errorHandler(e){
-				//console.log("\n\n***************** ERRORS HANDLER (errors jsgi) : \n", e, "\n*************************************\n");
+				
+				if(e.status && e.status >= 400 && e.status !== 404)
+					console.log("\n\n***************** ERRORS HANDLER (errors jsgi) : \n", e, "\n*************************************\n");
 				var response = {
 					headers:{
 						"content-type":"application/json"
@@ -47,8 +49,11 @@ define(function(require){
 					deep.utils.up(e.headers, response.headers);
 				
 				delete e.headers;
-								
-				response.body = e.body || "error";
+				
+				if(e.report)
+					response.body = e.report;	
+				else			
+					response.body = e.body || "error";
 				
 				return response;
 			}
