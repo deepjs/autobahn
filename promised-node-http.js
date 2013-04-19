@@ -73,7 +73,7 @@ define(function (require)
 
 		}
 		catch(e){
-			console.log("catche error in promised-node-http :  error : ";, e);
+			console.log("catche error in promised-node-http :  error : ", e);
 			if(!def.rejected)
 				def.reject(e);
 		}
