@@ -20,7 +20,7 @@ define(function (require)
 		};
 
 		var maxRedirections = options.maxRedirections || 10;
-
+		try{
 		var req = http.request(options, function(res) {
 			response.status = res.statusCode;
 			response.headers = res.headers;
@@ -58,6 +58,7 @@ define(function (require)
 			});
 			res.on('error', function(e)
 			{
+				console.log("promised-node-http : error : ", error);
 				def.reject(e);
 			});
 		});
@@ -69,6 +70,13 @@ define(function (require)
 	   	if(datas)
 			req.write(JSON.stringify(datas));
 		req.end();
+
+		}
+		catch(e){
+			console.log("catche error in promised-node-http :  error : ";, e);
+			if(!def.rejected)
+				def.reject(e);
+		}
 		return deep.promise(def);
 	}
 	return requester;

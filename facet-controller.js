@@ -107,6 +107,13 @@ var Accessors  = {
 
 
 		var schem = this.schema || this.facet.schema ;
+		var report = null;
+		if(schem)
+		{
+			report = deep.validate(object, schem);
+			if(report && !report.valid)
+				return new errors.PreconditionFailed("("+self.name+") put failed!", JSON.stringify(report));
+		}	
 		
 		if(typeof this.restrictToOwner === 'function' && !this.restrictToOwner(obj, this.schema || this.facet.schema, options))
 			throw new errors.Unauthorized("("+self.facet.name+") you're not the owner of this ressource.");
@@ -172,6 +179,13 @@ var Accessors  = {
 			throw new errors.PreconditionFailed("FacetController::put ("+self.facet.name+") : problem, ids in object and url dont correspond");
 
 		var schem = this.schema || this.facet.schema ;
+		var report = null;
+		if(schem)
+		{
+			report = deep.validate(object, schem);
+			if(report && !report.valid)
+				return new errors.PreconditionFailed("("+self.name+") put failed!", JSON.stringify(report));
+		}	
 
 		return deep.when(this.facet.accessors.get.handler(options.id, options))
 		.done(function(success){
@@ -222,7 +236,13 @@ var Accessors  = {
 		var id = object.id || options.id;
 
 		var schem = this.schema || this.facet.schema ;
-
+		var report = null;
+		if(schem)
+		{
+			report = deep.validate(object, schem);
+			if(report && !report.valid)
+				return new errors.PreconditionFailed("("+self.name+") put failed!", JSON.stringify(report));
+		}	
 
 	 	return	deep.when( this.facet.store.get(id, options) )
 		.done( function (success) {
@@ -588,14 +608,7 @@ var Permissive = {
 								
 								if(acc.sanitize)
 									accessor.sanitize(message.body);
-								var schem = acc.schema || self.schema ;
-								var report = null;
-								if(schem)
-								{
-									report = deep.validate(message.body, schem);
-									if(report && !report.valid)
-										return new errors.PreconditionFailed("("+self.name+") "+message.method+" failed!", JSON.stringify(report));
-								}	
+								
 								alls.push(acc.handler(message.body, {id:message.to}));
 							}
 							else
@@ -619,16 +632,9 @@ var Permissive = {
 					else{
 						console.log("facet : do simple method with body");
 						if(accessor.sanitize)
-							accessor.sanitize(body);
-						var schem = accessor.schema || self.schema ;
-						var report = null;
-						if(schem)
-						{
-							report = deep.validate(body, schem);
-							if(report && !report.valid)
-								return new errors.PreconditionFailed("("+self.name+") "+infos.method+" failed!", JSON.stringify(report));
-						}	
+							accessor.sanitize(body);	
 						result = accessor.handler(body, infos);
+
 					}
 					// console.log("method hasBody : ", accessor.handler)
 				});
