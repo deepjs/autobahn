@@ -86,11 +86,20 @@ define(function RoleControllerDefine(require)
 					return deep(request.body)
 					.catchError(true)
 					.done(function(){
-						var res = facet.analyse(request);
-						return res;
+						var r = null;
+						
+						try{
+							r = facet.analyse(request);
+						}
+						catch(e)
+						{
+							return e
+						}
+						return r;
 					})
 					.done(function (success) 
 					{
+						console.log("RoleController  "+self.name+"  : facets ("+facet.name+"."+request.autobahn.method+") success : ", success);
 						if(typeof success === 'undefined' || success == null)
 							return new errors.NotFound("facet failed to retrieve something")
 						if(success instanceof AutobahnResponse)

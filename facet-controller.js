@@ -108,9 +108,9 @@ var Accessors  = {
 
 		var schem = this.schema || this.facet.schema ;
 		
-	//	console.log("facets-controller : post : ", object, options);
 		if(typeof this.restrictToOwner === 'function' && !this.restrictToOwner(obj, this.schema || this.facet.schema, options))
 			throw new errors.Unauthorized("("+self.facet.name+") you're not the owner of this ressource.");
+		console.log("Accessors : post : ", object);
 
 		return deep.when(this.facet.store.post(object, options))
 		.done(function(obj){
@@ -122,6 +122,7 @@ var Accessors  = {
 			return obj;
 		})
 		.fail(function(error){
+			console.log("accessor.post on store error : ", error);
 			if(error instanceof Error)
 				throw error;
 			throw new errors.Access("("+self.facet.name+") error when posting on store. "+JSON.stringify(error));
@@ -616,6 +617,7 @@ var Permissive = {
 						});
 					}
 					else{
+						console.log("facet : do simple method with body");
 						if(accessor.sanitize)
 							accessor.sanitize(body);
 						var schem = accessor.schema || self.schema ;
@@ -624,9 +626,9 @@ var Permissive = {
 						{
 							report = deep.validate(body, schem);
 							if(report && !report.valid)
-								return new errors.PreconditionFailed("("+self.name+") put failed!", JSON.stringify(report));
+								return new errors.PreconditionFailed("("+self.name+") "+infos.method+" failed!", JSON.stringify(report));
 						}	
-						return accessor.handler(body, infos);
+						result = accessor.handler(body, infos);
 					}
 					// console.log("method hasBody : ", accessor.handler)
 				});
@@ -659,11 +661,15 @@ var Permissive = {
 			result = accessor.handler(infos.path, request.autobahn);
 
 		}
-		//console.log("facet call done");
+		console.log("facet call done");
 
 		return deep.when(result)
+		.fail(function (error) {
+			console.log("_________________________________________ FACET ANALYSE FAIL : ", error)
+		})
 		.done(function (result) {
 			//console.log("facet result : request.headers.Accept : ", request.headers);
+			console.log("facet result : ", result);
 			var asked = request.headers["accept"];
 			if(asked && accessor && accessor.negociation)
 			{	

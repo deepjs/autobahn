@@ -71,9 +71,9 @@ define(function (require)
 			deep.mediaCache.manage(d, id);
 		return d;
 	};
-	deep.stores.remotejson.put = function (object, id, options) {
-		id = id || "";
-		id = this.baseUri + id;
+	deep.stores.remotejson.put = function (object, options) {
+		var id = object.id || "";
+		id = this.baseUri + object.id;
 		var self = this;
 		var def = deep.Deferred();
 		options = options || {};
@@ -97,29 +97,28 @@ define(function (require)
 			handler.range = deep.Handler.range;
 		});
 	};
-	deep.stores.remotejson.post = function (object, id, options) {
-		id = id || "";
-		id = this.baseUri + id;
+	deep.stores.remotejson.post = function (object, options) {
+		console.log("remotejsn post: ", object)
 		var self = this;
-		var def = deep.Deferred();
 		options = options || {};
-		var infos = url.parse(id);
+		var infos = url.parse(this.baseUri);
 		infos.headers = {
 			"Accept" : "application/json; charset=utf-8",
 			"Content-Type":"application/json; charset=utf-8;"
 		};
 		infos.method = "POST";
 		this.setCustomHeaders(infos.headers, options.request);
-		request(infos, object)
+		return deep(request(infos, object)
 		.done(function (success) {
-			def.resolve(success.body);
+			console.log("remotejson success : ", success)
+			return success.body;
 		})
 		.fail(function  (error) {
-			def.reject(new Error("deep.store.remotejson.post failed : "+id+" - details : "+JSON.stringify(error)));
-		});
-		return deep(deep.promise(def))
+			return new Error("deep.store.remotejson.post failed  - details : "+JSON.stringify(error));
+		}), null, { rethrow:false })
 		.store(this)
 		.done(function (success, handler) {
+			console.log("remotejson end vhain on post")
 			handler.range = deep.Handler.range;
 		});
 	};
