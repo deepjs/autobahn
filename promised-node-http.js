@@ -35,6 +35,7 @@ define(function (require)
 			{
 				if(er)
 					return;
+
 				if(response.status > 299 && response.status < 400) // receive redirection
 				{
 					if(maxRedirections == 0)
@@ -58,15 +59,14 @@ define(function (require)
 					}
 					catch(e)
 					{
-						//if(def.rejected)
-						//	throw e;
-						def.reject(e);
+						if(!def.rejected)
+							def.reject(e);
 					}
 				}
 			});
 			res.on('error', function(e)
 			{
-				er = true;
+				er = e;
 				console.log("promised-node-http : error : ", e);
 				if(!def.rejected)
 					def.reject(e);
