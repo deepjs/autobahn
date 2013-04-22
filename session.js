@@ -158,8 +158,9 @@ define(function (require){
 	{
 		expiration = 0;
 		var request = deep.context && deep.context.request;
-		request.autobahn = request.autobahn || {};
-		if(request){
+		if(request)
+		{
+			request.autobahn = request.autobahn || {};
 			if(request.autobahn.session){
 				return request.autobahn.session;
 			}
@@ -167,8 +168,22 @@ define(function (require){
 				expiration = (typeof expiration !== 'undefined')?expiration:(new Date().valueOf()+Session.expiresDeltaMS);
 				return forceSession(request, expiration);
 			}
+			return null;
 		}
-		return null;
+		var newSessionId = generateSessionKey();
+		var session = {
+			expires: null,//new Date(expiration).toISOString(),
+			id: newSessionId,
+			save:function(){
+				return Session.store.put(session);
+			},
+			del:function(){
+				return Session.store["delete"](session.id);
+			}
+		}
+		return deep.when(Session.store.put(session)).then(function(){
+			return session;
+		});
 	}
 
 	function cookieVerification(request){

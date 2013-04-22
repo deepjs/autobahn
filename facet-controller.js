@@ -51,6 +51,7 @@ define(function FacetControllerDefine(require){
 var Accessors  = {
 	forbidden:function(message){
 		return function(obj, options){
+			options = options || {};
 			var self = this;
 			message = message || "";
 			throw new errors.MethodNotAllowed(" ("+self.facet.name+"."+options.method+") You don't have right to perform this operation. "+message);
@@ -117,7 +118,7 @@ var Accessors  = {
 		
 		if(typeof this.restrictToOwner === 'function' && !this.restrictToOwner(obj, this.schema || this.facet.schema, options))
 			throw new errors.Unauthorized("("+self.facet.name+") you're not the owner of this ressource.");
-		console.log("Accessors : post : ", object);
+		//console.log("Accessors : post : ", object);
 
 		return deep.when(this.facet.store.post(object, options))
 		.done(function(obj){
@@ -633,7 +634,7 @@ var Permissive = {
 						//console.log("facet : do simple method with body : ", self.name+"."+infos.method);
 						if(accessor.sanitize)
 							accessor.sanitize(body);	
-						result = accessor.handler(body, infos);
+						return accessor.handler(body, infos);
 
 					}
 					// console.log("method hasBody : ", accessor.handler)
@@ -664,7 +665,7 @@ var Permissive = {
 		else
 		{
 			//console.log("facet : "+self.name+" : simple call");
-			result = accessor.handler(infos.path, request.autobahn);
+			result = deep.when(accessor.handler(infos.path, request.autobahn));
 
 		}
 		//console.log("facet ("+self.name+"."+infos.method+") call done : result to wait : ", result);

@@ -170,7 +170,7 @@ define(["require","deep/deep"],function (require)
 					throw new Error("No facet selected before query : ",q);
 				deep.when(self.currentFacet.accessors.query.handler(q, options))
 				.done(function (result) {
-					console.log("autobahn.query : result : ", result)
+					//console.log("autobahn.query : result : ", result)
 					if(!result || !result.slice)
 					{
 						result = [];
@@ -200,7 +200,7 @@ define(["require","deep/deep"],function (require)
 			var func = function (s,e) {
 				if(!self.currentFacet)
 					throw new Error("No facet selected before post : ",object);
-				deep.when(self.currentFacet.accessors.post.handler(object, options)).then(function (result) {
+				deep(self.currentFacet.accessors.post.handler(object, options)).then(function (result) {
 					self.running = false;
 					deep.chain.nextQueueItem.apply(self, [result, null]); 
 				}, function (error) {

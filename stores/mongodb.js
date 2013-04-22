@@ -68,18 +68,18 @@ Mongo.prototype =  {
 			
 			try{
 			if(console && console.flags && console.flags["Mongorest"])
-				console.log("REMOTE STORE : post : ", object)
+				console.log("deep.stores.Mongo.post : ", object)
 
 			return when(this.mongo.put(object, options)).then(function(res){
 				if(res && res.headers && res.status && res.body)
 					return new errors.Server(res.body, res.status);
 				return res;
 			}, function  (error) {
-				console.log("error while calling Mongoservices :  - ", error);
+				console.log("error while calling deep.stores.Mongo.post :  - ", error);
 				return new errors.Server(error, 500);
 			});
 			}catch(error){
-				console.log("error (throw) while calling Mongostore :  - ", error);
+				console.log("error (throw) while calling deep.stores.Mongo.post :  - ", error);
 				return new errors.Server(error, 500);
 				//throw new Error("error while Mongorest.post : ", error);
 			}
@@ -105,7 +105,7 @@ Mongo.prototype =  {
 			if(nullCharAtEnd == "&null")
 				query = query.substring(0, query.length - 5);
 
-			//console.log("deep.stores.Mongo will do query : ", query, options);
+			//console.log("deep.stores.Mongo will do query : ", query);
 			return when(this.mongo.query(query, headers)).then(function(results){
 				//console.log("deep.stores.Mongo query res : ", results);
 
