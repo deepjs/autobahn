@@ -57,8 +57,8 @@ define(function (require)
 			return data;
 		})
 		.fail(function(error){
-			console.log("deep.stores.remotejson.get error : ",id," - ", error);
-			return new Error("deep.store.remotejson failed : "+id+" - \n\n"+JSON.stringify(error));
+			//console.log("deep.stores.remotejson.get error : ",id," - ", error);
+			return new errors.Server(error.body||error, error.status||500);
 		})
 		.done(function (datas, handler) {
 			//console.log("json.get : result : ", datas);
@@ -123,7 +123,7 @@ define(function (require)
 		}), null, { rethrow:false })
 		.store(this)
 		.done(function (success, handler) {
-			console.log("remotejson end chain on post")
+			//console.log("remotejson end chain on post")
 			handler.range = deep.Chain.range;
 		});
 	};
