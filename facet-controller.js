@@ -672,7 +672,7 @@ var Permissive = {
 
 		return deep.when(result)
 		.fail(function (error) {
-			console.log("_________________________________________ FACET ANALYSE FAIL : ", error)
+			//console.log("_________________________________________ FACET ANALYSE FAIL : ", error)
 		})
 		.done(function (result) {
 			//console.log("facet result : request.headers.Accept : ", request.headers);

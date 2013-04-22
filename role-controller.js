@@ -99,7 +99,7 @@ define(function RoleControllerDefine(require)
 					})
 					.done(function (success) 
 					{
-						console.log("RoleController  "+self.name+"  : facets ("+facet.name+"."+request.autobahn.method+") success : ", success);
+						//console.log("RoleController  "+self.name+"  : facets ("+facet.name+"."+request.autobahn.method+") success : ", success);
 						if(typeof success === 'undefined' || success == null)
 							return new errors.NotFound("facet failed to retrieve something")
 						if(success instanceof AutobahnResponse)
@@ -108,7 +108,7 @@ define(function RoleControllerDefine(require)
 							return new AutobahnResponse(success.status, success.headers, success.body || "facet return nothing");
 					})
 					.fail(function (error) {
-						console.log("RoleController  "+self.name+"  : facets ("+facet.name+"."+request.autobahn.method+") error : ", error);
+						//console.log("RoleController  "+self.name+"  : facets ("+facet.name+"."+request.autobahn.method+") error : ", error);
 						return error;
 					});
 				}
