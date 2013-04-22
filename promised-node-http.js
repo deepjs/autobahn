@@ -26,12 +26,15 @@ define(function (require)
 			response.headers = res.headers;
 			response.body = '';
 			res.setEncoding('utf8');
+			var er = false;
 			res.on('data', function (chunk)
 			{
 				response.body += chunk.toString();
 			});
 			res.on("end", function ()
 			{
+				if(er)
+					return;
 				if(response.status > 299 && response.status < 400) // receive redirection
 				{
 					if(maxRedirections == 0)
@@ -48,21 +51,22 @@ define(function (require)
 					try
 					{
 						response.body = deep.utils.parseBody(response.body, response.headers);
-						if(response.status >= 400 && ! def.rejected)
+						if(response.status >= 400 && !def.rejected)
 							def.reject(response)
 						else
 				  	  		def.resolve(response);
 					}
 					catch(e)
 					{
-						if(def.rejected)
-							throw e;
+						//if(def.rejected)
+						//	throw e;
 						def.reject(e);
 					}
 				}
 			});
 			res.on('error', function(e)
 			{
+				er = true;
 				console.log("promised-node-http : error : ", e);
 				if(!def.rejected)
 					def.reject(e);

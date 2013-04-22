@@ -633,7 +633,7 @@ var Permissive = {
 						//console.log("facet : do simple method with body : ", self.name+"."+infos.method);
 						if(accessor.sanitize)
 							accessor.sanitize(body);	
-						return accessor.handler(body, infos);
+						result = accessor.handler(body, infos);
 
 					}
 					// console.log("method hasBody : ", accessor.handler)
