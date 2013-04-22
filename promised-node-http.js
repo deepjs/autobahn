@@ -48,7 +48,10 @@ define(function (require)
 					try
 					{
 						response.body = deep.utils.parseBody(response.body, response.headers);
-				  	  	def.resolve(response);
+						if(response.status >= 400)
+							def.reject(response)
+						else
+				  	  		def.resolve(response);
 					}
 					catch(e)
 					{
