@@ -85,7 +85,7 @@ Mongo.prototype =  {
 			}
 		},
 		query: function(query, options){
-			//console.log("Remote query : ", query, options);
+			console.log("deep.stores.Mongo query : ", query, options);
 			options = options || {};
 			try{
 
@@ -105,8 +105,10 @@ Mongo.prototype =  {
 			if(nullCharAtEnd == "&null")
 				query = query.substring(0, query.length - 5);
 
-			//console.log("Mongo will do query : ", query, options);
+			console.log("deep.stores.Mongo will do query : ", query, options);
 			return when(this.mongo.query(query, headers)).then(function(results){
+				console.log("deep.stores.Mongo query res : ", results);
+
 				if(results && results.headers && results.status && results.body)
 					return new errors.Server(results.body, results.status);
 				if(!options.range)
@@ -116,7 +118,7 @@ Mongo.prototype =  {
 						return Array.prototype.slice.apply(results);
 				return deep(results.totalCount)
 				.done(function (count) {
-					//console.log("Mongo query res : ", results);
+					console.log("deep.stores.Mongo range query res : ", results);
 					var res = deep.utils.createRangeObject(results.start, results.end-1, count);
 					delete results.count;
 					delete results.start;

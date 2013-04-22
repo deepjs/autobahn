@@ -630,10 +630,10 @@ var Permissive = {
 						});
 					}
 					else{
-						console.log("facet : do simple method with body");
+						console.log("facet : do simple method with body : ", self.name+"."+infos.method);
 						if(accessor.sanitize)
 							accessor.sanitize(body);	
-						result = accessor.handler(body, infos);
+						return accessor.handler(body, infos);
 
 					}
 					// console.log("method hasBody : ", accessor.handler)
@@ -667,7 +667,7 @@ var Permissive = {
 			result = accessor.handler(infos.path, request.autobahn);
 
 		}
-		console.log("facet call done");
+		console.log("facet call done : result to wait : ", result);
 
 		return deep.when(result)
 		.fail(function (error) {

@@ -19,7 +19,10 @@ define(function (require)
 	deep.stores.remotejson.setCustomHeaders = function (headers, request) {
 		// body...
 	}
-	deep.stores.remotejson.get = function (id, options) {
+	deep.stores.remotejson.setRequestHeaders = function (headers, request) {
+		// body...
+	}
+	deep.stores.remotejson.get = deep.stores.remotejson.query = function (id, options) {
 		//console.log("json.get : ", id);
 
 		if(id == "?" || !id)
@@ -42,7 +45,7 @@ define(function (require)
 			"Accept" : "application/json; charset=utf-8"
 		};
 		infos.method = "GET";
-		this.setCustomHeaders(infos.headers, options.request);
+		this.setRequestHeaders(infos.headers, options.request);
 
 		var self = this;
 		var d = deep(request(infos))
@@ -83,7 +86,7 @@ define(function (require)
 			"Content-Type":"application/json; charset=utf-8;"
 		};
 		infos.method = "PUT";
-		this.setCustomHeaders(infos.headers, options.request);
+		this.setRequestHeaders(infos.headers, options.request);
 		request(infos, object)
 		.done(function (success) {
 			def.resolve(success.body);
@@ -107,7 +110,7 @@ define(function (require)
 			"Content-Type":"application/json; charset=utf-8;"
 		};
 		infos.method = "POST";
-		this.setCustomHeaders(infos.headers, options.request);
+		this.setRequestHeaders(infos.headers, options.request);
 		return deep(request(infos, object)
 		.done(function (success) {
 			console.log("remotejson success : ", success)
@@ -134,7 +137,7 @@ define(function (require)
 			//"Content-Type":"application/json; charset=utf-8;"
 		};
 		infos.method = "DELETE";
-		this.setCustomHeaders(infos.headers, options.request);
+		this.setRequestHeaders(infos.headers, options.request);
 		request(infos)
 		.done(function (success) {
 			def.resolve(success.body);
@@ -160,7 +163,7 @@ define(function (require)
 			"Content-Type":"application/json; charset=utf-8;"
 		};
 		infos.method = "PATCH";
-		this.setCustomHeaders(infos.headers, options.request);
+		this.setRequestHeaders(infos.headers, options.request);
 		request(infos, object)
 		.done(function (success) {
 			def.resolve(success.body);
@@ -265,7 +268,7 @@ define(function (require)
 			"Range" : "items=" +start+"-"+end
 		};
 		infos.method = "GET";
-		this.setCustomHeaders(infos.headers, options.request);
+		this.setRequestHeaders(infos.headers, options.request);
 
 		function success(data){
 			var rangePart = [];
