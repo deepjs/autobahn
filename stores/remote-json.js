@@ -65,7 +65,7 @@ define(function (require)
 		.store(this)
 		.done(function (success, handler) {
 			//console.log("json.get : "+id+" : result : ", success);
-			handler.range = deep.Handler.range; // reset range function to default chain behaviour
+			handler.range = deep.Chain.range; // reset range function to default chain behaviour
 		});
 		if(!noCache && (options && options.cache !== false)  || (self.options && self.options.cache !== false))
 			deep.mediaCache.manage(d, id);
@@ -94,7 +94,7 @@ define(function (require)
 		return deep(deep.promise(def))
 		.store(this)
 		.done(function (success, handler) {
-			handler.range = deep.Handler.range;
+			handler.range = deep.Chain.range;
 		});
 	};
 	deep.stores.remotejson.post = function (object, options) {
@@ -119,7 +119,7 @@ define(function (require)
 		.store(this)
 		.done(function (success, handler) {
 			console.log("remotejson end vhain on post")
-			handler.range = deep.Handler.range;
+			handler.range = deep.Chain.range;
 		});
 	};
 	deep.stores.remotejson.del = function (id, options) {
@@ -145,7 +145,7 @@ define(function (require)
 		return deep(deep.promise(def))
 		.store(this)
 		.done(function (success, handler) {
-			handler.range = deep.Handler.range;
+			handler.range = deep.Chain.range;
 		});
 	};
 	deep.stores.remotejson.patch = function (object, id, options) {
@@ -171,7 +171,7 @@ define(function (require)
 		return deep(deep.promise(def))
 		.store(this)
 		.done(function (success, handler) {
-			handler.range = deep.Handler.range;
+			handler.range = deep.Chain.range;
 		});
 	};
 	/*deep.stores.remotejson.bulk = function (arr, uri, options) {
@@ -206,7 +206,7 @@ define(function (require)
 		return deep(deep.promise(def))
 		.store(this)
 		.done(function (success, handler) {
-			handler.range = deep.Handler.range;
+			handler.range = deep.Chain.range;
 		});
 	};
 	deep.stores.remotejson.rpc = function (method, params, id) {
@@ -246,7 +246,7 @@ define(function (require)
 		return deep(deep.promise(def))
 		.store(this)
 		.done(function (success, handler) {
-			handler.range = deep.Handler.range;
+			handler.range = deep.Chain.range;
 		});
 	};
 	*/
@@ -317,7 +317,7 @@ define(function (require)
 		})
 		.store(this)
 		.done(function (success, handler) {
-			handler.range = deep.Handler.range;
+			handler.range = deep.Chain.range;
 		});
 	};
 	deep.stores.remotejson.init = function (options)

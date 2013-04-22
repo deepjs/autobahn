@@ -21,11 +21,10 @@ if(typeof define !== 'function'){
 
 
 
-define(function (require)
+define(["require","deep/deep"],function (require)
 {
 	var HTTPrequest = require("promised-io/http-client").request;
 	var deep = require("deep/deep");
-	var Querier = require("deep/deep-query");
 	var autobahnController = require("autobahn/autobahn-controller");
 	var utils = require("autobahn/utils");
 	var errors = require("autobahn/errors");
