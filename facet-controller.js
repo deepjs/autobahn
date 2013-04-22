@@ -667,7 +667,7 @@ var Permissive = {
 			result = accessor.handler(infos.path, request.autobahn);
 
 		}
-		console.log("facet ("+self.name+"."+infos.method") call done : result to wait : ", result);
+		console.log("facet ("+self.name+"."+infos.method+") call done : result to wait : ", result);
 
 		return deep.when(result)
 		.fail(function (error) {
