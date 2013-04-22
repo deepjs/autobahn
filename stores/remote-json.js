@@ -117,7 +117,8 @@ define(function (require)
 			return success.body;
 		})
 		.fail(function  (error) {
-			return new Error("deep.store.remotejson.post failed  - details : "+JSON.stringify(error));
+			return new errors.Server(error.body||error, error.status||500)
+			//return new Error("deep.store.remotejson.post failed  - details : "+JSON.stringify(error));
 		}), null, { rethrow:false })
 		.store(this)
 		.done(function (success, handler) {
