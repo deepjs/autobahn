@@ -48,21 +48,24 @@ define(function (require)
 					try
 					{
 						response.body = deep.utils.parseBody(response.body, response.headers);
-						if(response.status >= 400)
+						if(response.status >= 400 && ! def.rejected)
 							def.reject(response)
 						else
 				  	  		def.resolve(response);
 					}
 					catch(e)
 					{
+						if(def.rejected)
+							throw e;
 						def.reject(e);
 					}
 				}
 			});
 			res.on('error', function(e)
 			{
-				console.log("promised-node-http : error : ", error);
-				def.reject(e);
+				console.log("promised-node-http : error : ", e);
+				if(!def.rejected)
+					def.reject(e);
 			});
 		});
 

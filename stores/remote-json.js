@@ -101,7 +101,7 @@ define(function (require)
 		});
 	};
 	deep.stores.remotejson.post = function (object, options) {
-		console.log("remotejsn post: ", object)
+		//console.log("remotejsn post: ", object)
 		var self = this;
 		options = options || {};
 		var infos = url.parse(this.baseUri);
@@ -113,7 +113,7 @@ define(function (require)
 		this.setRequestHeaders(infos.headers, options.request);
 		return deep(request(infos, object)
 		.done(function (success) {
-			console.log("remotejson success : ", success)
+			//console.log("remotejson success : ", success)
 			return success.body;
 		})
 		.fail(function  (error) {
@@ -121,7 +121,7 @@ define(function (require)
 		}), null, { rethrow:false })
 		.store(this)
 		.done(function (success, handler) {
-			console.log("remotejson end vhain on post")
+			console.log("remotejson end chain on post")
 			handler.range = deep.Chain.range;
 		});
 	};

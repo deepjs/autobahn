@@ -630,7 +630,7 @@ var Permissive = {
 						});
 					}
 					else{
-						console.log("facet : do simple method with body : ", self.name+"."+infos.method);
+						//console.log("facet : do simple method with body : ", self.name+"."+infos.method);
 						if(accessor.sanitize)
 							accessor.sanitize(body);	
 						return accessor.handler(body, infos);
@@ -667,7 +667,7 @@ var Permissive = {
 			result = accessor.handler(infos.path, request.autobahn);
 
 		}
-		console.log("facet ("+self.name+"."+infos.method+") call done : result to wait : ", result);
+		//console.log("facet ("+self.name+"."+infos.method+") call done : result to wait : ", result);
 
 		return deep.when(result)
 		.fail(function (error) {
@@ -675,7 +675,7 @@ var Permissive = {
 		})
 		.done(function (result) {
 			//console.log("facet result : request.headers.Accept : ", request.headers);
-			console.log("facet result : ", result);
+			//console.log("facet result : ", result);
 			var asked = request.headers["accept"];
 			if(asked && accessor && accessor.negociation)
 			{	
