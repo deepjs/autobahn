@@ -55,9 +55,9 @@ define(function (require)
 				deep.mediaCache.manage(data, id);
 			return data;
 		})
-		.fail(function(){
-			console.log("deep.stores.remotejson.get error : ",id," - ", arguments);
-			return new Error("deep.store.remotejson failed : "+id+" - \n\n"+JSON.stringify(arguments));
+		.fail(function(error){
+			console.log("deep.stores.remotejson.get error : ",id," - ", error);
+			return new Error("deep.store.remotejson failed : "+id+" - \n\n"+JSON.stringify(error));
 		})
 		.done(function (datas, handler) {
 			//console.log("json.get : result : ", datas);
