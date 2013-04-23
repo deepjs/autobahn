@@ -75,7 +75,9 @@ define(function (require)
 			deep.mediaCache.manage(d, id);
 		return d;
 	};
-	deep.stores.remotejson.put = function (object, options) {
+	deep.stores.remotejson.put = function (object, options) 
+	{
+		console.log("remotejson.put : ", object, options.id);
 		options = options || {};
 		var id = object.id || options.id;
 
@@ -100,6 +102,9 @@ define(function (require)
 			console.log("remotejson put failed : ", error)
 			return new errors.Server(error.body||error, error.status||500)			
 		}), null, { rethrow:false })
+		.fail(function (error) {
+			console.log("remotejson put failed 2 : ", error);
+		})
 		.store(this)
 		.done(function (success, handler) {
 			handler.range = deep.Chain.range;
