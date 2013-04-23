@@ -76,11 +76,15 @@ define(function (require)
 		return d;
 	};
 	deep.stores.remotejson.put = function (object, options) {
-		var id = object.id || "";
+		options = options || {};
+		var id = object.id || options.id;
+
+		if(!id)
+			throw new errors.PreconditionFailed("stores.put need id in uri or in object");
+
 		id = this.baseUri + object.id;
 		var self = this;
 		var def = deep.Deferred();
-		options = options || {};
 		var infos = url.parse(id);
 		infos.headers = {
 			"Accept" : "application/json; charset=utf-8",
@@ -129,6 +133,9 @@ define(function (require)
 	};
 	deep.stores.remotejson.del = function (id, options) {
 		id = id || "";
+		if(!id)
+			throw new errors.PreconditionFailed("stores.del need id in uri");
+
 		id = this.baseUri + id;
 		var self = this;
 		var def = deep.Deferred();
@@ -153,12 +160,17 @@ define(function (require)
 			handler.range = deep.Chain.range;
 		});
 	};
-	deep.stores.remotejson.patch = function (object, id, options) {
-		id = id || "";
+
+
+	deep.stores.remotejson.patch = function (object, options) {
+		options = options || {};
+		var id = object.id || options.id;
+		if(!id)
+			throw new errors.PreconditionFailed("stores.patch need id in uri or in object");
+
 		id = this.baseUri + id;
 		var self = this;
 		var def = deep.Deferred();
-		options = options || {};
 		var infos = url.parse(id);
 		infos.headers = {
 			"Accept" : "application/json; charset=utf-8",

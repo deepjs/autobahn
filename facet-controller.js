@@ -591,9 +591,6 @@ var Permissive = {
 				result = deep.when(request.body)
 				.done(function (body)
 				{
-					
-
-
 					if(request.autobahn.method == "post" && request.autobahn.contentType.match("^(message/)"))
 					{
 						if(!(body instanceof Array))
@@ -635,7 +632,6 @@ var Permissive = {
 						if(accessor.sanitize)
 							accessor.sanitize(body);	
 						return accessor.handler(body, infos);
-
 					}
 					// console.log("method hasBody : ", accessor.handler)
 				});
