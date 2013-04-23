@@ -49,7 +49,7 @@ define(function (require)
 		this.setRequestHeaders(infos.headers, options.request);
 
 		var self = this;
-		var d = deep(request(infos))
+		var d = deep(request(infos), null, { rethrow:false })
 		.done(function(data){
 			data = data.body;
 			if(!noCache && (options && options.cache !== false)  || (self.options && self.options.cache !== false))
@@ -82,7 +82,7 @@ define(function (require)
 		if(!id)
 			throw new errors.PreconditionFailed("stores.put need id in uri or in object");
 
-		id = this.baseUri + object.id;
+		id = this.baseUri + id;
 		var self = this;
 		var def = deep.Deferred();
 		var infos = url.parse(id);
@@ -92,14 +92,13 @@ define(function (require)
 		};
 		infos.method = "PUT";
 		this.setRequestHeaders(infos.headers, options.request);
-		request(infos, object)
+		return deep(request(infos, object)
 		.done(function (success) {
-			def.resolve(success.body);
+			return success.body;
 		})
 		.fail(function  (error) {
-			def.reject(new Error("deep.store.remotejson.put failed : "+id+" - details : "+JSON.stringify(error)));
-		});
-		return deep(deep.promise(def))
+			return new errors.Server(error.body||error, error.status||500)			
+		}), null, { rethrow:false })
 		.store(this)
 		.done(function (success, handler) {
 			handler.range = deep.Chain.range;
@@ -138,7 +137,6 @@ define(function (require)
 
 		id = this.baseUri + id;
 		var self = this;
-		var def = deep.Deferred();
 		options = options || {};
 		var infos = url.parse(id);
 		infos.headers = {
@@ -147,14 +145,13 @@ define(function (require)
 		};
 		infos.method = "DELETE";
 		this.setRequestHeaders(infos.headers, options.request);
-		request(infos)
+		return deep(request(infos)
 		.done(function (success) {
-			def.resolve(success.body);
+			return success.body;
 		})
 		.fail(function  (error) {
-			def.reject(new Error("deep.store.remotejson.del failed : "+id+" - details : "+JSON.stringify(error)));
-		});
-		return deep(deep.promise(def))
+			return new errors.Server(error.body||error, error.status||500)
+		}), null, { rethrow:false })
 		.store(this)
 		.done(function (success, handler) {
 			handler.range = deep.Chain.range;
@@ -170,7 +167,6 @@ define(function (require)
 
 		id = this.baseUri + id;
 		var self = this;
-		var def = deep.Deferred();
 		var infos = url.parse(id);
 		infos.headers = {
 			"Accept" : "application/json; charset=utf-8",
@@ -178,14 +174,13 @@ define(function (require)
 		};
 		infos.method = "PATCH";
 		this.setRequestHeaders(infos.headers, options.request);
-		request(infos, object)
+		return deep(request(infos, object)
 		.done(function (success) {
-			def.resolve(success.body);
+			success.body;
 		})
 		.fail(function  (error) {
-			def.reject(new Error("deep.store.remotejson.put failed : "+id+" - details : "+JSON.stringify(error)));
-		});
-		return deep(deep.promise(def))
+			return new errors.Server(error.body||error, error.status||500)
+		}), null, { rethrow:false })
 		.store(this)
 		.done(function (success, handler) {
 			handler.range = deep.Chain.range;
@@ -317,17 +312,15 @@ define(function (require)
 			return rangeResult;
 		}
 
-		request(info)
+		return deep(request(info)
 		.done(function (data) 
 		{
-			def.resolve( success(data) );
+			return success(data) ;
 		})
 		.fail(function (error) 
 		{
-			def.reject(new Error("deep.store.remotejson.range failed : details : "+JSON.stringify(arguments)));
-		});
-
-		return deep(deep.promise(def))
+			return new errors.Server(error.body||error, error.status||500);
+		}), null, {rethrow:false })
 		.done(function (rangeObject, handler) {
 			handler._entries = deep(rangeObject.results).nodes();
 			return rangeObject;
