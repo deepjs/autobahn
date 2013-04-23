@@ -166,7 +166,7 @@ var Accessors  = {
 	put : function(object, options)
 	{
 		var self = this;
-		//console.log("FACET put : object.id ", object.id, " - id : ", options.id)
+		console.log("FACET put : object.id ", object.id, " - id : ", options.id)
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to put something");
 
