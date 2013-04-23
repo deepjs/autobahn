@@ -97,6 +97,7 @@ define(function (require)
 			return success.body;
 		})
 		.fail(function  (error) {
+			console.log("remotejson put failed : ", error)
 			return new errors.Server(error.body||error, error.status||500)			
 		}), null, { rethrow:false })
 		.store(this)
