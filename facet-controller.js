@@ -219,6 +219,7 @@ var Accessors  = {
 			return obj;
 		})
 		.fail(function(error){
+			console.log("Facet.put failed : ",error);
 			if(error instanceof Error)
 				throw error;
 			throw new errors.Access("("+self.facet.name+") error when putting on store. "+JSON.stringify(error));
