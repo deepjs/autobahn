@@ -81,7 +81,7 @@ var Accessors  = {
 			throw new errors.Access(this.facet.name + " don't have store to get something");
 
 		//console.log("facet : ("+this.facet.name+") : get  : "+id+" : will call store. ")
-		return deep.when(this.facet.store.get(id, options))
+		return deep.when(this.facet.store.get(id, options), null, { rethrow:false })
 		.done(function(obj){
 			//console.log("facet get stroe response")
 			if(typeof obj === 'undefined' || obj == null)
@@ -120,7 +120,7 @@ var Accessors  = {
 			throw new errors.Unauthorized("("+self.facet.name+") you're not the owner of this ressource.");
 		//console.log("Accessors : post : ", object);
 
-		return deep.when(this.facet.store.post(object, options))
+		return deep.when(this.facet.store.post(object, options), null, { rethrow:false })
 		.done(function(obj){
 			console.log("("+self.facet.name+") facet-controller : after store post  : response ", obj);
 			if(typeof obj === 'undefined' || obj === null)
@@ -142,7 +142,7 @@ var Accessors  = {
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to query something");
 		var self = this;
-		return deep.when(this.facet.store.query(query, options))
+		return deep.when(this.facet.store.query(query, options), null, { rethrow:false })
 		.done(function(result){
 			// console.log("facet.query : ", query, result)
 			if(!result)
@@ -188,7 +188,7 @@ var Accessors  = {
 				return new errors.PreconditionFailed("("+self.name+") put failed!", JSON.stringify(report));
 		}	
 
-		return deep(this.facet.accessors.get.handler(options.id, options))
+		return deep(this.facet.accessors.get.handler(options.id, options), null, {rethrow:false})
 		.done(function(success){
 			if(success.length == 0)
 				throw new errors.Unauthorized("("+self.facet.name+") object don't exists. Please post before.");
@@ -246,7 +246,7 @@ var Accessors  = {
 				return new errors.PreconditionFailed("("+self.name+") put failed!", JSON.stringify(report));
 		}	
 
-	 	return	deep.when( this.facet.store.get(id, options) )
+	 	return	deep.when( this.facet.store.get(id, options), null, { rethrow:false } )
 		.done( function (success) {
 			//console.log("("+self.facet.name+") PATCH GET old object done = ", success);
 			
@@ -295,7 +295,7 @@ var Accessors  = {
 			throw new errors.Access(this.facet.name + " don't have store to delete something");
 		var self = this;
 		console.log("("+self.facet.name+") delete : ", object, options, this.facet.store)
-		return deep.when(this.facet.store["delete"](object, options))
+		return deep.when(this.facet.store["delete"](object, options), null, { rethrow:false })
 		.done(function(obj){
 			//console.log("delete success : ", obj);
 			if(!obj)
