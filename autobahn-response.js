@@ -6,7 +6,7 @@ define(function(require){
 	var deep = require("deep/deep");
 
 	var Response = function (status, headers, body) {
-		this._autobahn_reponse = true;
+		this._autobahn_response = true;
 		this.headers = {};
 		if(headers)
 			deep.utils.up(headers, this.headers);
@@ -15,7 +15,7 @@ define(function(require){
 	}
 
 	Response.prototype = {
-		_autobahn_reponse:true
+		_autobahn_response:true
 	}
 
 

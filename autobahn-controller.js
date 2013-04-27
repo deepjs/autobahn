@@ -170,6 +170,7 @@ define(function (require)
 					})
 					.fail(function  (error) 
 					{
+						//console.log("error in autobah controller analyse : ", error);
 						if(error instanceof Error)
 							return error;
 						return new errors.Server(error, error.status || 404);
@@ -182,6 +183,7 @@ define(function (require)
 				}
 			})
 			.fail(function (error) {
+				//console.log("autobahn-controller : request error : ", error);
 				if(error instanceof Error)
 					return error;
 				return new errors.Server(error, error.status || 404);
@@ -219,10 +221,9 @@ define(function (require)
 			{
 				//console.log("CONTROLLER NOT LOADED : load it : ", ctrl)
 				ctrl.name = joined;
-				var d = deep(othis)
+				return deep(othis)
 				.catchError()
 				.query("./roles/_"+joined)
-				.position("role")
 				.bottom(RoleController)
 				.run("init")
 				.log("role "+joined+" : flattened...")

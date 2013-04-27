@@ -52,23 +52,30 @@ define(function RoleControllerDefine(require)
 			.bottom(FacetController)
 			.back("role")
 			.flatten()
+			//.log("Facets flattened________________________________")
 			.query("./facets/*")
-			.done(function (success, handler, brancher)
+			.branches(function (brancher)
 			{
-				brancher.branch()
+				console.log("facet will init stores")
+				brancher
+				.branch()
 				.query("./store?_schema.type=object")
 				.run("init");
 
-				brancher.branch()
+				brancher
+				.branch()
 				.query("./store?_schema.type=string")
 				.load();
-
+				//console.log("stores init launched")
 				return brancher;
 			})
+			//.log("________________ stores initialised")
 			.run("init")
 			.fail(function (error) {
 				// body...
-			});
+				 console.log("error while compiling role controller")
+			})
+			.log("facet initialised_______________________");
 		},
 		analyse : function(request)
 		{
@@ -86,16 +93,7 @@ define(function RoleControllerDefine(require)
 					return deep(request.body)
 					.catchError(true)
 					.done(function(){
-						var r = null;
-						
-						try{
-							r = facet.analyse(request);
-						}
-						catch(e)
-						{
-							return e
-						}
-						return r;
+						return facet.analyse(request);
 					})
 					.done(function (success) 
 					{
@@ -108,7 +106,7 @@ define(function RoleControllerDefine(require)
 							return new AutobahnResponse(success.status, success.headers, success.body || "facet return nothing");
 					})
 					.fail(function (error) {
-						//console.log("RoleController  "+self.name+"  : facets ("+facet.name+"."+request.autobahn.method+") error : ", error);
+						console.log("RoleController  "+self.name+"  : facets ("+facet.name+"."+request.autobahn.method+") error : ", error);
 						return error;
 					});
 				}
@@ -126,7 +124,7 @@ define(function RoleControllerDefine(require)
 					return noStatics(error);
 				})
 				.done(function (success) {
-					// console.log("RoleController ( "+self.name+" ) : statics success : ", success);
+					//console.log("RoleController ( "+self.name+" ) : statics success : ", success);
 					if(!success || success.status >= 400)
 						return noStatics(success);
 					return success;

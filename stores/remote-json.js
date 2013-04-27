@@ -58,7 +58,7 @@ define(function (require)
 		})
 		.fail(function(error){
 			//console.log("deep.stores.remotejson.get error : ",id," - ", error);
-			return new errors.Server(error.body||error, error.status||500);
+			throw new errors.Server(error.body||error, error.status||500);
 		})
 		.done(function (datas, handler) {
 			//console.log("json.get : result : ", datas);

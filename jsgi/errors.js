@@ -13,28 +13,25 @@ define(function(require){
 			try{
 				return deep.when(nextApp(request, autobahnResponse))
 				.done(function(response){
-					//console.log("JSGI Errors : direct response : ",response )
+					//console.log("JSGI Errors : direct response : ", response );
 					if(response instanceof Error)
-					{
 						return errorHandler(response);
-					}
 					return response;
 				})
 				.fail(errorHandler);
 			}
 			catch(e){
 				//console.log("JSGI ERRORS : catch ", e);
-				console.log("\n\n***************** ERRORS (catched in errors jsgi) : \n", e, "\n*************************************\n");
+				//console.log("\n\n***************** ERRORS (catched in errors jsgi) : \n", e, "\n*************************************\n");
 				return errorHandler(e);
 			}
 			finally{
-			//	console.log("JSGI ERRORS : finaly ");
-
+				//console.log("JSGI ERRORS : finaly ");
 			}
 			function errorHandler(e){
 				
-				if(e.status && e.status >= 400 && e.status !== 404)
-					console.log("\n\n***************** ERRORS HANDLER (errors jsgi) : \n", e, "\n*************************************\n");
+				//if(e.status && e.status >= 400 && e.status !== 404)
+				console.log("\n\n***************** ERRORS HANDLER (errors jsgi) : \n", e, "\n*************************************\n");
 				var response = {
 					headers:{
 						"content-type":"application/json"

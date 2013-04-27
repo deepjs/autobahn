@@ -212,7 +212,7 @@ var Accessors  = {
 		})
 		.done(function(obj){
 			if(!obj)
-				throw new errors.Access("("+self.facet.name+") put return nothing");
+				return new errors.Access("("+self.facet.name+") put return nothing");
 			if(self.hasPrivates)
 				deep(obj, schem).remove(".//?_schema.private=true");
 			//console.log("FACET PUT DONE obj : ", obj);
@@ -221,8 +221,8 @@ var Accessors  = {
 		.fail(function(error){
 			console.log("Facet.put failed : ",error);
 			if(error instanceof Error)
-				throw error;
-			throw new errors.Access("("+self.facet.name+") error when putting on store. "+JSON.stringify(error));
+				return error;
+			return new errors.Access("("+self.facet.name+") error when putting on store. "+JSON.stringify(error));
 		}); 
 	},
 	patch : function(object, options)
@@ -447,7 +447,7 @@ var Permissive = {
 			var name = i + "";
 			this[i] = function(arg1, options)
 			{
-				return accessor[i](arg1, options);
+				return accessors[i].handler(arg1, options);
 			}
 		}
 	},
@@ -662,14 +662,14 @@ var Permissive = {
 		else
 		{
 			//console.log("facet : "+self.name+" : simple call");
-			result = deep.when(accessor.handler(infos.path, request.autobahn));
+			result = accessor.handler(infos.path, request.autobahn);
 
 		}
 		//console.log("facet ("+self.name+"."+infos.method+") call done : result to wait : ", result);
 
 		return deep.when(result)
 		.fail(function (error) {
-			//console.log("_________________________________________ FACET ANALYSE FAIL : ", error)
+			console.log("_________________________________________ FACET ANALYSE FAIL : ", error)
 		})
 		.done(function (result) {
 			//console.log("facet result : request.headers.Accept : ", request.headers);
