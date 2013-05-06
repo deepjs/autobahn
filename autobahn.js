@@ -367,10 +367,13 @@ define(["require","deep/deep"],function (require)
 		}
 	});
 	
-	var autobahn = function () {
+	var autobahn = function (arg) {
 		var handler = deep(autobahnController);
 		deep.utils.up(baseHandler, handler);
-
+		if(arguments.length > 0)
+			handler.roles(Array.prototype.slice.apply(arguments));
+		else if(arg && typeof arg === 'object')
+			handler.session(arg);
 		//console.log("autobahn start : ", handler)
 		return handler; 
 	}
