@@ -124,7 +124,7 @@ define(["require","deep/deep"],function (require)
 				if(!self.currentFacet.rpc || !self.currentFacet.rpc[method])
 					return new errors.MethodNotAllowed("rpc call couldn't be fullfilled : no metod found with : ", method)
 
-				deep.when(self.currentFacet.rpc["method"](id, options))
+				deep.when(self.currentFacet.rpc[method](id, args))
 				.then(function (result)
 				{
 					console.log("facetHandler : get : ", result)
