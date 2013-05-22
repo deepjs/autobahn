@@ -90,8 +90,7 @@ define(function RoleControllerDefine(require)
 				{
 					//console.log("try facet : ", request.autobahn.part, self.facets[request.autobahn.part].analyse)
 					var facet = self.facets[request.autobahn.part];
-					return deep(request.body)
-					.catchError(true)
+					return deep.when(request.body)
 					.done(function(){
 						return facet.analyse(request);
 					})
@@ -119,7 +118,7 @@ define(function RoleControllerDefine(require)
 			}
 
 			if(this.statics)
-				return deep(this.statics(request))
+				return deep.when(this.statics(request))
 				.fail(function (error) {
 					return noStatics(error);
 				})
