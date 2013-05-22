@@ -28,6 +28,7 @@ define(["require","deep/deep"],function (require)
 	var autobahnController = require("autobahn/autobahn-controller");
 	var utils = require("autobahn/utils");
 	var errors = require("autobahn/errors");
+	deep.rethrow = false;
 	var baseHandler = {
 		session:function (session) 
 		{

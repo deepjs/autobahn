@@ -642,7 +642,7 @@ var Permissive = {
 		else if(isQuery)
 		{
 			//console.log("will do query : ", accessor);
-			result = deep(accessor.handler(infos.queryString, infos))
+			result = deep.when(accessor.handler(infos.queryString, infos))
 			.done(function (result)
 			{
 				//console.log("query result : range ?", infos.range, " - ", result);
