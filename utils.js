@@ -50,13 +50,13 @@ define(function (require)
 				var q = ask[ask.length-1];
 				var quality = 1;
 				if(q.indexOf("q=") == 0)
-					quality = parseInt(q.substring(2));
+					quality = parseFloat(q.substring(2));
 				res.push({
 					quality:quality,
 					media:ask.shift()
 				});
 			});
-			return deep(res).select("./*?sort(-quality)");
+			return deep(res).select("./!?sort(-quality)");
 		},
 		parseRange : function (request) {
 			var rangeSum = request.autobahn.range = {};

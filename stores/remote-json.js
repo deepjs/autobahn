@@ -60,16 +60,17 @@ define(function (require)
 			//console.log("deep.stores.remotejson.get error : ",id," - ", error);
 			throw new errors.Server(error.body||error, error.status||500);
 		})
-		.done(function (datas, handler) {
+		.done(function (datas) {
 			//console.log("json.get : result : ", datas);
+			var handler = this;
 			return deep(datas).nodes(function (nodes) {
 				handler._entries = nodes;
 			});
 		})
 		.store(this)
-		.done(function (success, handler) {
+		.done(function (success) {
 			//console.log("json.get : "+id+" : result : ", success);
-			handler.range = deep.Chain.range; // reset range function to default chain behaviour
+			this.range = deep.Chain.range; // reset range function to default chain behaviour
 		});
 		if(!noCache && (options && options.cache !== false)  || (self.options && self.options.cache !== false))
 			deep.mediaCache.manage(d, id);
@@ -106,8 +107,8 @@ define(function (require)
 			console.log("remotejson put failed 2 : ", error);
 		})
 		.store(this)
-		.done(function (success, handler) {
-			handler.range = deep.Chain.range;
+		.done(function (success) {
+			this.range = deep.Chain.range;
 		});
 	};
 	deep.stores.remotejson.post = function (object, options) {
@@ -131,9 +132,9 @@ define(function (require)
 			//return new Error("deep.store.remotejson.post failed  - details : "+JSON.stringify(error));
 		}), null, { rethrow:false })
 		.store(this)
-		.done(function (success, handler) {
+		.done(function (success) {
 			//console.log("remotejson end chain on post")
-			handler.range = deep.Chain.range;
+			this.range = deep.Chain.range;
 		});
 	};
 	deep.stores.remotejson.del = function (id, options) {
@@ -159,8 +160,8 @@ define(function (require)
 			return new errors.Server(error.body||error, error.status||500)
 		}), null, { rethrow:false })
 		.store(this)
-		.done(function (success, handler) {
-			handler.range = deep.Chain.range;
+		.done(function (success) {
+			this.range = deep.Chain.range;
 		});
 	};
 
@@ -188,8 +189,8 @@ define(function (require)
 			return new errors.Server(error.body||error, error.status||500)
 		}), null, { rethrow:false })
 		.store(this)
-		.done(function (success, handler) {
-			handler.range = deep.Chain.range;
+		.done(function (success) {
+			this.range = deep.Chain.range;
 		});
 	};
 	/*deep.stores.remotejson.bulk = function (arr, uri, options) {
@@ -223,8 +224,8 @@ define(function (require)
 		});
 		return deep(deep.promise(def))
 		.store(this)
-		.done(function (success, handler) {
-			handler.range = deep.Chain.range;
+		.done(function (success) {
+			this.range = deep.Chain.range;
 		});
 	};
 	deep.stores.remotejson.rpc = function (method, params, id) {
@@ -263,8 +264,8 @@ define(function (require)
 		});
 		return deep(deep.promise(def))
 		.store(this)
-		.done(function (success, handler) {
-			handler.range = deep.Chain.range;
+		.done(function (success) {
+			this.range = deep.Chain.range;
 		});
 	};
 	*/
@@ -327,13 +328,13 @@ define(function (require)
 		{
 			return new errors.Server(error.body||error, error.status||500);
 		}), null, {rethrow:false })
-		.done(function (rangeObject, handler) {
-			handler._entries = deep(rangeObject.results).nodes();
+		.done(function (rangeObject) {
+			this._entries = deep(rangeObject.results).nodes();
 			return rangeObject;
 		})
 		.store(this)
-		.done(function (success, handler) {
-			handler.range = deep.Chain.range;
+		.done(function (success) {
+			this.range = deep.Chain.range;
 		});
 	};
 	deep.stores.remotejson.init = function (options)

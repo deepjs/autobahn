@@ -370,11 +370,7 @@ var Permissive = {
 				request.autobahn.response.headers["Content-Location"] = request.autobahn.scheme + "://" + request.headers.host + request.autobahn.scriptName  + '/' + (this.facet.getId(response));
 			},
 			negociation:{
-				"text/html":{
-					handler:function (response, request) {
-						// body...
-					}
-				}
+				
 			}
 		},
 		query:{
@@ -682,12 +678,14 @@ var Permissive = {
 			if(accessor && accessor.negociation)
 			{	
 				var asked = utils.parseAcceptHeader(request.headers);
+				console.log("try negociation : ", asked);
 				var negociator = null;
 				var alsoJSON = false;
 				var choosed = null;
 				for(i = 0; i< asked.length; ++i) 
 				{
-					if(media == "application/json")
+					var ask = asked[i];
+					if(ask.media == "application/json")
 						alsoJSON = true;
 					negociator = accessor.negociation[ask.media];
 					if(negociator)
@@ -696,11 +694,17 @@ var Permissive = {
 						break;
 					}
 				}
+				console.log("found negociator ? ",negociator);
 				infos.response.headers["Content-Type"] = ask.media;
 				if(negociator)
-					return negociator.handler(result, request);
+				{
+					var r = negociator.handler(result, request);
+					console.log("negociation result : ",r)
+					return r;
+				}	
 				else if(!alsoJSON && accessor.negociation["default"])
 					return accessor.negociation["default"].handler(result, request);
+				console.log("negociation failed");
 			}
 			infos.response.body = result;
 			deep.utils.up(accessor.headers || self.headers || {}, infos.response.headers);
