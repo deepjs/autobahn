@@ -115,8 +115,7 @@ define(function (require)
 			if(this.loaded)
 				return this;
 			this.loaded = true;
-			console.log("autobahn will load")
-
+			console.log("autobahn will load");
 			return deep(this)
 			//.log("autobahn flatten 1")
 			.flatten()
@@ -131,7 +130,6 @@ define(function (require)
 			var roles = ["public"];
 			if(session && session.remoteUser)
 			{
-
 				roles = session.remoteUser.roles || ["user"];
 				if(console.flags["autobahn"])
 					console.log("autobahn", "getRole() : request.remoteUser : ", session.remoteUser);

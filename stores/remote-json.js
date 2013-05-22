@@ -11,7 +11,7 @@ define(function (require)
 	var request = require("autobahn/promised-node-http");
 	var errors = require("autobahn/errors");
 	var deep = require("deep/deep");
-	deep.stores.remotejson = new deep.store.DeepStore();
+	deep.stores.remotejson = new deep.store.Store();
 
 	deep.stores.remotejson.extensions = [
 		/(\.json(\?.*)?)$/gi

@@ -33,7 +33,7 @@ need to provide wrap mecanims for methods and rpc restriction
 	need to add from schema : avoid duplicate (on unique schema prop)
 		: look in store if there is no duplicate before insertion (post/patch/put - input)
 
-
+	
 
  */
 
@@ -338,21 +338,28 @@ var Permissive = {
 	schema:{
 		
 	},
-	serveSchema:function (id) {
+	serveSchema:function (id) 
+	{
 		var accessors = this.accessors;
 		var schema = this.schema;
-		if(id == "schema" || id == "schema.get")
-			return (accessors.get && accessors.get.schema)?accessors.get.schema:schema;
-		else if(id == "schema.put")
-			return (accessors.put && accessors.put.schema)?accessors.put.schema:schema;
-		else if(id == "schema.post")
-			return (accessors.post && accessors.post.schema)?accessors.post.schema:schema;
-		else if(id == "schema.query")
-			return (accessors.query && accessors.query.schema)?accessors.query.schema:schema;
-		else if(id == "schema.patch")
-			return (accessors.patch && accessors.patch.schema)?accessors.patch.schema:schema;
-		else if(id == "schema.delete")
-			return (accessors["delete"] && accessors["delete"].schema)?accessors["delete"].schema:schema;
+		switch(id)
+		{
+			case "schema" : 
+				return schema;
+			case "schema.get" : 
+				return (accessors.get && accessors.get.schema)?accessors.get.schema:schema;
+			case "schema.post" : 
+				return (accessors.post && accessors.post.schema)?accessors.post.schema:schema;
+			case "schema.query" : 
+				return (accessors.query && accessors.query.schema)?accessors.query.schema:schema;
+			case "schema.put" : 
+				return (accessors.put && accessors.put.schema)?accessors.put.schema:schema;
+			case "schema.patch" : 
+				return (accessors.patch && accessors.patch.schema)?accessors.patch.schema:schema;
+			case "schema.delete" : 
+				return (accessors["delete"] && accessors["delete"].schema)?accessors["delete"].schema:schema;
+			default: ;
+		}
 	},
 	accessors:{
 		get:{
@@ -451,9 +458,6 @@ var Permissive = {
 			}
 		}
 	},
-	rpcCall2:function (id, method) {
-		// body...
-	},
 	rpcCall:function (request)
 	{
 		console.log("Facet.rpcCall : ", request.autobahn.path)
@@ -550,7 +554,7 @@ var Permissive = {
 
 		if(infos.method == "post" && infos.contentType.indexOf("application/json-rpc") !== -1)
 		{
-			console.log("will call rpc");
+			//console.log("will call rpc");
 			return this.rpcCall(request);
 		}	
 		var accessor = this.accessors[infos.method];
@@ -663,43 +667,46 @@ var Permissive = {
 		{
 			//console.log("facet : "+self.name+" : simple call");
 			result = accessor.handler(infos.path, request.autobahn);
-
 		}
 		//console.log("facet ("+self.name+"."+infos.method+") call done : result to wait : ", result);
 
 		return deep.when(result)
 		.fail(function (error) {
-			console.log("_________________________________________ FACET ANALYSE FAIL : ", error)
+			console.log("_________________________________________ FACET ANALYSE FAIL : ", error);
 		})
 		.done(function (result) {
-			//console.log("facet result : request.headers.Accept : ", request.headers);
-			//console.log("facet result : ", result);
-			var asked = request.headers["accept"];
-			if(asked && accessor && accessor.negociation)
+			//console.log("autobahn.facet : final result : ", result);
+			//**************************************************************************************
+			//****************************************** NEGOCIATION *******************************
+			//**************************************************************************************
+			if(accessor && accessor.negociation)
 			{	
-				var tmp = [];
-				for( var i in accessor.negociation )
+				var asked = utils.parseAcceptHeader(request.headers);
+				var negociator = null;
+				var alsoJSON = false;
+				var choosed = null;
+				for(i = 0; i< asked.length; ++i) 
 				{
-					var io = asked.indexOf(i);
-					if(io > -1)
-						tmp.push({ index:io, negociator:accessor.negociation[i].handler  })
+					if(media == "application/json")
+						alsoJSON = true;
+					negociator = accessor.negociation[ask.media];
+					if(negociator)
+					{
+						choosed = ask;
+						break;
+					}
 				}
-				if(tmp.length > 0)
-				{
-					//console.log("all negoc match : ", tmp);
-					var nego = deep(tmp).query("./!?sort(index)").val().negociator;
-					return nego(result, request);
-				}
+				infos.response.headers["Content-Type"] = ask.media;
+				if(negociator)
+					return negociator.handler(result, request);
+				else if(!alsoJSON && accessor.negociation["default"])
+					return accessor.negociation["default"].handler(result, request);
 			}
-			
 			infos.response.body = result;
-			//console.log("facet will add headers on response")
 			deep.utils.up(accessor.headers || self.headers || {}, infos.response.headers);
 			if(accessor.setCustomHeaders)
 				accessor.setCustomHeaders(result, request);
 			return infos.response;
-			
-	
 		});
 	}
 };
