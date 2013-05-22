@@ -48,9 +48,9 @@ define(function (require){
 					delete request.crossSiteForgeable;
 				session = store.get(cookieId);
 			}
-			var context = deep.context;
-			if(!context)
-				context = deep.context = request.context = {};
+			//var context = deep.context;
+			//if(!context)
+			var	context = deep.context = {};
 			context.request = request;
 
 			request.autobahn = request.autobahn || {};
