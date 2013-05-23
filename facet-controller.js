@@ -579,7 +579,7 @@ var Permissive = {
 		}
 
 		if(!accessor)
-			throw new errors.MethodNotAllowed(self.name+"."+infos.method);
+			throw new errors.MethodNotAllowed(self.name+"."+infos.method+" (not present)");
 
 		request.autobahn.response.status = 200;
 		// console.log("facet analyse 2")
@@ -588,10 +588,12 @@ var Permissive = {
 		var result = null;
 		if(accessor.hasBody)
 		{
+			console.log("accessors has body: request.body : ", request.body);
 			if(request.body)
 				result = deep.when(request.body)
 				.done(function (body)
 				{
+					console.log("body received : ", body);
 					if(request.autobahn.method == "post" && request.autobahn.contentType.match("^(message/)"))
 					{
 						if(!(body instanceof Array))
@@ -629,7 +631,7 @@ var Permissive = {
 						});
 					}
 					else{
-						//console.log("facet : do simple method with body : ", self.name+"."+infos.method);
+						console.log("facet : do simple method with body : ", self.name+"."+infos.method);
 						if(accessor.sanitize)
 							accessor.sanitize(body);	
 						return accessor.handler(body, infos);
@@ -671,7 +673,7 @@ var Permissive = {
 			console.log("_________________________________________ FACET ANALYSE FAIL : ", error);
 		})
 		.done(function (result) {
-			//console.log("autobahn.facet : final result : ", result);
+			console.log("autobahn.facet : final result : ", result);
 			//**************************************************************************************
 			//****************************************** NEGOCIATION *******************************
 			//**************************************************************************************

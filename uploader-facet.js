@@ -143,48 +143,80 @@ define(function (require){
     
     FileInfo.prototype.moveAndResize = function (options, newName, safe) 
     {
+        try{
         var self = this;
-       // console.log("FileInfo.prototype.moveAndResize : ", options)
-      //  console.log("FileInfo.prototype.moveAndResize : file.type : ", this.type);
+        console.log("FileInfo.prototype.moveAndResize : ", options)
+        console.log("FileInfo.prototype.moveAndResize : file.type : ", this.type);
         if(newName)
             this.name = newName + "." + this.extension;
         var def = deep.Deferred();
+        console.log("1")
         if(safe)
             this.safeName(options.uploadDir);
+
         var newPath = path.join(path.normalize(options.uploadDir), this.name);
-        fs.renameSync(this.file.path,newPath);
+        console.log("________________________________ will move sync : ",this.file.path, " --> ",newPath);
+
+       
+        console.log("3 : res rename : ", fs.renameSync(this.file.path,newPath))
+
+        }
+        catch(e){
+            console.log("error while : first part of resize : ",e)
+        }
         var count = 0;
 
          var finished = function (err, stdoutContent, stderrContent) {
-            if(err)
-                console.log("WARNING : error while resizing : ", err, stdoutContent,stderrContent )
-            count--;
-            if(count <= 0)
-            {
-                self.initUrls(options);
-                def.resolve(self);
+            console.log("resize finish : ", err, stdoutContent, stderrContent)
+            try{
+                if(err)
+                    console.log("WARNING : error while resizing : ", err, stdoutContent,stderrContent )
+                count--;
+                if(count <= 0)
+                {
+                    self.initUrls(options);
+                    def.resolve(self);
+                }
+            }
+            catch(e){
+                console.log("ERROR while finishing move and resize (upload file) : ",e)
             }
          }
         if (options.imageTypes.test(this.name)) 
         {
+        console.log("4")
+
             var vers = Object.keys(options.imageVersions);
             count = vers.length;
-
+            try{
             if(count > 0)
                 vers.forEach(function (version) 
                 {   
-                  //  console.log("do resize : ", version)
+                    console.log("5")
+
                     var dstPath = path.join(path.normalize(options.uploadDir),  version, self.name);
+
                     var opts = options.imageVersions[version];
+                    console.log("6")
+                    console.log("do resize : ", version, " - source : ", newPath ," - dest path : ",
+                     dstPath, " - options : ", opts);
+
+                    
                     imageMagick.resize({
                         width: opts.width,
                         height: opts.height,
                         srcPath: newPath,
                         dstPath: dstPath
                     }, finished);
+                    console.log("7")
+
                 });
             else
                 finished();
+            }
+            catch(e){
+                console.log("ERROR while move and resize (upload file) : ",e)
+            }
         }
         else
             finished();
@@ -194,8 +226,8 @@ define(function (require){
     FileInfo.prototype.moveAndCrop = function (options, newName, safe) 
     {
         var self = this;
-       // console.log("FileInfo.prototype.moveAndResize : ", options)
-      //  console.log("FileInfo.prototype.moveAndResize : file.type : ", this.type);
+        console.log("FileInfo.prototype.moveAndCrop : ", options)
+        console.log("FileInfo.prototype.moveAndCrop : file.type : ", this.type);
         if(newName)
             this.name = newName + "." + this.extension;
         var def = deep.Deferred();
@@ -206,6 +238,7 @@ define(function (require){
         var count = 0;
 
          var finished = function (err, stdoutContent, stderrContent) {
+            try{
             if(err)
                 console.log("WARNING : error while resizing : ", err, stdoutContent,stderrContent )
             count--;
@@ -213,6 +246,10 @@ define(function (require){
             {
                 self.initUrls(options);
                 def.resolve(self);
+            }
+            }
+            catch(e){
+                console.log("CATCH ERROR WHIL MOVE AND CROP : ",e)
             }
          }
         if (options.imageTypes.test(this.name)) 
@@ -223,15 +260,21 @@ define(function (require){
             if(count > 0)
                 vers.forEach(function (version) 
                 {   
-                  //  console.log("do resize : ", version)
-                    var dstPath = path.join(path.normalize(options.uploadDir),  version, self.name);
-                    var opts = options.imageVersions[version];
-                    imageMagick.crop({
-                        width: opts.width,
-                        height: opts.height,
-                        srcPath: newPath,
-                        dstPath: dstPath
-                    }, finished);
+                    try{
+                      //  console.log("do resize : ", version)
+                        var dstPath = path.join(path.normalize(options.uploadDir),  version, self.name);
+                        var opts = options.imageVersions[version];
+                        imageMagick.crop({
+                            width: opts.width,
+                            height: opts.height,
+                            srcPath: newPath,
+                            dstPath: dstPath
+                        }, finished);
+                    }
+                    catch(e){
+                        console.log("error while move and crop : ",e)
+                        def.reject(e);
+                    }
                 });
             else
                 finished();
@@ -296,7 +339,7 @@ define(function (require){
 
             form.uploadDir = this.options.tmpDir;
             form.on('fileBegin', function (name, file) {
-               // console.log("on file begin : ", name, file)
+                console.log("on file begin : ", name, file)
                 if(handler.aborted)
                     return;
                 tmpFiles.push(file.path);
@@ -306,13 +349,13 @@ define(function (require){
                 files.push(fileInfo);
             })
             .on('field', function (name, value) {
-               // console.log("on field")
+               console.log("on field : name : ", name, " - value : ", value)
                 if(handler.aborted)
                     return;
                 fields[name] = value;
             })
             .on('file', function (name, file) {
-               // console.log("on file")
+                console.log("on file : name : ", name, " - path : ", file.path)
                 if(handler.aborted)
                     return;
                 var fileInfo = map[path.basename(file.path)];
@@ -330,7 +373,7 @@ define(function (require){
                 if(handler.aborted)
                     return;
                 handler.aborted = true;
-                //console.log("on aborted")
+                console.log("on aborted")
                 tmpFiles.forEach(function (file) {
                     fs.unlink(file);
                 });
@@ -338,7 +381,7 @@ define(function (require){
             })
             .on('error', function (e) {
                 response.errors.push("upload error : unlink files and aborting !")
-               // console.log("on upload error : ",e);
+                console.log("on upload error : ",e);
                 if(handler.aborted)
                     return;
                 handler.error = e;
