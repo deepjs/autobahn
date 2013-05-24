@@ -673,7 +673,12 @@ var Permissive = {
 			console.log("_________________________________________ FACET ANALYSE FAIL : ", error);
 		})
 		.done(function (result) {
+
 			console.log("autobahn.facet : final result : ", result);
+
+			if(result && result._pintura_redirection_)
+				return result;
+
 			//**************************************************************************************
 			//****************************************** NEGOCIATION *******************************
 			//**************************************************************************************
