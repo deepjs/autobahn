@@ -75,7 +75,7 @@ define(function RoleControllerDefine(require)
 				// body...
 				 console.log("error while compiling role controller")
 			})
-			.log("facet initialised_______________________");
+			.log("role ("+this.name+") : facets initialised _______________________");
 		},
 		analyse : function(request)
 		{
@@ -88,9 +88,10 @@ define(function RoleControllerDefine(require)
 				//console.log("RoleController : statics error : try next")
 				if(self.facets && self.facets[request.autobahn.part]) 
 				{
-					//console.log("try facet : ", request.autobahn.part, self.facets[request.autobahn.part].analyse)
+					//console.log("try facet : ", request.autobahn.part)
 					var facet = self.facets[request.autobahn.part];
-					return deep.when(request.body)
+					return deep(request.body)
+					.catchError()
 					.done(function(){
 						return facet.analyse(request);
 					})
@@ -105,7 +106,7 @@ define(function RoleControllerDefine(require)
 							return new AutobahnResponse(success.status, success.headers, success.body || "facet return nothing");
 					})
 					.fail(function (error) {
-						console.log("RoleController  "+self.name+"  : facets ("+facet.name+"."+request.autobahn.method+") error : ", error);
+						//console.log("RoleController  "+self.name+"  : facets ("+facet.name+"."+request.autobahn.method+") error : ", error);
 						return error;
 					});
 				}
