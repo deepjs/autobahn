@@ -145,12 +145,12 @@ define(function (require){
     {
         try{
         var self = this;
-        console.log("FileInfo.prototype.moveAndResize : ", options)
-        console.log("FileInfo.prototype.moveAndResize : file.type : ", this.type);
+        //console.log("FileInfo.prototype.moveAndResize : ", options)
+        //console.log("FileInfo.prototype.moveAndResize : file.type : ", this.type);
         if(newName)
             this.name = newName + "." + this.extension;
         var def = deep.Deferred();
-        console.log("1")
+       // console.log("1")
         if(safe)
             this.safeName(options.uploadDir);
 
@@ -158,7 +158,7 @@ define(function (require){
         console.log("________________________________ will move sync : ",this.file.path, " --> ",newPath);
 
        
-        console.log("3 : res rename : ", fs.renameSync(this.file.path,newPath))
+        //console.log("3 : res rename : ", fs.renameSync(this.file.path,newPath))
 
         }
         catch(e){
@@ -197,9 +197,8 @@ define(function (require){
                     var dstPath = path.join(path.normalize(options.uploadDir),  version, self.name);
 
                     var opts = options.imageVersions[version];
-                    console.log("6")
-                    console.log("do resize : ", version, " - source : ", newPath ," - dest path : ",
-                     dstPath, " - options : ", opts);
+                    //console.log("6")
+                    //console.log("do resize : ", version, " - source : ", newPath ," - dest path : ",dstPath, " - options : ", opts);
 
                     
                     imageMagick.resize({
@@ -226,8 +225,8 @@ define(function (require){
     FileInfo.prototype.moveAndCrop = function (options, newName, safe) 
     {
         var self = this;
-        console.log("FileInfo.prototype.moveAndCrop : ", options)
-        console.log("FileInfo.prototype.moveAndCrop : file.type : ", this.type);
+        //console.log("FileInfo.prototype.moveAndCrop : ", options)
+        //console.log("FileInfo.prototype.moveAndCrop : file.type : ", this.type);
         if(newName)
             this.name = newName + "." + this.extension;
         var def = deep.Deferred();
@@ -331,7 +330,7 @@ define(function (require){
                 map = {},
                 redirect,
                 finish = function () {
-                    console.log("on finish")
+                    //console.log("on finish")
                     if(handler.aborted)
                         return;
                     def.resolve(response);
@@ -339,7 +338,7 @@ define(function (require){
 
             form.uploadDir = this.options.tmpDir;
             form.on('fileBegin', function (name, file) {
-                console.log("on file begin : ", name, file)
+                //console.log("on file begin : ", name, file)
                 if(handler.aborted)
                     return;
                 tmpFiles.push(file.path);
@@ -349,13 +348,13 @@ define(function (require){
                 files.push(fileInfo);
             })
             .on('field', function (name, value) {
-               console.log("on field : name : ", name, " - value : ", value)
+               //console.log("on field : name : ", name, " - value : ", value)
                 if(handler.aborted)
                     return;
                 fields[name] = value;
             })
             .on('file', function (name, file) {
-                console.log("on file : name : ", name, " - path : ", file.path)
+                //console.log("on file : name : ", name, " - path : ", file.path)
                 if(handler.aborted)
                     return;
                 var fileInfo = map[path.basename(file.path)];
@@ -381,7 +380,7 @@ define(function (require){
             })
             .on('error', function (e) {
                 response.errors.push("upload error : unlink files and aborting !")
-                console.log("on upload error : ",e);
+                //console.log("on upload error : ",e);
                 if(handler.aborted)
                     return;
                 handler.error = e;
@@ -396,7 +395,7 @@ define(function (require){
             .on('progress', function (bytesReceived, bytesExpected) {
                 if(handler.aborted)
                     return;
-                console.log("on progress",bytesReceived, "/", bytesExpected)
+                //console.log("on progress",bytesReceived, "/", bytesExpected)
                 if (bytesReceived > handler.options.maxPostSize)
                 {
                     tmpFiles.forEach(function (file) {
