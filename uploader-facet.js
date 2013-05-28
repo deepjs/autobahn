@@ -155,7 +155,7 @@ define(function (require){
             this.safeName(options.uploadDir);
 
         var newPath = path.join(path.normalize(options.uploadDir), this.name);
-        console.log("________________________________ will move sync : ",this.file.path, " --> ",newPath);
+        //console.log("________________________________ will move sync : ",this.file.path, " --> ",newPath);
 
        
         //console.log("3 : res rename : ", fs.renameSync(this.file.path,newPath))
@@ -167,7 +167,7 @@ define(function (require){
         var count = 0;
 
          var finished = function (err, stdoutContent, stderrContent) {
-            console.log("resize finish : ", err, stdoutContent, stderrContent)
+            //console.log("resize finish : ", err, stdoutContent, stderrContent)
             try{
                 if(err)
                     console.log("WARNING : error while resizing : ", err, stdoutContent,stderrContent )
@@ -184,7 +184,7 @@ define(function (require){
          }
         if (options.imageTypes.test(this.name)) 
         {
-        console.log("4")
+            //console.log("4")
 
             var vers = Object.keys(options.imageVersions);
             count = vers.length;
@@ -192,7 +192,7 @@ define(function (require){
             if(count > 0)
                 vers.forEach(function (version) 
                 {   
-                    console.log("5")
+                    //console.log("5")
 
                     var dstPath = path.join(path.normalize(options.uploadDir),  version, self.name);
 
@@ -207,7 +207,7 @@ define(function (require){
                         srcPath: newPath,
                         dstPath: dstPath
                     }, finished);
-                    console.log("7")
+                    //console.log("7")
 
                 });
             else
