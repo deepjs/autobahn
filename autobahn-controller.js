@@ -162,6 +162,8 @@ define(function (require)
 					.done(function (result) 
 					{
 						//console.log("result in autobahn controller : ", result)
+						if(result && result._pintura_redirection_)
+							return result;
 						if(!(result instanceof AutobahnResponse) )
 							return new AutobahnResponse(200, request.autobahn.response.headers, result);
 						return result;

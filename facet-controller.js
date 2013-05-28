@@ -166,7 +166,7 @@ var Accessors  = {
 	put : function(object, options)
 	{
 		var self = this;
-		console.log("FACET put : object.id ", object.id, " - id : ", options.id)
+		//console.log("FACET put : object.id ", object.id, " - id : ", options.id)
 		if(!this.facet.store)
 			throw new errors.Access(this.facet.name + " don't have store to put something");
 
@@ -579,7 +579,7 @@ var Permissive = {
 		}
 
 		if(!accessor)
-			throw new errors.MethodNotAllowed(self.name+"."+infos.method);
+			throw new errors.MethodNotAllowed(self.name+"."+infos.method+" (not present)");
 
 		request.autobahn.response.status = 200;
 		// console.log("facet analyse 2")
@@ -588,10 +588,14 @@ var Permissive = {
 		var result = null;
 		if(accessor.hasBody)
 		{
+			//console.log("accessors has body: request.body : ", request.body);
+			if(request.body instanceof Buffer)
+				request.body = request.body.toString();
 			if(request.body)
 				result = deep.when(request.body)
 				.done(function (body)
 				{
+					//console.log("body received : ", body);
 					if(request.autobahn.method == "post" && request.autobahn.contentType.match("^(message/)"))
 					{
 						if(!(body instanceof Array))
@@ -668,17 +672,22 @@ var Permissive = {
 
 		return deep.when(result)
 		.fail(function (error) {
-			console.log("_________________________________________ FACET ANALYSE FAIL : ", error);
+			//console.log("_________________________________________ FACET ANALYSE FAIL : ", error);
 		})
 		.done(function (result) {
+
 			//console.log("autobahn.facet : final result : ", result);
+
+			if(result && result._pintura_redirection_)
+				return result;
+
 			//**************************************************************************************
 			//****************************************** NEGOCIATION *******************************
 			//**************************************************************************************
 			if(accessor && accessor.negociation)
 			{	
 				var asked = utils.parseAcceptHeader(request.headers);
-				console.log("try negociation : ", asked);
+				//console.log("try negociation : ", asked);
 				var negociator = null;
 				var alsoJSON = false;
 				var choosed = null;
@@ -694,17 +703,17 @@ var Permissive = {
 						break;
 					}
 				}
-				console.log("found negociator ? ",negociator);
+				//console.log("found negociator ? ",negociator);
 				infos.response.headers["Content-Type"] = ask.media;
 				if(negociator)
 				{
 					var r = negociator.handler(result, request);
-					console.log("negociation result : ",r)
+					///console.log("negociation result : ",r)
 					return r;
 				}	
 				else if(!alsoJSON && accessor.negociation["default"])
 					return accessor.negociation["default"].handler(result, request);
-				console.log("negociation failed");
+				//console.log("negociation failed");
 			}
 			infos.response.body = result;
 			deep.utils.up(accessor.headers || self.headers || {}, infos.response.headers);

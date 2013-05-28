@@ -34,8 +34,10 @@ define(function RoleControllerDefine(require)
 				this.statics.forEach(function (stat) {
 					stats.push(Static(stat));
 				});
-			this.statics = Cascade(stats);
-
+			if(stats.length > 0)
+				this.statics = Cascade(stats);
+			else
+				this.statics = null;
 			/*********************************************
 			*  INIT FACETS
 			**********************************************/
@@ -85,7 +87,7 @@ define(function RoleControllerDefine(require)
 			//console.log("RoleController.analyse : facets : ", this);
 
 			var noStatics = function (error) {
-				//console.log("RoleController : statics error : try next")
+				//console.log("RoleController : statics error (",error,") : try next")
 				if(self.facets && self.facets[request.autobahn.part]) 
 				{
 					//console.log("try facet : ", request.autobahn.part)
@@ -119,8 +121,12 @@ define(function RoleControllerDefine(require)
 			}
 
 			if(this.statics)
+			{
+				//console.log("facet  have statics")
+
 				return deep.when(this.statics(request))
 				.fail(function (error) {
+					//console.log("statics failed : ", error);
 					return noStatics(error);
 				})
 				.done(function (success) {
@@ -129,6 +135,8 @@ define(function RoleControllerDefine(require)
 						return noStatics(success);
 					return success;
 				});
+			}
+			//console.log("facet dont have statics")
 			return noStatics(null);
 		},
 		getFile : function(path, type)
