@@ -20,13 +20,15 @@ define(function (require)
 				return request.body = function(){
 					//console.log("create simple body");
 					var def = deep.Deferred();
-					var body = [];
+					var body = "";
 					request.on('data', function(chunk) {
 				      //	console.log("Received simple body data:");
-				      	body.push(chunk);
+				      	body += (chunk.toString());
 				    });
 				    request.on('end', function() {
 				    	//console.log("simple body end")
+				   
+
 				    	request.body = deep.utils.parseBody(body, request.headers);
 						def.resolve(request.body);
 				    });

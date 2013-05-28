@@ -81,16 +81,16 @@ define(function RoleControllerDefine(require)
 		},
 		analyse : function(request)
 		{
-			console.log("role "+this.name+" analyse ( "+request.method+" ) : ", request.url);
+			//console.log("role "+this.name+" analyse ( "+request.method+" ) : ", request.url);
 			var self = this;
 			//console.log("RoleController.analyse : statics : ", c);
 			//console.log("RoleController.analyse : facets : ", this);
 
 			var noStatics = function (error) {
-				console.log("RoleController : statics error (",error,") : try next")
+				//console.log("RoleController : statics error (",error,") : try next")
 				if(self.facets && self.facets[request.autobahn.part]) 
 				{
-					console.log("try facet : ", request.autobahn.part)
+					//console.log("try facet : ", request.autobahn.part)
 					var facet = self.facets[request.autobahn.part];
 					return deep.when(request.body)
 					.done(function(){
@@ -107,7 +107,7 @@ define(function RoleControllerDefine(require)
 							return new AutobahnResponse(success.status, success.headers, success.body || "facet return nothing");
 					})
 					.fail(function (error) {
-						console.log("RoleController  "+self.name+"  : facets ("+facet.name+"."+request.autobahn.method+") error : ", error);
+						//console.log("RoleController  "+self.name+"  : facets ("+facet.name+"."+request.autobahn.method+") error : ", error);
 						return error;
 					});
 				}
@@ -121,11 +121,11 @@ define(function RoleControllerDefine(require)
 
 			if(this.statics)
 			{
-			console.log("facet  have statics")
+				//console.log("facet  have statics")
 
 				return deep.when(this.statics(request))
 				.fail(function (error) {
-					console.log("statics failed : ", error);
+					//console.log("statics failed : ", error);
 					return noStatics(error);
 				})
 				.done(function (success) {
@@ -135,7 +135,7 @@ define(function RoleControllerDefine(require)
 					return success;
 				});
 			}
-			console.log("facet dont have statics")
+			//console.log("facet dont have statics")
 			return noStatics(null);
 		},
 		getFile : function(path, type)

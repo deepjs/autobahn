@@ -76,13 +76,13 @@ define(function FacetControllerDefine(require){
 				if(Facet.accessors[method] && Facet.accessors[method].hasBody )
 					if(!isForm)
 					{
-						console.log("manage simple body")
+						//console.log("manage simple body")
 						autobahn.utils.createBody(request);
 					}
 						
 					else
 					{
-						console.log("create upload body")
+						//console.log("create upload body")
 						request.autobahn.uploadHandler = new UploadHandler(request, 
 						{
 					            tmpDir: settings.rootPath + '/tmpfiles',
