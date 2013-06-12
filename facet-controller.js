@@ -456,7 +456,7 @@ var Permissive = {
 	},
 	rpcCall:function (request)
 	{
-		console.log("Facet.rpcCall : ", request.autobahn.path)
+		//console.log("Facet.rpcCall : ", request.autobahn.path)
 		var self = this;
 		return deep(deep.all([this.accessors.get.handler(request.autobahn.path, request.autobahn), request.body]))
 		.catchError(true)
@@ -469,7 +469,7 @@ var Permissive = {
 				body = JSON.parse(body);
 			var toCall = self.rpc[body.method];
 
-			console.log("rpc : call method : ", body)
+			//console.log("rpc : call method : ", body)
 
 			if(!toCall)
 				return errors.MethodNotAllowed();
@@ -588,18 +588,18 @@ var Permissive = {
 		var result = null;
 		if(accessor.hasBody)
 		{
-			//console.log("accessors has body: request.body : ", request.body);
-			if(request.body instanceof Buffer)
-				request.body = request.body.toString();
+			//console.log("accessors has body: request.body : ", request.body);	
 			if(request.body)
 				result = deep.when(request.body)
 				.done(function (body)
 				{
+					if(body instanceof Buffer)
+						body = body.toString();
 					//console.log("body received : ", body);
 					if(request.autobahn.method == "post" && request.autobahn.contentType.match("^(message/)"))
 					{
 						if(!(body instanceof Array))
-							throw errors.Access("trying to send message but body isn't array! ("+self.name+")");
+							return errors.Access("trying to send message but body isn't array! ("+self.name+")");
 						var alls = [];
 						body.forEach(function (message) {
 							//console.log("BULK UPDATE : message : ", message);
