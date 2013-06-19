@@ -117,7 +117,7 @@ define(function (require)
 			this.loaded = true;
 			console.log("autobahn will load");
 			return deep(this)
-			//.log("autobahn flatten 1")
+			.log("autobahn flatten 1")
 			.flatten()
 			.log("______________________ autobahn flattened")
 			.query("/stores/*")

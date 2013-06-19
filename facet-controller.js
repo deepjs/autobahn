@@ -184,7 +184,7 @@ var Accessors  = {
 		if(schem)
 		{
 			report = deep.validate(object, schem);
-			if(report && !report.valid)
+			if(!report.valid)
 				return new errors.PreconditionFailed("("+self.name+") put failed!", JSON.stringify(report));
 		}	
 
