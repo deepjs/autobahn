@@ -217,59 +217,58 @@ Donc toute cette finesse toute cette élégance n'est la que pour produire plus 
 	*/
 
 
-
-
-	var deep = require("deep/deep");
 	var fs = require("fs");
 	var swig = require("swig");
+return function(deep){
 
-	deep.stores.fs = {
+
+	deep.protocoles.fs = {
 		get:function (path, options) {
 			var def = deep.Deferred();
 			fs.readFile(path, function(err, datas){
+				if(datas instanceof Buffer)
+					datas = datas.toString();
 				if(err)
 					def.reject(err);
 				else
 					def.resolve(datas);
 			});
-			return deep(deep.promise(def));
+			return def.promise();
 		}
 	};
 
-	deep.stores.htmlfs = {
+	deep.protocoles.htmlfs = {
 		get:function (path, options) {
 			options = options || {};
-			return deep.store("fs")
+			return deep.protocoles.fs
 			.get(path, options)
-			.catchError()
 			.done(function (success) {
 				return success.toString("utf8");
 			});
 		}
 	};
 
-	deep.stores.swigfs = {
+	deep.protocoles.swigfs = {
 		get:function (path, options) {
 			options = options || {};
-			return deep.store("fs")
+			return deep.protocoles.fs
 			.get(path, options)
-			.catchError()
 			.done(function (success) {
+				//console.log("swigfs : response : ", success)
 				return swig.compile(success.toString("utf8"), { filename:options.fileName || path });
 			});
 		}
 	};
 
-	deep.stores.jsonfs = {
+	deep.protocoles.jsonfs = {
 		get:function (path, options) {
 			options = options || {};
-			return deep.store("fs")
+			return deep.protocoles.fs
 			.get(path, options)
-			.catchError()
 			.done(function (success) {
 				return JSON.parse(success);
 			});
 		}
 	};
-
+}
 });

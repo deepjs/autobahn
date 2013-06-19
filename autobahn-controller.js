@@ -115,8 +115,9 @@ define(function (require)
 			if(this.loaded)
 				return this;
 			this.loaded = true;
-			console.log("autobahn will load");
+			//console.log("autobahn will load : ", this);
 			return deep(this)
+			//.logValues()
 			.log("autobahn flatten 1")
 			.flatten()
 			.log("______________________ autobahn flattened")
@@ -177,8 +178,8 @@ define(function (require)
 					});
 				}
 				catch(e){
-					if(error instanceof Error)
-						return error;
+					if(e instanceof Error)
+						return e;
 					return new errors.Server(e, 500);
 				}
 			})
@@ -221,9 +222,9 @@ define(function (require)
 			{
 				//console.log("CONTROLLER NOT LOADED : load it : ", ctrl)
 				ctrl.name = joined;
-				return deep(othis)
-				.catchError()
-				.query("./roles/_"+joined)
+				return deep(ctrl)
+				//.catchError()
+				//.query("./roles/_"+joined)
 				.bottom(RoleController)
 				.run("init")
 				.log("role "+joined+" : flattened...")

@@ -1,25 +1,17 @@
 if(typeof define !== 'function'){
 	var define = require('amdefine')(module);
 }
-
-
 /*
-
 	request : 
 		 passage par Session en jsgi : request contient session.
 		arrivée dans autobahn controller : 
 			analyse request : find roles
 
-
 		put:stock.allowCreate().onwerput(),
 		patch:stock.ownerpatch()
 
-
-
 	autobahn().......close() : end chain
 */
-
-
 
 define(["require","deep/deep"],function (require)
 {
@@ -380,38 +372,6 @@ define(["require","deep/deep"],function (require)
 	}
 	autobahn.utils = utils;
 	autobahn.layer = autobahnController;
-
-	deep(deep.request).up({
-		post:function  (uri, object, options) 
-		{
-			console.log("POST from autobahn-plugin")
-			
-			var headers = {};
-
-			//this.setRequestHeaders(options, headers);
-
-			//console.log("HEADER  : ", headers )
-			var postRequest= HTTPrequest({
-					method: "POST",
-					url:uri,
-					body: JSON.stringify(object),
-					headers: headers
-				});
-			
-			return deep.when( postRequest )
-				.done( function (results) {
-					return results
-				})
-				.fail( function  (error) {
-					console.log("error (remote HTTP call failed) while calling remote-services on autobhan post plugin : ", error);
-					return error;
-				});
-		},
-		put:function ( uri, object, options) 
-		{
-			console.log("put from autobahn-plugin")
-		}
-	})
 	return autobahn;
 
 })
