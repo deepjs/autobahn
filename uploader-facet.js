@@ -107,7 +107,7 @@ define(function (require){
     };*/
     FileInfo.prototype.validate = function () 
     {
-        console.log("validate file uplpad");
+        //console.log("validate file uplpad");
         if (this.options.minFileSize && this.options.minFileSize > this.size) 
             this.error = 'File is too small';
         else if (this.options.maxFileSize && this.options.maxFileSize < this.size) 
@@ -157,8 +157,8 @@ define(function (require){
         var newPath = path.join(path.normalize(options.uploadDir), this.name);
         //console.log("________________________________ will move sync : ",this.file.path, " --> ",newPath);
 
-       
-        //console.log("3 : res rename : ", fs.renameSync(this.file.path,newPath))
+       fs.renameSync(this.file.path,newPath)
+        //console.log("3 : res rename : ", )
 
         }
         catch(e){
@@ -219,7 +219,7 @@ define(function (require){
         }
         else
             finished();
-        return deep.promise(def);
+        return def.promise();
     }
 
     FileInfo.prototype.moveAndCrop = function (options, newName, safe) 
@@ -280,7 +280,7 @@ define(function (require){
         }
         else
             finished();
-        return deep.promise(def);
+        return def.promise();
     }
 
 
@@ -314,8 +314,8 @@ define(function (require){
     };*/
 
     UploadHandler.prototype.post = function () {
-        //console.log("UploadHandler : post ")
-        var def = this.deferred = deep.Deferred();
+       // console.log("UploadHandler : post ")
+        var def = this.deferred = new deep.Deferred();
         var response = {
             files:this.files,
             fields:this.fields,
@@ -330,7 +330,7 @@ define(function (require){
                 map = {},
                 redirect,
                 finish = function () {
-                    //console.log("on finish")
+                   // console.log("upload on finish : ", response)
                     if(handler.aborted)
                         return;
                     def.resolve(response);
@@ -372,7 +372,7 @@ define(function (require){
                 if(handler.aborted)
                     return;
                 handler.aborted = true;
-                console.log("on aborted")
+               // console.log("on aborted")
                 tmpFiles.forEach(function (file) {
                     fs.unlink(file);
                 });
@@ -395,7 +395,7 @@ define(function (require){
             .on('progress', function (bytesReceived, bytesExpected) {
                 if(handler.aborted)
                     return;
-                //console.log("on progress",bytesReceived, "/", bytesExpected)
+               // console.log("on progress",bytesReceived, "/", bytesExpected)
                 if (bytesReceived > handler.options.maxPostSize)
                 {
                     tmpFiles.forEach(function (file) {
@@ -411,9 +411,10 @@ define(function (require){
         }
         catch(e)
         {
+            //console.log("error while uploader.post : ",e)
             def.reject(e);
         }
-        return deep.promise(def);
+        return def.promise();
     };
 
     UploadHandler.prototype.abort = function (argument) {
@@ -444,7 +445,7 @@ define(function (require){
             else
                 def.resolve({success: !error});
         });
-        return deep.promise(def);
+        return def.promise();
     };
 
 
@@ -525,7 +526,7 @@ define(function (require){
         accessors:{
             post:{
                 handler:function (object, options) {
-                    console.log("upload facet : post " , object)
+                    //console.log("upload facet : post " , object)
                     utils.setNoCacheHeaders(options);
                     
                     return object;

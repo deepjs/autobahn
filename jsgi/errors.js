@@ -32,6 +32,7 @@ define(function(require){
 				
 				//if(e.status && e.status >= 400 && e.status !== 404)
 				console.log("\n\n***************** ERRORS HANDLER (errors jsgi) : \n", e, "\n*************************************\n");
+				deep.utils.dumpError(e);
 				var response = {
 					headers:{
 						"content-type":"application/json"
