@@ -50,12 +50,17 @@ define(function RoleControllerDefine(require)
 
 			return deep(this)
 			.position("role")
+			//.log("______________ START INIT FACETS")
+			//.logValues()
 			.query("./facets/*")
 			.bottom(FacetController)
+			//.log("_____________ FACETS ? ")
+			//.logValues()
 			.back("role")
 			.flatten()
 			//.log("Facets flattened________________________________")
 			.query("./facets/*")
+			//.logValues()
 			.branches(function (brancher)
 			{
 				console.log("facet will init stores")
@@ -71,7 +76,7 @@ define(function RoleControllerDefine(require)
 				//console.log("stores init launched")
 				return brancher;
 			})
-			//.log("________________ stores initialised")
+			//.log("________________ stores initialised : INIT FACET")
 			.run("init")
 			.fail(function (error) {
 				// body...

@@ -136,9 +136,10 @@ define(function (require)
 					console.log("autobahn", "getRole() : request.remoteUser : ", session.remoteUser);
 			}	
 			if(console.flags["autobahn"])
-				console.log("autobahn", "getRole() : will compil roles : ", roles, this);
+				console.log("autobahn", "getRequestController() : will compil roles : ", roles, this);
 			return deep.when(this.compileRoles(roles))
 			.done(function (ctrl) {
+				//console.log("getRequestController : role compiled : ", ctrl)
 				request.autobahn.roleController = ctrl;
 				if(request.autobahn.session)
 						request.autobahn.session.roleController = function(){ return ctrl };
@@ -212,7 +213,8 @@ define(function (require)
 					this.roles["_"+joined] = ctrl;
 				}
 			}
-			catch(e){
+			catch(e)
+			{
 				if(e instanceof Error)
 					return e;
 				return new Error("error while compiling roles : "+String(e));
@@ -225,10 +227,13 @@ define(function (require)
 				return deep(ctrl)
 				//.catchError()
 				//.query("./roles/_"+joined)
+				//.log("__________________ ROLES JOINED CATCHED TO INIT ")
 				.bottom(RoleController)
+				//.logValues()
 				.run("init")
 				.log("role "+joined+" : flattened...")
 				.done(function (success) {
+					//console.log("success of role compilation : ", success)
 					return ctrl;
 				})
 				.fail(function (error) {

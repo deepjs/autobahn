@@ -313,6 +313,7 @@ var Accessors  = {
 var sanitizer = require("sanitizer");
 var createSanitizer = function (schema) {
 	var toSanitize = deep(schema).query(".//*?sanitize=true").nodes();
+	//console.log("TO SANITIZE : ", toSanitize);
 	if(toSanitize.length == 0)
 		return null;
 	var queries = [];
