@@ -32,53 +32,39 @@ define(["require","deep/deep"],function (require)
 				self.currentRole = null;
 				var roles = session.remoteUser.roles || ["public"];
 				if(session.roleController)
-				{
-					self.currentRole = session.roleController();
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [self.currentRole, null]);
-				}
-				else
-					deep.when(autobahnController.compileRoles(roles)).then(function (ctrl) {
+					return self.currentRole = session.roleController();
+				return deep.when(autobahnController.compileRoles(roles)).then(function (ctrl) {
 						self.currentRole = ctrl;
 						if(!ctrl)
 							throw new Error("No roles selected with : "+JSON.stringify(roles));
-						self.running = false;
-						deep.chain.nextQueueItem.apply(self, [ctrl, null]);
-					},
-					function (error) {
-						self.running = false;
-						deep.chain.nextQueueItem.apply(self, [null, error]);
+						return ctrl;
 					});
 			}
-			deep.chain.addInQueue.apply(self, [func]);
+			deep.chain.addInChain.apply(self, [func]);
 			return this;
 		},
 		roles:function (list) {
 			var self = this;
 			list = list || ["public"];
 			var func = function (s,e) {
-				deep.when(autobahnController.compileRoles(list)).then(function (ctrl) {
+				return deep.when(autobahnController.compileRoles(list)).then(function (ctrl) {
 					self.currentRole = ctrl;
 					//self._entries = []
 					if(!ctrl)
 						throw new Error("No roles selected with : "+JSON.stringify(list));
 				
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [ctrl, null]);
-				},
-				function (error) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [null, error]);
+					//self.running = false;
+					return ctrl;
 				})
 			}
-			deep.chain.addInQueue.apply(self, [func]);
+			deep.chain.addInChain.apply(self, [func]);
 			return this;
 		},
 		facet:function (name) {
 			var self = this;
 			var func = function (s,e) {
 				if(!self.currentRole)
-					deep.when(autobahnController.compileRoles(["public"])).then(function (ctrl) {
+					return deep.when(autobahnController.compileRoles(["public"])).then(function (ctrl) {
 						self.currentRole = ctrl;
 						if(!ctrl)
 							throw new Error("No roles selected before facet use");
@@ -86,12 +72,7 @@ define(["require","deep/deep"],function (require)
 						self.currentFacet = ctrl.facets[name];
 						if(!self.currentFacet)
 							throw new Error("No facet selected with : "+name);
-						self.running = false;
-						deep.chain.nextQueueItem.apply(self, [self.currentFacet, null]);
-					},
-					function (error) {
-						self.running = false;
-						deep.chain.nextQueueItem.apply(self, [null, error]);
+						return self.currentFacet;
 					});
 				else
 				{
@@ -99,12 +80,11 @@ define(["require","deep/deep"],function (require)
 					//console.log("autobahn.facet : current roles already present : name : ",name, " - ctrl.facets ", self.currentRole.facets[name])
 					if(!self.currentFacet)
 						throw new Error("No facet selected with : "+name);
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [self.currentFacet, null]);
+					return self.currentFacet;
 				}
 			}
 			deep.utils.up(facetHandler, self);
-			deep.chain.addInQueue.apply(self, [func]);
+			deep.chain.addInChain.apply(self, [func]);
 			return this;
 		}
 	};
@@ -117,21 +97,16 @@ define(["require","deep/deep"],function (require)
 				if(!self.currentFacet.rpc || !self.currentFacet.rpc[method])
 					return new errors.MethodNotAllowed("rpc call couldn't be fullfilled : no metod found with : ", method)
 
-				deep.when(self.currentFacet.rpc[method](id, args))
+				return deep.when(self.currentFacet.rpc[method](id, args))
 				.then(function (result)
 				{
 					console.log("facetHandler : get : ", result)
 					self._entries = deep.query(result, "/!", { schema:self.currentFacet.schema, resultType:"full"  });
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [result, null]); 
-				})
-				.fail(function (error) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [null, error]); 
+					return result;
 				});
 			}
 			deep.utils.up(ressourceHandler, self);
-			deep.chain.addInQueue.apply(self, [func]);
+			deep.chain.addInChain.apply(self, [func]);
 			return this;
 		},
 		get:function (id, options) {
@@ -139,21 +114,16 @@ define(["require","deep/deep"],function (require)
 			var func = function (s,e) {
 				if(!self.currentFacet)
 					throw new Error("No facet selected before get : ",id);
-				deep.when(self.currentFacet.accessors.get.handler(id, options))
+				return deep.when(self.currentFacet.accessors.get.handler(id, options))
 				.then(function (result)
 				{
 					console.log("facetHandler : get : ", result)
 					self._entries = deep.query(result, "/!", { schema:self.currentFacet.schema, resultType:"full"  });
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [result, null]); 
-				})
-				.fail(function (error) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [null, error]); 
+					return result;
 				});
 			}
 			deep.utils.up(ressourceHandler, self);
-			deep.chain.addInQueue.apply(self, [func]);
+			deep.chain.addInChain.apply(self, [func]);
 			return this;
 		},
 		query:function (q, options) {
@@ -161,7 +131,7 @@ define(["require","deep/deep"],function (require)
 			var func = function (s,e) {
 				if(!self.currentFacet)
 					throw new Error("No facet selected before query : ",q);
-				deep.when(self.currentFacet.accessors.query.handler(q, options))
+				return deep.when(self.currentFacet.accessors.query.handler(q, options))
 				.done(function (result) {
 					//console.log("autobahn.query : result : ", result)
 					if(!result || !result.slice)
@@ -174,18 +144,11 @@ define(["require","deep/deep"],function (require)
 						result = result.slice(0,result.length);
 						self._entries = deep.query(result, "/*", { schema:{ type:"array", items:self.currentFacet.schema }, resultType:"full" });
 					}
-
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [result, null]); 
-				})
-				.fail(function (error) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [null, error]); 
 				});
 			}
 			//console.log("facetHandler.query : add ressource controle")
 			deep.utils.up(ressourceHandler, this);
-			deep.chain.addInQueue.apply(this, [func]);
+			deep.chain.addInChain.apply(this, [func]);
 			return this;
 		},
 		post:function (object, options) {
@@ -193,15 +156,9 @@ define(["require","deep/deep"],function (require)
 			var func = function (s,e) {
 				if(!self.currentFacet)
 					throw new Error("No facet selected before post : ",object);
-				deep(self.currentFacet.accessors.post.handler(object, options)).then(function (result) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [result, null]); 
-				}, function (error) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [null, error]); 
-				});
+				return self.currentFacet.accessors.post.handler(object, options);
 			}
-			deep.chain.addInQueue.apply(self, [func]);
+			deep.chain.addInChain.apply(self, [func]);
 			return this;
 		},
 		put:function (object, options) {
@@ -212,15 +169,9 @@ define(["require","deep/deep"],function (require)
 					throw new Error("No facet selected before put : ",object);
 				options = options || {};
 				options.id = options.id || object.id;
-				deep.when(self.currentFacet.accessors.put.handler(object, options)).then(function (result) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [result, null]); 
-				}, function (error) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [null, error]); 
-				});
+				return self.currentFacet.accessors.put.handler(object, options)
 			}
-			deep.chain.addInQueue.apply(self, [func]);
+			deep.chain.addInChain.apply(self, [func]);
 			return this;
 		},
 		patch:function (object, options) {
@@ -230,15 +181,9 @@ define(["require","deep/deep"],function (require)
 					throw new Error("No facet selected before patch : ",object);
 				options = options || {};
 				options.id = options.id || object.id;
-				deep.when(self.currentFacet.accessors.patch.handler(object, options)).then(function (result) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [result, null]); 
-				}, function (error) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [null, error]); 
-				});
+				return self.currentFacet.accessors.patch.handler(object, options);
 			}
-			deep.chain.addInQueue.apply(self, [func]);
+			deep.chain.addInChain.apply(self, [func]);
 			return this;
 		},
 		del:function (id, options) {
@@ -246,15 +191,9 @@ define(["require","deep/deep"],function (require)
 			var func = function (s,e) {
 				if(!self.currentFacet)
 					throw new Error("No facet selected before get : ",id);
-				deep.when(self.currentFacet.accessors["delete"].handler(id, options)).then(function (result) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [result, null]); 
-				}, function (error) {
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [null, error]); 
-				});
+				return self.currentFacet.accessors["delete"].handler(id, options);
 			}
-			deep.chain.addInQueue.apply(self, [func]);
+			deep.chain.addInChain.apply(self, [func]);
 			return this;
 		}
 	});
@@ -271,18 +210,9 @@ define(["require","deep/deep"],function (require)
 				self._entries.forEach(function(e){
 					alls.push(deep.when(self.currentFacet.accessors.post.handler(e.value, options)));
 				})
-				deep.all(alls)
-				.done(function(results){
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [results, null]); 
-				})
-				.fail(function(error){
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [null, error]); 
-				})
-				
+				return deep.all(alls);
 			}
-			deep.chain.addInQueue.apply(self, [func]);
+			deep.chain.addInChain.apply(self, [func]);
 			return this;
 		},
 		put:function (options) {
@@ -298,17 +228,9 @@ define(["require","deep/deep"],function (require)
 					options.id = e.value.id;
 					alls.push(deep.when(self.currentFacet.accessors.put.handler(e.value, options)));
 				})
-				deep.all(alls)
-				.done(function(results){
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [results, null]); 
-				})
-				.fail(function(error){
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [null, error]); 
-				})
+				return deep.all(alls);
 			}
-			deep.chain.addInQueue.apply(self, [func]);
+			deep.chain.addInChain.apply(self, [func]);
 			return this;
 		},
 		patch:function (options) {
@@ -319,20 +241,12 @@ define(["require","deep/deep"],function (require)
 				var alls = [];
 				options = options || {};
 				options.id = options.id || object.id;
-				dself._entries.forEach(function(e){
+				self._entries.forEach(function(e){
 					alls.push(deep.when(self.currentFacet.accessors.patch.handler(e.value, options)));
 				})
-				deep.all(alls)
-				.done(function(results){
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [results, null]); 
-				})
-				.fail(function(error){
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [null, error]); 
-				})
+				return deep.all(alls);
 			}
-			deep.chain.addInQueue.apply(self, [func]);
+			deep.chain.addInChain.apply(self, [func]);
 			return this;
 		},
 		del:function (options) {
@@ -344,18 +258,9 @@ define(["require","deep/deep"],function (require)
 				self._entries.forEach(function(e){
 					alls.push(deep.when(self.currentFacet.accessors["delete"].handler(e.value.id, options)));
 				})
-				deep.all(alls)
-				.done(function(results){
-					self.entries = [];
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [results, null]); 
-				})
-				.fail(function(error){
-					self.running = false;
-					deep.chain.nextQueueItem.apply(self, [null, error]); 
-				})
+				return deep.all(alls);
 			}
-			deep.chain.addInQueue.apply(self, [func]);
+			deep.chain.addInChain.apply(self, [func]);
 			return this;
 		}
 	});

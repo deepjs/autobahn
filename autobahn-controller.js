@@ -224,9 +224,9 @@ define(function (require)
 			{
 				//console.log("CONTROLLER NOT LOADED : load it : ", ctrl)
 				ctrl.name = joined;
-				return deep(ctrl)
-				//.catchError()
-				//.query("./roles/_"+joined)
+				return deep(this)
+				.catchError()
+				.query("./roles/_"+joined)
 				//.log("__________________ ROLES JOINED CATCHED TO INIT ")
 				.bottom(RoleController)
 				//.logValues()

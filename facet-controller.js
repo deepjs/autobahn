@@ -32,9 +32,6 @@ need to provide wrap mecanims for methods and rpc restriction
 	
 	need to add from schema : avoid duplicate (on unique schema prop)
 		: look in store if there is no duplicate before insertion (post/patch/put - input)
-
-	
-
  */
 
 if(typeof define !== 'function')
