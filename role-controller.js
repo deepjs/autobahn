@@ -71,12 +71,17 @@ define(function RoleControllerDefine(require)
 
 				brancher
 				.branch()
+				//.logValues()
 				.query("./store?_schema.type=string")
-				.load();
+				//.log("role controller load store : ")
+				//.logValues()
+				.load()
+				//.logValues();
 				//console.log("stores init launched")
 				return brancher;
 			})
-			//.log("________________ stores initialised : INIT FACET")
+			.log("________________ stores initialised : INIT FACET")
+			//.log()
 			.run("init")
 			.fail(function (error) {
 				// body...
