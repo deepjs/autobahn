@@ -30,9 +30,9 @@ define(function RouteNodeControllerDefine(require){
 				jsdom.env({
 				  html:index,
 				  scripts: [
-				    '../../www/common/js-lib/jquery/jquery-1.7.1.min.js',
-				    '../../www/common/js-lib/jquery/jquery.address-1.4.min.js',
-				    '../../www/common/js-lib/jquery/jquery.cookie.js',
+				    '../../www/js/jquery/jquery-1.7.1.min.js',
+				    '../../www/js/jquery/jquery.address-1.4.min.js',
+				    '../../www/js/jquery/jquery.cookie.js',
 				    "../../www/app/ui/smartstrap/js/bootstrap-transition.js",
 					"../../www/app/ui/smartstrap/js/bootstrap-alert.js",
 					"../../www/app/ui/smartstrap/js/bootstrap-modal.js",
