@@ -56,7 +56,7 @@ var Accessors  = {
 	},
 	get : function(id, options)
 	{
-		//console.log("facets-controller ("+this.facet.name+") : get : ", id);
+		console.log("facets-controller ("+this.facet.name+") : get : ", id);
 		var self = this;
 
 		var accessors = this.facet.accessors;
@@ -452,12 +452,11 @@ var Permissive = {
 			}
 		}
 	},
-	rpcCall:function (request)
+	executeRPC:function(id, body, options)
 	{
-		//console.log("Facet.rpcCall : ", request.autobahn.path)
 		var self = this;
-		return deep(deep.all([this.accessors.get.handler(request.autobahn.path, request.autobahn), request.body]))
-		.catchError(true)
+		console.log("execute rpc : ",id, body);
+		return deep.all([this.accessors.get.handler(id, options), body])
 		.done(function (results) {
 			var obj = results[0];
 			var body = results[1];
@@ -474,8 +473,8 @@ var Permissive = {
 			body.params = body.params || [];
 
 			var schema = self.schema;
-			var session = request.autobahn.session;
-			var roleController = request.autobahn.roleController;
+			var session = options.session;
+			var roleController = options.roleController;
 
 			var handler = {
 				save:function()
@@ -483,7 +482,7 @@ var Permissive = {
 					return autobahn()
 					.roles(["admin"])
 					.facet(self.name)
-					.put(obj)
+					.patch(obj)
 					.done(function (success)
 					{
 						return success;
@@ -530,8 +529,14 @@ var Permissive = {
 					error:JSON.stringify(error),
 					result:null
 				}
-			})
-		})
+			});
+		});
+	},
+	rpcCall:function (request)
+	{
+		//console.log("Facet.rpcCall : ", request.autobahn.path)
+		var self = this;
+		return self.executeRPC(request.autobahn.path, request.body, request.autobahn)
 		.done(function  (result) {
 			request.autobahn.response.body = result;
 			deep.utils.up(self.headers || {}, request.autobahn.response.headers);

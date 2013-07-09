@@ -11,19 +11,19 @@ define(function (require)
 	var request = require("autobahn/promised-node-http");
 	var errors = require("autobahn/errors");
 	var deep = require("deep/deep");
-	deep.stores.remotejson = new deep.store.Store();
+	deep.protocoles.remotejson = new deep.Store();
 
-	deep.stores.remotejson.extensions = [
+	deep.protocoles.remotejson.extensions = [
 		/(\.json(\?.*)?)$/gi
 	];
-	deep.stores.remotejson.baseUri = "";
-	deep.stores.remotejson.setCustomHeaders = function (headers, request) {
+	deep.protocoles.remotejson.baseUri = "";
+	deep.protocoles.remotejson.setCustomHeaders = function (headers, request) {
 		// body...
 	}
-	deep.stores.remotejson.setRequestHeaders = function (headers, request) {
+	deep.protocoles.remotejson.setRequestHeaders = function (headers, request) {
 		// body...
 	}
-	deep.stores.remotejson.get = deep.stores.remotejson.query = function (id, options) {
+	deep.protocoles.remotejson.get = deep.protocoles.remotejson.query = function (id, options) {
 		//console.log("json.get : ", id);
 
 		if(id == "?" || !id)
@@ -57,7 +57,7 @@ define(function (require)
 			return data;
 		})
 		.fail(function(error){
-			//console.log("deep.stores.remotejson.get error : ",id," - ", error);
+			//console.log("deep.protocoles.remotejson.get error : ",id," - ", error);
 			throw new errors.Server(error.body||error, error.status||500);
 		})
 		.done(function (datas) {
@@ -76,7 +76,7 @@ define(function (require)
 			deep.mediaCache.manage(d, id);
 		return d;
 	};
-	deep.stores.remotejson.put = function (object, options) 
+	deep.protocoles.remotejson.put = function (object, options) 
 	{
 		console.log("remotejson.put : ", object, options.id);
 		options = options || {};
@@ -111,7 +111,7 @@ define(function (require)
 			this.range = deep.Chain.range;
 		});
 	};
-	deep.stores.remotejson.post = function (object, options) {
+	deep.protocoles.remotejson.post = function (object, options) {
 		//console.log("remotejsn post: ", object)
 		var self = this;
 		options = options || {};
@@ -137,7 +137,7 @@ define(function (require)
 			this.range = deep.Chain.range;
 		});
 	};
-	deep.stores.remotejson.del = function (id, options) {
+	deep.protocoles.remotejson.del = function (id, options) {
 		id = id || "";
 		if(!id)
 			throw new errors.PreconditionFailed("stores.del need id in uri");
@@ -166,7 +166,7 @@ define(function (require)
 	};
 
 
-	deep.stores.remotejson.patch = function (object, options) {
+	deep.protocoles.remotejson.patch = function (object, options) {
 		options = options || {};
 		var id = object.id || options.id;
 		if(!id)
@@ -193,7 +193,7 @@ define(function (require)
 			this.range = deep.Chain.range;
 		});
 	};
-	/*deep.stores.remotejson.bulk = function (arr, uri, options) {
+	/*deep.protocoles.remotejson.bulk = function (arr, uri, options) {
 		var self = this;
 		var def = deep.Deferred();
 		$.ajax({
@@ -228,7 +228,7 @@ define(function (require)
 			this.range = deep.Chain.range;
 		});
 	};
-	deep.stores.remotejson.rpc = function (method, params, id) {
+	deep.protocoles.remotejson.rpc = function (method, params, id) {
 		var self = this;
 		var callId = "call"+new Date().valueOf();
 		var def = deep.Deferred();
@@ -269,7 +269,7 @@ define(function (require)
 		});
 	};
 	*/
-	deep.stores.remotejson.range = function (arg1, arg2, query, options)
+	deep.protocoles.remotejson.range = function (arg1, arg2, query, options)
 	{
 		query = query || "";
 		query = this.baseUri + query;
@@ -313,7 +313,7 @@ define(function (require)
 				}
 			}
 			else
-				console.log("ERROR deep.stores.remotejson.range : range header missing !! ");
+				console.log("ERROR deep.protocoles.remotejson.range : range header missing !! ");
 			rangeResult = deep.utils.createRangeObject(rangeResult.start, rangeResult.end, rangeResult.totalCount);
 			rangeResult.results = data.body;
 			return rangeResult;
@@ -337,20 +337,20 @@ define(function (require)
 			this.range = deep.Chain.range;
 		});
 	};
-	deep.stores.remotejson.init = function (options)
+	deep.protocoles.remotejson.init = function (options)
 	{
 
 	}
-	deep.stores.remotejson.create = function (name, uri, options)
+	deep.protocoles.remotejson.create = function (name, uri, options)
 	{
-		var store = deep.utils.bottom(deep.stores.remotejson, {
+		var store = deep.utils.bottom(deep.protocoles.remotejson, {
 			baseUri:uri,
 			options:options,
 			create:deep.collider.remove()
 		});
-		deep.stores[name] = store;
+		deep.protocoles[name] = store;
 		store.name = name;
 		return store;
 	};
-	return deep.stores.remotejson;
+	return deep.protocoles.remotejson;
 });

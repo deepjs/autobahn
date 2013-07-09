@@ -93,15 +93,19 @@ define(["require","deep/deep"],function (require)
 			var self = this;
 			var func = function (s,e) {
 				if(!self.currentFacet)
-					throw new Error("No facet selected before rpc : post on ",id);
-				if(!self.currentFacet.rpc || !self.currentFacet.rpc[method])
-					return new errors.MethodNotAllowed("rpc call couldn't be fullfilled : no metod found with : ", method)
-
-				return deep.when(self.currentFacet.rpc[method](id, args))
-				.then(function (result)
+					throw new Error("No facet selected before rpc : post on "+id);
+				var body = {
+					id:"internal1",
+					params:args,
+					method:method
+				}
+				console.log("autobahn.Chain.rpc : ",id, method, args);
+				return deep.when(self.currentFacet.executeRPC(id, body, options))
+				.done(function (result)
 				{
-					console.log("facetHandler : get : ", result)
-					self._entries = deep.query(result, "/!", { schema:self.currentFacet.schema, resultType:"full"  });
+					console.log("facetHandler : rpc : ", result)
+					self._entries = deep.Querier.createRootNode(result, self.currentFacet.schema);
+					self._queried = false;
 					return result;
 				});
 			}
@@ -115,10 +119,11 @@ define(["require","deep/deep"],function (require)
 				if(!self.currentFacet)
 					throw new Error("No facet selected before get : ",id);
 				return deep.when(self.currentFacet.accessors.get.handler(id, options))
-				.then(function (result)
+				.done(function (result)
 				{
 					console.log("facetHandler : get : ", result)
-					self._entries = deep.query(result, "/!", { schema:self.currentFacet.schema, resultType:"full"  });
+					self._entries = deep.Querier.createRootNode(result, self.currentFacet.schema);
+					self._queried = false;
 					return result;
 				});
 			}
@@ -142,7 +147,8 @@ define(["require","deep/deep"],function (require)
 					else
 					{
 						result = result.slice(0,result.length);
-						self._entries = deep.query(result, "/*", { schema:{ type:"array", items:self.currentFacet.schema }, resultType:"full" });
+						self._entries = deep.Querier.createRootNode(result, { type:"array", items:self.currentFacet.schema });
+						self._queried = false;
 					}
 				});
 			}
@@ -156,7 +162,14 @@ define(["require","deep/deep"],function (require)
 			var func = function (s,e) {
 				if(!self.currentFacet)
 					throw new Error("No facet selected before post : ",object);
-				return self.currentFacet.accessors.post.handler(object, options);
+				return deep.when(self.currentFacet.accessors.post.handler(object, options))
+				.done(function (result)
+				{
+					console.log("facetHandler : post : ", result)
+					self._entries = deep.Querier.createRootNode(result, self.currentFacet.schema);
+					self._queried = false;
+					return result;
+				});
 			}
 			deep.chain.addInChain.apply(self, [func]);
 			return this;
@@ -169,7 +182,14 @@ define(["require","deep/deep"],function (require)
 					throw new Error("No facet selected before put : ",object);
 				options = options || {};
 				options.id = options.id || object.id;
-				return self.currentFacet.accessors.put.handler(object, options)
+				return deep.when(self.currentFacet.accessors.put.handler(object, options))
+				.done(function (result)
+				{
+					console.log("facetHandler : put : ", result)
+					self._entries = deep.Querier.createRootNode(result, self.currentFacet.schema);
+					self._queried = false;
+					return result;
+				});
 			}
 			deep.chain.addInChain.apply(self, [func]);
 			return this;
@@ -181,7 +201,14 @@ define(["require","deep/deep"],function (require)
 					throw new Error("No facet selected before patch : ",object);
 				options = options || {};
 				options.id = options.id || object.id;
-				return self.currentFacet.accessors.patch.handler(object, options);
+				return deep.when(self.currentFacet.accessors.patch.handler(object, options))
+				.done(function (result)
+				{
+					console.log("facetHandler : patch : ", result)
+					self._entries = deep.Querier.createRootNode(result, self.currentFacet.schema);
+					self._queried = false;
+					return result;
+				});
 			}
 			deep.chain.addInChain.apply(self, [func]);
 			return this;
@@ -277,6 +304,12 @@ define(["require","deep/deep"],function (require)
 	}
 	autobahn.utils = utils;
 	autobahn.layer = autobahnController;
+	var redirect = require("pintura/jsgi/redirect");
+	autobahn.redirect = function(request, uri){
+		var r =  redirect.Redirect(uri)(request);
+		r._pintura_redirection_ = true;
+		return r;
+	}
 	return autobahn;
 
 })
