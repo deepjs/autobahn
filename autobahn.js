@@ -103,7 +103,7 @@ define(["require","deep/deep"],function (require)
 				return deep.when(self.currentFacet.executeRPC(id, body, options))
 				.done(function (result)
 				{
-					console.log("facetHandler : rpc : ", result)
+					//console.log("facetHandler : rpc : ", result)
 					self._entries = deep.Querier.createRootNode(result, self.currentFacet.schema);
 					self._queried = false;
 					return result;
@@ -121,7 +121,7 @@ define(["require","deep/deep"],function (require)
 				return deep.when(self.currentFacet.accessors.get.handler(id, options))
 				.done(function (result)
 				{
-					console.log("facetHandler : get : ", result)
+					//console.log("facetHandler : get : ", result)
 					self._entries = deep.Querier.createRootNode(result, self.currentFacet.schema);
 					self._queried = false;
 					return result;
@@ -165,7 +165,7 @@ define(["require","deep/deep"],function (require)
 				return deep.when(self.currentFacet.accessors.post.handler(object, options))
 				.done(function (result)
 				{
-					console.log("facetHandler : post : ", result)
+					//console.log("facetHandler : post : ", result)
 					self._entries = deep.Querier.createRootNode(result, self.currentFacet.schema);
 					self._queried = false;
 					return result;
@@ -185,7 +185,7 @@ define(["require","deep/deep"],function (require)
 				return deep.when(self.currentFacet.accessors.put.handler(object, options))
 				.done(function (result)
 				{
-					console.log("facetHandler : put : ", result)
+					//console.log("facetHandler : put : ", result)
 					self._entries = deep.Querier.createRootNode(result, self.currentFacet.schema);
 					self._queried = false;
 					return result;
@@ -204,7 +204,7 @@ define(["require","deep/deep"],function (require)
 				return deep.when(self.currentFacet.accessors.patch.handler(object, options))
 				.done(function (result)
 				{
-					console.log("facetHandler : patch : ", result)
+					//console.log("facetHandler : patch : ", result)
 					self._entries = deep.Querier.createRootNode(result, self.currentFacet.schema);
 					self._queried = false;
 					return result;
@@ -250,7 +250,7 @@ define(["require","deep/deep"],function (require)
 					throw new Error("No facet selected before ressource.put");
 				var alls = [];
 				options = options || {};
-				console.log("before ressource.put : self._entries : ", deep.chain.values(self))
+				//console.log("before ressource.put : self._entries : ", deep.chain.values(self))
 				self._entries.forEach(function(e){
 					options.id = e.value.id;
 					alls.push(deep.when(self.currentFacet.accessors.put.handler(e.value, options)));

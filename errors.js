@@ -26,10 +26,9 @@ if(typeof define !== 'function'){
 define(function(require){
 	var Compose = require("compose");
 	var toString = function () {
-
 		return JSON.stringify(this);
 	}
-	var common = { toString:toString, headers:null, body:null, body:null, status:null };
+	var common = { toString:toString, headers:null, body:null, status:null };
 	var AccessError = Compose( Error,function(body){ this.body = body; this.status = 404; this.headers = {}; }, common );
 
 	var Conflict = Compose( Error,function(body){ this.body = body; this.status = 409; }, common);
@@ -43,10 +42,9 @@ define(function(require){
 
 	var DatabaseError = Compose(Error, function(body){ this.body = body; this.status = 404; }, common);
 
-	var NotFoundError = Compose(Error, function(body){ this.body = body; this.status = 404; }, common)
+	var NotFoundError = Compose(Error, function(body){ this.body = body; this.status = 404; }, common);
 
 	var PreconditionFailed = Compose(Error, function(body, report){ this.body = body; this.status = 412; this.report = report; }, common)
-
 
 	return {
 		Server:ServerError,
@@ -59,5 +57,6 @@ define(function(require){
 		Database:DatabaseError,
 		NotFound:NotFoundError,
 		PreconditionFailed:PreconditionFailed,
-	}
-})
+		Owner:Compose(Error, function(body){ this.body = body || "Owner error"; this.status = 403; }, common)
+	};
+});

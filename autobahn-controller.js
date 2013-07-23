@@ -62,11 +62,11 @@ define(function (require)
 		{
 			var session = request.autobahn.session;
 			var roles = ["public"];
-			if(session && session.remoteUser)
+			if(session && session.passport)
 			{
-				roles = session.remoteUser.roles || ["user"];
+				roles = session.passport.roles || ["user"];
 				if(console.flags["autobahn"])
-					console.log("autobahn", "getRole() : request.remoteUser : ", session.remoteUser);
+					console.log("autobahn", "getRole() : request.passport : ", session.passport);
 			}	
 			if(console.flags["autobahn"])
 				console.log("autobahn", "getRequestController() : will compil roles : ", roles, this);

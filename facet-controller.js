@@ -80,12 +80,17 @@ var Accessors  = {
 		//console.log("facet : ("+this.facet.name+") : get  : "+id+" : will call store. ")
 		return deep.when(this.facet.store.get(id, options), null, { rethrow:false })
 		.done(function(obj){
-			//console.log("facet get stroe response")
+			console.log("facet get stroe response : ", obj)
 			if(typeof obj === 'undefined' || obj == null)
 				throw new errors.NotFound("("+self.facet.name+") facet return nothing");
-			if(typeof self.restrictToOwner === 'function' && !self.restrictToOwner(obj, self.schema || schema, options))
-				throw new errors.Unauthorized("("+self.facet.name+") you're not the owner of this ressource.");
-			// filter privates props
+			if(self.restrictToOwner)
+			{
+				if(!deep.context.session)
+					return new errors.Owner("no previous session : ownership failed");
+				var toMatch = obj.userId || obj[self.restrictToOwner];
+				if(deep.context.session.remoteUser.id !== toMatch)
+					return new errors.Owner("id doesn't match : ownership failed");
+			}
 			if(self.hasPrivates)
 				deep(obj, self.schema || schema).remove(".//?_schema.private=true");
 			return obj;
@@ -112,7 +117,13 @@ var Accessors  = {
 			if(report && !report.valid)
 				return new errors.PreconditionFailed("("+self.name+") put failed!", JSON.stringify(report));
 		}	
-		
+
+		if(self.restrictToOwner)
+			if(!deep.context.session)
+				return new errors.Owner();
+			else if(object.userId && deep.context.session.remoteUser.id !== object.userId)
+				return new errors.Owner();
+
 		if(typeof this.restrictToOwner === 'function' && !this.restrictToOwner(obj, this.schema || this.facet.schema, options))
 			throw new errors.Unauthorized("("+self.facet.name+") you're not the owner of this ressource.");
 		//console.log("Accessors : post : ", object);
@@ -137,9 +148,10 @@ var Accessors  = {
 	{
 		//console.log("FacetController QUERY  : "+query+": options = ", this.facet.store);
 		if(!this.facet.store)
-			throw new errors.Access(this.facet.name + " don't have store to query something");
+			return new errors.Access(this.facet.name + " don't have store to query something");
 		var self = this;
-		return deep.when(this.facet.store.query(query, options), null, { rethrow:false })
+		return deep
+		.when(this.facet.store.query(query, options), null, { rethrow:false })
 		.done(function(result){
 			// console.log("facet.query : ", query, result)
 			if(!result)
@@ -152,12 +164,17 @@ var Accessors  = {
 					toTest = result.results;
 				deep(toTest, { type:"array", items:schema }).remove(".//?_schema.private=true");
 			}
+			if(self.restrictToOwner)
+				if(!deep.context.session)
+					return new errors.Owner();
+				else
+					deep(toTest, { type:"array", items:schema }).remove("./*?userId=ne="+success.userId);
 			return result;
 		})
 		.fail(function(error){
 			if(error instanceof Error)
-				throw error;
-			throw new errors.Access("("+self.facet.name+") error when query on store. "+JSON.stringify(error));
+				return error;
+			return new errors.Access("("+self.facet.name+") error when query on store. "+JSON.stringify(error));
 		});
 	},
 	put : function(object, options)
@@ -189,7 +206,12 @@ var Accessors  = {
 		.done(function(success){
 			if(success.length == 0)
 				throw new errors.Unauthorized("("+self.facet.name+") object don't exists. Please post before.");
-			return success;
+			var user = success.shift();
+			if(self.restrictToOwner)
+				if(!deep.context.session)
+					return new errors.Owner();
+				else if(deep.context.session.remoteUser.id !== success.userId)
+					return new errors.Owner();
 		})
 		.done(function(oldOne)
 		{
@@ -227,7 +249,7 @@ var Accessors  = {
 		var self = this;
 		//console.log("FACET patch : object.id ", object.id, " - id : ", options.id)
 		if(!this.facet.store)
-			throw new errors.Access(this.facet.name + " don't have store to put something");
+			return new errors.Access(this.facet.name + " don't have store to put something");
 		options.id = options.id || object.id;
 
 		if(!options.id || (object.id && options.id != object.id))
@@ -247,6 +269,12 @@ var Accessors  = {
 		.done( function (success) {
 			//console.log("("+self.facet.name+") PATCH GET old object done = ", success);
 			
+			if(self.restrictToOwner)
+				if(!deep.context.session)
+					return new errors.Owner();
+				else if(deep.context.session.remoteUser.id !== success.userId)
+					return new errors.Owner();
+
 			if(!success)
 				throw new errors.Unauthorized("no ressource to patch");
 
