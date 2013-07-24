@@ -64,7 +64,7 @@ define(function (require)
 			var roles = ["public"];
 			if(session && session.passport)
 			{
-				roles = session.passport.roles || ["user"];
+				roles = session.roles || ["user"];
 				if(console.flags["autobahn"])
 					console.log("autobahn", "getRole() : request.passport : ", session.passport);
 			}	
