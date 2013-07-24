@@ -486,7 +486,7 @@ var Permissive = {
 		console.log("execute rpc : ",id, body);
 
 		if(this.store && this.store.forwardRPC)
-			return this.store.rpc(id, body, options);
+			return this.store.rpc(body.method, body.params, id, options);
 
 		return deep.all([this.accessors.get.handler(id, options), body])
 		.done(function (results) {
