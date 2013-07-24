@@ -17,7 +17,7 @@ define(function (require){
 	var Memory = require("autobahn/stores/memory").store;
 	var AutobahnResponse = require("autobahn/autobahn-response");
 	var deep = require("deep/deep");
-	//var when = require("deep/promise").when;
+	//var when = deep.when;
 	var Session = {
 
 	};

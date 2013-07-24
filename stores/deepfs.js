@@ -223,6 +223,7 @@ return function(deep){
 
 
 	deep.protocoles.fs = {
+		_deep_store_:true,
 		get:function (path, options) {
 			var def = deep.Deferred();
 			fs.readFile(path, function(err, datas){
@@ -238,6 +239,7 @@ return function(deep){
 	};
 
 	deep.protocoles.htmlfs = {
+		_deep_store_:true,
 		get:function (path, options) {
 			options = options || {};
 			return deep.protocoles.fs
@@ -249,6 +251,7 @@ return function(deep){
 	};
 
 	deep.protocoles.swigfs = {
+		_deep_store_:true,
 		get:function (path, options) {
 			options = options || {};
 			return deep.protocoles.fs
@@ -261,6 +264,7 @@ return function(deep){
 	};
 
 	deep.protocoles.jsonfs = {
+		_deep_store_:true,
 		get:function (path, options) {
 			options = options || {};
 			return deep.protocoles.fs

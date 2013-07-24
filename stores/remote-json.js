@@ -16,12 +16,18 @@ define(function (require)
 	deep.protocoles.remotejson.extensions = [
 		/(\.json(\?.*)?)$/gi
 	];
+	deep.protocoles.remotejson.forwardRPC = true;
 	deep.protocoles.remotejson.baseUri = "";
 	deep.protocoles.remotejson.setCustomHeaders = function (headers, request) {
 		// body...
 	}
 	deep.protocoles.remotejson.setRequestHeaders = function (headers, request) {
-		// body...
+		for(var i in deep.globalHeaders)
+			headers[i] = deep.globalHeaders[i];
+
+
+		// toDO : add custom headers as Referent, userId, impersonateId, ...
+
 	}
 	deep.protocoles.remotejson.get = deep.protocoles.remotejson.query = function (id, options) {
 		//console.log("json.get : ", id);
@@ -193,7 +199,8 @@ define(function (require)
 			this.range = deep.Chain.range;
 		});
 	};
-	/*deep.protocoles.remotejson.bulk = function (arr, uri, options) {
+	/*
+	deep.protocoles.remotejson.bulk = function (arr, uri, options) {
 		var self = this;
 		var def = deep.Deferred();
 		$.ajax({
@@ -228,47 +235,50 @@ define(function (require)
 			this.range = deep.Chain.range;
 		});
 	};
-	deep.protocoles.remotejson.rpc = function (method, params, id) {
-		var self = this;
+*/
+	deep.protocoles.remotejson.rpc = function (method, params, id, options) {
+		options = options || {};
+		if(!id)
+			throw new errors.PreconditionFailed("stores.patch need id in uri or in object");
 		var callId = "call"+new Date().valueOf();
-		var def = deep.Deferred();
-		$.ajax({
-			beforeSend :function(req) {
-				writeJQueryDefaultHeaders(req);
-				req.setRequestHeader("Accept", "application/json; charset=utf-8;");
-			},
-			type:"POST",
-			url:id,
-			//dataType:"application/json-rpc; charset=utf-8;",
-			contentType:"application/json-rpc; charset=utf-8;",
-			data:JSON.stringify({
+
+		id = this.baseUri + id;
+		var self = this;
+		var infos = url.parse(id);
+		infos.headers = {
+			"Accept" : "application/json; charset=utf-8",
+			"Content-Type":"application/json-rpc; charset=utf-8;"
+		};
+		infos.method = "POST";
+		this.setRequestHeaders(infos.headers, options.request);
+		return deep(request(infos, {
 				id:callId,
 				method:method,
 				params:params||[]
-			})
 		})
 		.done(function (success) {
-			def.resolve(success);
+			if(success.error)
+				if(success.error instanceof Error)
+					return success.error;
+				else
+					return new deep.errors.Internal(sucess.error);
+				return success.result;
 		})
-		.fail(function  (jqXHR, textStatus, errorThrown)
-		{
-			if(jqXHR.status < 300)
-			{
-				var test = $.parseJSON(jqXHR.responseText);
-				if(typeof test === 'string')
-					test = $.parseJSON(test);
-				def.resolve(test);
-			}
-			else
-				def.reject(new Error("deep.store.remotejson.rpc failed : "+id+" - details : "+JSON.stringify(arguments)));
-		});
-		return deep(deep.promise(def))
+		.fail(function  (error) {
+			if(error.error)
+				if(error.error instanceof Error)
+					return error.error;
+				else
+					return new errors.Server(error.error);
+			return new errors.Server(error.body||error, error.status||500);
+		}), null, { rethrow:false })
 		.store(this)
 		.done(function (success) {
 			this.range = deep.Chain.range;
 		});
 	};
-	*/
+
+	
 	deep.protocoles.remotejson.range = function (arg1, arg2, query, options)
 	{
 		query = query || "";
@@ -286,7 +296,8 @@ define(function (require)
 		infos.method = "GET";
 		this.setRequestHeaders(infos.headers, options.request);
 
-		function success(data){
+		function success(data)
+		{
 			var rangePart = [];
 			var rangeResult = {};
 			var headers = data.headers["Content-Range"];
