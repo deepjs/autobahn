@@ -19,9 +19,11 @@ define(function (require)
 			headers:null
 		};
 
+		console.log("http req : send : ", options.headers, datas);
 		var maxRedirections = options.maxRedirections || 10;
 		try{
 		var req = http.request(options, function(res) {
+			//console.log("http req : response : ", res);
 			response.status = res.statusCode;
 			response.headers = res.headers;
 			response.body = '';

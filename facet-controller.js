@@ -485,8 +485,38 @@ var Permissive = {
 		var self = this;
 		console.log("execute rpc : ",id, body);
 
+
+
 		if(this.store && this.store.forwardRPC)
-			return this.store.rpc(body.method, body.params, id, options);
+			return deep.when(body)
+			.done(function(body){
+				return self.store.rpc(body.method, body.params, id, options);
+			})
+			.log("_____________ FORWARD RPC RESPONSE : ")
+			.log()
+		/*.done(function  (result) {
+			// console.log("rpc call : response : ", result);
+			return {
+				id:body.id,
+				error:null,
+				result:result
+			}
+		})
+		.fail(function (error) {
+			console.log("rpc failed : response : ", error);
+			return {
+				id:body.id,
+				error:JSON.stringify(error),
+				result:null
+			}
+		});*/
+
+		var toCall = self.rpc[body.method];
+
+		console.log("rpc : call method : ", body)
+
+		if(!toCall)
+			return errors.MethodNotAllowed();
 
 		return deep.all([this.accessors.get.handler(id, options), body])
 		.done(function (results) {
@@ -496,12 +526,7 @@ var Permissive = {
 				body = {};
 			if(typeof body === "string")
 				body = JSON.parse(body);
-			var toCall = self.rpc[body.method];
 
-			//console.log("rpc : call method : ", body)
-
-			if(!toCall)
-				return errors.MethodNotAllowed();
 			body.params = body.params || [];
 
 			var schema = self.schema;
@@ -568,7 +593,7 @@ var Permissive = {
 	{
 		//console.log("Facet.rpcCall : ", request.autobahn.path)
 		var self = this;
-		return self.executeRPC(request.autobahn.path, request.body, request.autobahn)
+		return deep.when(self.executeRPC(request.autobahn.path, request.body, request.autobahn))
 		.done(function  (result) {
 			request.autobahn.response.body = result;
 			deep.utils.up(self.headers || {}, request.autobahn.response.headers);

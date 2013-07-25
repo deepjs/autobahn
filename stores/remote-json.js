@@ -25,7 +25,7 @@ define(function (require)
 		for(var i in deep.globalHeaders)
 			headers[i] = deep.globalHeaders[i];
 
-
+		console.log("remote st request headers : ", headers)
 		// toDO : add custom headers as Referent, userId, impersonateId, ...
 
 	}
@@ -240,23 +240,27 @@ define(function (require)
 		options = options || {};
 		if(!id)
 			throw new errors.PreconditionFailed("stores.patch need id in uri or in object");
-		var callId = "call"+new Date().valueOf();
+		var callId = 12;//new Date().valueOf();
 
 		id = this.baseUri + id;
 		var self = this;
 		var infos = url.parse(id);
-		infos.headers = {
-			"Accept" : "application/json; charset=utf-8",
-			"Content-Type":"application/json-rpc; charset=utf-8;"
-		};
+		infos.headers = {};
 		infos.method = "POST";
 		this.setRequestHeaders(infos.headers, options.request);
+		console.log("________________ WILL RPC HEADERS (after set request headers): ", infos.headers);
+		deep.utils.up({
+			"Accept" : "application/json; charset=utf-8",
+			"Content-Type":"application/json-rpc; charset=utf-8;"
+		},infos.headers);
 		return deep(request(infos, {
 				id:callId,
 				method:method,
-				params:params||[]
+				params:params||[],
+				jsonrpc:"2.0"
 		})
 		.done(function (success) {
+			console.log("rpc call remote success : ",success)
 			if(success.error)
 				if(success.error instanceof Error)
 					return success.error;
@@ -265,6 +269,7 @@ define(function (require)
 				return success.result;
 		})
 		.fail(function  (error) {
+			console.log("rpc call remote error : ",error)
 			if(error.error)
 				if(error.error instanceof Error)
 					return error.error;
