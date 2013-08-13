@@ -204,9 +204,9 @@ var Accessors  = {
 
 		return deep(this.facet.accessors.get.handler(options.id, options), null, {rethrow:false})
 		.done(function(success){
-			if(success.length == 0)
+			if(!success)
 				throw new errors.Unauthorized("("+self.facet.name+") object don't exists. Please post before.");
-			var user = success.shift();
+			var user = success;
 			if(self.restrictToOwner)
 				if(!deep.context.session)
 					return new errors.Owner();
