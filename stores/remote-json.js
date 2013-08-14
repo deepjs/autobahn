@@ -16,22 +16,27 @@ define(function (require)
 	deep.protocoles.remotejson.extensions = [
 		/(\.json(\?.*)?)$/gi
 	];
+
 	deep.protocoles.remotejson.forwardRPC = true;
 	deep.protocoles.remotejson.baseUri = "";
-	deep.protocoles.remotejson.setCustomHeaders = function (headers, request) {
+
+	deep.protocoles.remotejson.setCustomHeaders = function (headers, request)
+	{
 		// body...
 	}
-	deep.protocoles.remotejson.setRequestHeaders = function (headers, request) {
+
+	deep.protocoles.remotejson.setRequestHeaders = function (headers, request)
+	{
 		for(var i in deep.globalHeaders)
 			headers[i] = deep.globalHeaders[i];
 
 		console.log("remote st request headers : ", headers)
 		// toDO : add custom headers as Referent, userId, impersonateId, ...
-
 	}
-	deep.protocoles.remotejson.get = deep.protocoles.remotejson.query = function (id, options) {
-		//console.log("json.get : ", id);
 
+	deep.protocoles.remotejson.get = deep.protocoles.remotejson.query = function (id, options)
+	{
+		//console.log("json.get : ", id);
 		if(id == "?" || !id)
 			id = "";
 		id = this.baseUri + id;
@@ -265,7 +270,7 @@ define(function (require)
 				if(success.error instanceof Error)
 					return success.error;
 				else
-					return new deep.errors.Internal(sucess.error);
+					return deep.errors.Internal(sucess.error);
 				return success.result;
 		})
 		.fail(function  (error) {
@@ -274,7 +279,7 @@ define(function (require)
 				if(error.error instanceof Error)
 					return error.error;
 				else
-					return new errors.Server(error.error);
+					return errors.Server(error.error);
 			return new errors.Server(error.body||error, error.status||500);
 		}), null, { rethrow:false })
 		.store(this)
