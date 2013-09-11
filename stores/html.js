@@ -23,7 +23,10 @@ define(["require"],function (require)
 		var def = deep.Deferred();
 		fs.readFile(path, function(err, datas){
 			if(err)
+			{
+				delete deep.mediaCache.cache["html::"+path];
 				return def.reject(err);
+			}	
 			if(datas instanceof Buffer)
 				datas = datas.toString("utf8");
 			deep.mediaCache.manage(datas, "html::"+path);
