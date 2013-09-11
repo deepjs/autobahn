@@ -23,7 +23,7 @@ define(["require"],function (require)
 		var def = deep.Deferred();
 		fs.readFile(path, function(err, datas){
 			if(err)
-				def.reject(err);
+				return def.reject(err);
 			if(datas instanceof Buffer)
 				datas = datas.toString("utf8");
 			def.resolve(JSON.parse(datas));
