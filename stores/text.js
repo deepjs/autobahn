@@ -8,15 +8,15 @@ define(["require"],function (require)
 	var fs = require("fs");
 
 	//__________________________________________________
-	deep.protocoles.html = new deep.Store();
+	deep.protocoles.text = new deep.Store();
 	//var writeJQueryDefaultHeaders = function (req) {};
 	deep.extensions.push({
 		extensions:[
-			/(\.(html|htm|xhtm|xhtml)(\?.*)?)$/gi
+			/(\.(text|htm|xhtm|xtext)(\?.*)?)$/gi
 		],
-		store:deep.protocoles.html
+		store:deep.protocoles.text
 	});
-	deep.protocoles.html.get = function (path, options) {
+	deep.protocoles.text.get = function (path, options) {
 		options = options || {};
 		if(options.cache !== false && deep.mediaCache.cache[id])
 			return deep(deep.mediaCache.cache[id]).store(this);
@@ -33,6 +33,6 @@ define(["require"],function (require)
 			deep.mediaCache.manage(d, id);
 		return d;
 	};
-	return deep.protocoles.html;
+	return deep.protocoles.text;
 
 });
