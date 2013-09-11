@@ -1,6 +1,6 @@
 {
   "name": "autobahn",
-  "version": "0.1",
+  "version": "0.1.0",
   "author": "Gilles Coomans",
   "description": "nodejs/connectjs/deep related stuffs : stores, ...",
   "licenses": [
