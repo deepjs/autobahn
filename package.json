@@ -1,4 +1,22 @@
 {
   "name": "autobahn",
-  "version": "0.1.0"
+  "version": "0.1",
+  "author": "Gilles Coomans",
+  "description": "nodejs/connectjs/deep related stuffs : stores, ...",
+  "licenses": [
+  ],
+  "repository": {
+    "type":"git",
+    "url":"ssh://git@dev.ubik.be/autobahn"
+  },
+  "dependencies": {
+    "pintura":"git+ssh://git@dev.ubik.be/pintura",
+    "perstore":"git+ssh://git@dev.ubik.be/perstore",
+    "mongodb": "jar:http://github.com/christkv/node-mongodb-native/zipball/V0.9.4.4!/lib/mongodb/",
+    "rql": "*"
+  },
+  "mappings":{
+    "rql": "http://github.com/kriszyp/rql/zipball/v0.3.1"
+  },
+  "main": "./main"
 }

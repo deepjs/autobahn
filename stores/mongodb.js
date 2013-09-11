@@ -9,13 +9,14 @@ var DatabaseError = require("perstore/errors").DatabaseError,
 	AccessError = require("perstore/errors").AccessError,
 	MethodNotAllowedError = require("perstore/errors").MethodNotAllowed;
 	var errors = require("autobahn/errors");
+
 var Mongo = function(url, collection, schema){
 	if(schema)
 		this.schema = schema;
 	if(url)
 		this.dbURL = url;
 	if(collection)
-		this.collection = collection;
+		this.collectionName = collection;
 }
 Mongo.prototype =  {
 		dbURL:null,
