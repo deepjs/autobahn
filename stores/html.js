@@ -26,6 +26,7 @@ define(["require"],function (require)
 				return def.reject(err);
 			if(datas instanceof Buffer)
 				datas = datas.toString("utf8");
+			deep.mediaCache.manage(datas, "html::"+path);
 			def.resolve(datas);
 		});
 		var d = deep(def.promise()).store(this);
