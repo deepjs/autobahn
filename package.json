@@ -12,7 +12,7 @@
   "dependencies": {
     "pintura":"git+ssh://git@dev.ubik.be/pintura",
     "perstore":"git+ssh://git@dev.ubik.be/perstore",
-    "mongodb": ">=0.9.9",
+    "mongodb": "https://github.com/mongodb/node-mongodb-native.git",
     "rql": ">=0.3.0"
   },
   "main": "./main"
