@@ -12,7 +12,7 @@
   "dependencies": {
     "pintura":"git+ssh://git@dev.ubik.be/pintura",
     "perstore":"git+ssh://git@dev.ubik.be/perstore",
-    "mongodb": "jar:http://github.com/christkv/node-mongodb-native/zipball/V0.9.4.4!/lib/mongodb/",
+    "mongodb": "http://github.com/christkv/node-mongodb-native.git",
     "rql": "*"
   },
   "mappings":{
