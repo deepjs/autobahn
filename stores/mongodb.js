@@ -9,7 +9,14 @@ var DatabaseError = require("perstore/errors").DatabaseError,
 	AccessError = require("perstore/errors").AccessError,
 	MethodNotAllowedError = require("perstore/errors").MethodNotAllowed;
 	var errors = require("autobahn/errors");
-var Mongo = function(){}
+var Mongo = function(url, collection, schema){
+	if(schema)
+		this.schema = schema;
+	if(url)
+		this.dbURL = url;
+	if(collection)
+		this.collection = collection;
+}
 Mongo.prototype =  {
 		dbURL:null,
 		collectionName:null,
@@ -27,10 +34,12 @@ Mongo.prototype =  {
 			if(options.response)
 				headers = options.response.headers || {};
 			if(this.headers)
-				deep.utils.deepCopy(this.headers, headers, false);
+				deep.utils.bottom(this.headers, headers);
 			//console.log("mongo after set headers : ", headers);
 			return when(this.mongo.get(id, headers)).then(function(res){
 				//console.log("mongstore (real) response : ",res);
+				if(typeof res === 'undefined' || res === null)
+					return errors.NotFound();
 				if(res && res.headers && res.status && res.body)
 					return new errors.Server(res.body, res.status);
 				return res;
@@ -47,6 +56,13 @@ Mongo.prototype =  {
 			try{
 			if(console && console.flags && console.flags["Mongorest"])
 				console.log("Mongo : post : ", object)
+
+			var schema = options.schema || this.schema;
+            if (schema) {
+                var report = deep.validate(object, schema);
+                if (!report.valid)
+                    return  deep(deep.errors.PreconditionFail("Failed to put on Mongo : validation failed.", report));
+            }
 
 			return when(this.mongo.put(object, options)).then(function (res){
 				if(res && res.headers && res.status && res.body)
@@ -66,9 +82,17 @@ Mongo.prototype =  {
 		},
 		post: function(object, options){
 			
+			options = options || {};
 			try{
 			if(console && console.flags && console.flags["Mongorest"])
 				console.log("deep.stores.Mongo.post : ", object)
+
+			var schema = options.schema || this.schema;
+            if (schema) {
+                var report = deep.validate(object, schema);
+                if (!report.valid)
+                    return  deep(deep.errors.PreconditionFail("Failed to put on Mongo : validation failed.", report));
+            }
 
 			return when(this.mongo.put(object, options)).then(function(res){
 				if(res && res.headers && res.status && res.body)
@@ -108,7 +132,8 @@ Mongo.prototype =  {
 			//console.log("deep.stores.Mongo will do query : ", query);
 			return when(this.mongo.query(query, headers)).then(function(results){
 				//console.log("deep.stores.Mongo query res : ", results);
-
+				if(typeof results === 'undefined' || results === null)
+					return errors.NotFound();
 				if(results && results.headers && results.status && results.body)
 					return new errors.Server(results.body, results.status);
 				if(!options.range)
