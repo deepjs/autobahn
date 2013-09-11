@@ -18,8 +18,8 @@ define(["require"],function (require)
 	});
 	deep.protocoles.text.get = function (path, options) {
 		options = options || {};
-		if(options.cache !== false && deep.mediaCache.cache[id])
-			return deep(deep.mediaCache.cache[id]).store(this);
+		if(options.cache !== false && deep.mediaCache.cache["text::"+path])
+			return deep(deep.mediaCache.cache["text::"+path]).store(this);
 		var def = deep.Deferred();
 		fs.readFile(path, function(err, datas){
 			if(err)
@@ -30,7 +30,7 @@ define(["require"],function (require)
 		});
 		var d = deep(def.promise()).store(this);
 		if(options.cache !== false || (self.options && self.options.cache !== false))
-			deep.mediaCache.manage(d, id);
+			deep.mediaCache.manage(d, "text::"+path);
 		return d;
 	};
 	return deep.protocoles.text;
