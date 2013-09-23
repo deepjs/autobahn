@@ -168,7 +168,7 @@ var Accessors  = {
 				if(!deep.context.session)
 					return new errors.Owner();
 				else
-					deep(toTest, { type:"array", items:schema }).remove("./*?userId=ne="+success.userId);
+					deep(toTest, { type:"array", items:schema }).remove("./*?userId=ne="+result.userId);
 			return result;
 		})
 		.fail(function(error){
