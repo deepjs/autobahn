@@ -75,7 +75,7 @@ define(function RoleControllerDefine(require)
 				.query("./store?_schema.type=string")
 				//.log("role controller load store : ")
 				//.logValues()
-				.load()
+				.load(null, true);
 				//.logValues();
 				//console.log("stores init launched")
 				return brancher;
