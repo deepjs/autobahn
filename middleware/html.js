@@ -33,7 +33,8 @@ exports.simpleMap = function(map){
 			.deepLoad(items.params, false)
 			.done(function(success){
 				//console.log("success map loaded : ", success)
-				success.context.content.join("\n");
+				if(success.context.content && success.context.content.join)
+					success.context.content = success.context.content.join("\n");
 				res.writeHead(200, {'Content-Type': 'text/html', "location":"/"});
 				res.end(success.page(success.context));
 			})
