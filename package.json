@@ -2,7 +2,7 @@
   "name": "autobahn",
   "version": "0.1.0",
   "author": "Gilles Coomans",
-  "description": "nodejs/connectjs/deep related stuffs : stores, ...",
+  "description": "nodejs/expressjs/deep related tools and middlewares",
   "licenses": [
   ],
   "repository": {
