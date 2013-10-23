@@ -1,5 +1,5 @@
 
-var router = require("deep-route/route");
+var router = require("deep-routes/route");
 var urlparse = require('url').parse;
 exports.simpleMap = function(map){
 	var usableMap = [];
@@ -14,14 +14,14 @@ exports.simpleMap = function(map){
 	return function (req, res, next)
 	{
 		var pathname = urlparse(req.url).pathname;
-		var items = {}
+		var items = {};
 		var handled = usableMap.some(function (entry) {
 			items.params = entry.router.match(pathname);
 			if(items.params)
 			{
 				items.object = deep.utils.copy(entry.object);
 				return true;
-			}	
+			}
 			return false;
 		});
 
@@ -46,5 +46,5 @@ exports.simpleMap = function(map){
 		}
 		else
 			return next();
-	}
+	};
 };
