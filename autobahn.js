@@ -20,8 +20,14 @@ define(["require","deep/deep"],function (require)
 	var autobahnController = require("autobahn/autobahn-controller");
 	var utils = require("autobahn/utils");
 	var errors = require("autobahn/errors");
+	var Session = require("./session");
 	deep.rethrow = false;
 	var baseHandler = {
+		innerSession:function(login, roles)
+		{
+			this.session(Session.produceInnerSession(login, roles));
+			return this;
+		},
 		session:function (session) 
 		{
 			var self = this;

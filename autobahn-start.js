@@ -39,10 +39,10 @@ define(function FacetControllerDefine(require){
 	var util = require('util');
 	var http = require('http');
 	var deep = require("deep/deep");
-	autobahn = require("autobahn/autobahn");
-	var AutobahnResponse = require("autobahn/autobahn-response");
-	var Facet = require("autobahn/facet-controller").Permissive;
-	var UploadFacet = require("autobahn/uploader-facet");
+	autobahn = require("./autobahn");
+	var AutobahnResponse = require("./autobahn-response");
+	var Facet = require("./facet-controller").Permissive;
+	var UploadFacet = require("./uploader-facet");
 	var UploadHandler = UploadFacet.UploadHandler;
 
 	var start = function(settings, jsgiStack)

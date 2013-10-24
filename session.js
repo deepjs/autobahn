@@ -188,6 +188,30 @@ define(function (require){
 		});
 	}
 
+	Session.produceInnerSession = function(login, roles){
+		return autobahn()
+		.roles(["admin"])
+		.facet("user")
+		.get("email="+login)
+		.done(function(user){
+			var newSessionId = generateSessionKey();
+			var session = {
+				expires: null,//new Date(expiration).toISOString(),
+				id: newSessionId,
+				remoteUser : user,
+				passport : null,
+				roles : roles,
+				save:function(){
+					return Session.store.put(session);
+				},
+				del:function(){
+					return Session.store["delete"](session.id);
+				}
+			}
+			return session;
+		});
+	}
+
 	function cookieVerification(request){
 		var pinturaAuth = request.queryString.match(/autobahn-session=(\w+)/);
 		if(pinturaAuth){

@@ -205,7 +205,7 @@ var Accessors  = {
 				return new errors.PreconditionFailed("("+self.name+") put failed!", JSON.stringify(report));
 		}	
 
-		return deep(this.facet.accessors.get.handler(options.id, options), null, {rethrow:false})
+		return deep(this.facet.accessors.get.handler(options.id, options))
 		.done(function(success){
 			if(!success)
 				throw new errors.Unauthorized("("+self.facet.name+") object don't exists. Please post before.");
