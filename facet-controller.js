@@ -220,14 +220,10 @@ var Accessors  = {
 		{
 			if(self.hasReadOnly)
 			{
-				var newOnly = deep( object, schem )
+				deep(oldOne, schem)
 				.query(".//*?_schema.readOnly=true")
-				.nodes();
-
-				newOnly.forEach(function(e){
-					var oldValue = deep.utils.retrieveValueByPath(oldOne, e.path, "/");
-					if(typeof oldValue === 'undefined' && oldValue != e.value)
-						throw new errors.Unauthorized(e.path+" is readOnly !")
+				.nodes().forEach(function(e){
+					deep.utils.setValueByPath(object, e.path, e.value, "/");
 				});
 			}
 			return self.facet.store.put(object, options);
