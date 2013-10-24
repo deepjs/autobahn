@@ -191,6 +191,7 @@ var Accessors  = {
 
 		options.id = options.id || object.id;
 
+		object.id = options.id;
 		//console.log("Facet::put : ", object, options)
 
 		if(!options.id || (object.id && options.id != object.id))
@@ -220,6 +221,7 @@ var Accessors  = {
 		{
 			if(self.hasReadOnly)
 			{
+				//console.log("OLDONE ===== ", oldOne);
 				deep(oldOne, schem)
 				.query(".//*?_schema.readOnly=true")
 				.nodes().forEach(function(e){
