@@ -33,18 +33,21 @@ define(["require","deep/deep"],function (require)
 			var self = this;
 			var func = function (s,e) 
 			{
-				self.currentSession = session;
-				self.currentFacet = null;
-				self.currentRole = null;
-				var roles = session.remoteUser.roles || ["public"];
-				if(session.roleController)
-					return self.currentRole = session.roleController();
-				return deep.when(autobahnController.compileRoles(roles)).then(function (ctrl) {
-						self.currentRole = ctrl;
-						if(!ctrl)
-							throw new Error("No roles selected with : "+JSON.stringify(roles));
-						return ctrl;
-					});
+				return deep.when(session)
+				.done(function(session){
+				   	self.currentSession = session;
+					self.currentFacet = null;
+					self.currentRole = null;
+					var roles = session.remoteUser.roles || ["public"];
+					if(session.roleController)
+						return self.currentRole = session.roleController();
+					return deep.when(autobahnController.compileRoles(roles)).then(function (ctrl) {
+							self.currentRole = ctrl;
+							if(!ctrl)
+								throw new Error("No roles selected with : "+JSON.stringify(roles));
+							return ctrl;
+						});  
+				});
 			}
 			deep.chain.addInChain.apply(self, [func]);
 			return this;
