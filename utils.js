@@ -59,7 +59,10 @@ define(function (require)
 					media:ask.shift()
 				});
 			});
-			return deep(res).select("./*?sort(-quality)");
+			//return deep(res).select("./*?sort(-quality)");
+			var d = deep(res);
+			return deep.chain.select(d,"./*?sort(-quality)");
+
 		},
 		parseRange : function (request) {
 			var rangeSum = request.autobahn.range = {};
