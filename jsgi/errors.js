@@ -6,7 +6,7 @@
 	var define = require('amdefine')(module);
 }
 define(function(require){
-	 var deep = require("deep/deep");
+	 var deep = require("deepjs/deep");
 	var ErrorHandler = function(nextApp){
 		return function(request, autobahnResponse){
 			//console.log("JSGI Errors : will call next app ")

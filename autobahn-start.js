@@ -38,7 +38,7 @@ if(typeof define !== 'function')
 define(function FacetControllerDefine(require){
 	var util = require('util');
 	var http = require('http');
-	var deep = require("deep/deep");
+	var deep = require("deepjs/deep");
 	autobahn = require("./autobahn");
 	var AutobahnResponse = require("./autobahn-response");
 	var Facet = require("./facet-controller").Permissive;

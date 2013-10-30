@@ -3,7 +3,7 @@ if(typeof define !== 'function'){
 }
 define(function(require){
 
-var deep = require("deep/deep");
+var deep = require("deepjs/deep");
 var DatabaseError = require("perstore/errors").DatabaseError,
 	AccessError = require("perstore/errors").AccessError,
 	MethodNotAllowedError = require("perstore/errors").MethodNotAllowed;

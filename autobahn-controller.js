@@ -30,7 +30,7 @@ if(typeof define !== 'function'){
 
 define(function (require)
 {
-	var deep = require("deep/deep");
+	var deep = require("deepjs/deep");
 	var RoleController = require("autobahn/role-controller");
 	var FacetController = require("autobahn/facet-controller").Permissive;
 	var Accessors = require("autobahn/facet-controller").Accessors;

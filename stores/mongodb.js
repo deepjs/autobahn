@@ -3,7 +3,7 @@ if(typeof define !== 'function'){
 }
 define(function(require){
 var MongoDB = require("perstore/store/mongodb").MongoDB;
-var deep = require("deep/deep");
+var deep = require("deepjs/deep");
 var when = deep.when;
 var DatabaseError = require("perstore/errors").DatabaseError,
 	AccessError = require("perstore/errors").AccessError,
