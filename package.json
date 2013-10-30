@@ -10,6 +10,6 @@
     "url":"https://github.com/nomocas/autobahn.git"
   },
   "dependencies": {
-    "deep":">=0.9.4"
+    "deepjs":">=0.9.5"
   }
 }
