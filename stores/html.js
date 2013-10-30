@@ -4,7 +4,7 @@ if(typeof define !== 'function')
 define(["require"],function (require)
 {
 
-	var deep = require("deepjs/deep");
+	var deep = require("deep/deep");
 	var fs = require("fs");
 
 	//__________________________________________________

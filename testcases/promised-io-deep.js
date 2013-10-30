@@ -3,7 +3,7 @@ if(typeof define !== 'function')
 
 define(function FacetControllerDefine(require){
 
-			var deep = require("deepjs/deep");
+			var deep = require("deep/deep");
 				var promised = require("promised-io/promise");
 
 	return {

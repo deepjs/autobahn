@@ -3,7 +3,7 @@ if(typeof define !== 'function'){
 }
 define(function(require){
 
-var deep = require("deepjs/deep");
+var deep = require("deep/deep");
 var formidable = require('formidable');
 var when = deep.when;
 var DatabaseError = require("perstore/errors").DatabaseError,

@@ -16,7 +16,7 @@ define(function (require){
 	sha1 = require("pintura/util/sha1").hex_sha1;
 	var Memory = require("autobahn/stores/memory").store;
 	var AutobahnResponse = require("autobahn/autobahn-response");
-	var deep = require("deepjs/deep");
+	var deep = require("deep/deep");
 	//var when = deep.when;
 	var Session = {
 

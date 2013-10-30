@@ -13,10 +13,10 @@ if(typeof define !== 'function'){
 	autobahn().......close() : end chain
 */
 
-define(["require","deepjs/deep"],function (require)
+define(["require","deep/deep"],function (require)
 {
 	var HTTPrequest = require("promised-io/http-client").request;
-	var deep = require("deepjs/deep");
+	var deep = require("deep/deep");
 	var autobahnController = require("autobahn/autobahn-controller");
 	var utils = require("autobahn/utils");
 	var errors = require("autobahn/errors");

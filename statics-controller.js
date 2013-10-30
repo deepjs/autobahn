@@ -9,10 +9,10 @@ if(typeof define !== 'function'){
 
 
 define(function RouteNodeControllerDefine(require){
-var deep = require("deepjs/deep");
+var deep = require("deep/deep");
 	var Compose = require("compose");
-	var deepCopy = require("deepjs/deep-copy");
-	var DeepFactory = require("deepjs/deep-factory");
+	var deepCopy = require("deep/deep-copy");
+	var DeepFactory = require("deep/deep-factory");
 	var promise = require("deep/promise");
 	var StaticsController = Compose(DeepFactory, function(){
 		//console.log("RouteNodeController : constructor");

@@ -3,7 +3,7 @@ if(typeof define !== 'function'){
 	var define = require('amdefine')(module);
 }
 define(function(require){
-	var deep = require("deepjs/deep");
+	var deep = require("deep/deep");
 
 	var Response = function (status, headers, body) {
 		this._autobahn_response = true;

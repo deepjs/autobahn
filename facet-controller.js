@@ -38,7 +38,7 @@ if(typeof define !== 'function')
 	var define = require('amdefine')(module);
 
 define(function FacetControllerDefine(require){
-	var deep = require("deepjs/deep");
+	var deep = require("deep/deep");
 	var errors = require("autobahn/errors");
 	var AutobahnResponse = require("autobahn/autobahn-response");
 	var utils = require("autobahn/utils");
