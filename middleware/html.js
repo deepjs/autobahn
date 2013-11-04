@@ -35,12 +35,12 @@ exports.simpleMap = function(map){
 				//console.log("success map loaded : ", success)
 				if(success.context.content && success.context.content.join)
 					success.context.content = success.context.content.join("\n");
-				res.writeHead(200, {'Content-Type': 'text/html', "location":"/"});
+				res.writeHead(200, {'Content-Type': 'text/html', "Location":pathname});
 				res.end(success.page(success.context));
 			})
 			.fail(function(error){
 				//deep.utils.dumpError(error);
-				res.writeHead(error.status || 500, {'Content-Type': 'application/json', "location":"/"});
+				res.writeHead(error.status || 500, {'Content-Type': 'application/json', "Location":pathname});
 				res.end(JSON.stringify(error));
 			});
 		}
