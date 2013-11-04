@@ -29,10 +29,9 @@ exports.simpleMap = function(map){
 		{
 			//console.log("items : ", items, handled);
 			deep(items.object)
-			//.flatten()
 			.deepLoad(items.params, false)
 			.done(function(success){
-				//console.log("success map loaded : ", success)
+				//console.log("success map loaded : ", pathname, success);
 				if(success.context.content && success.context.content.join)
 					success.context.content = success.context.content.join("\n");
 				res.writeHead(200, {'Content-Type': 'text/html', "Location":pathname});
