@@ -45,7 +45,8 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 					//console.log("restful map : handled : params : ", handler.params);
 					//console.log("restful map : request.body : ", request.body);
 					var d = null;
-
+					if(handler.store._deep_ocm_)
+						handler.store = handler.store();
 					switch(request.method.toLowerCase())
 					{
 						case "get" : // subcases : get, query, range
