@@ -23,7 +23,7 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 			}
 			return function(request, response, next)
 			{
-				console.log("restful : session : ", request.session);
+				//console.log("restful : session : ", request.session);
 				var parsedURL = urlparse(request.url);
 				var pathname = parsedURL.pathname;
 				var headers = request.headers;
@@ -46,8 +46,11 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 					//console.log("restful map : handled : params : ", handler.params);
 					//console.log("restful map : request.body : ", request.body);
 					var d = null;
-					if(handler.store._deep_ocm_)
-						handler.store = handler.store();
+					var curRoles = "public";
+					if(request.session && request.session.user)
+						curRoles = request.session.user.roles || "guest";
+					deep.setModes({ roles:curRoles });
+					console.log("restful : store : ", handler.store);
 					switch(request.method.toLowerCase())
 					{
 						case "get" : // subcases : get, query, range
@@ -63,7 +66,7 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 									{
 										var start = parseInt(res[1], 10);
 										var end = parseInt(res[2], 10);
-										d = deep(handler.store).range(start, end, parsedURL.search)
+										d = deep.store(handler.store).range(start, end, parsedURL.search)
 										.done(function(range){
 											response.status((range.start === 0 && range.total -1 === end) ? 200 : 206);
 											response.set({
@@ -78,7 +81,7 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 								}
 							}
 							else
-								d = deep(handler.store).get(handler.params.id || parsedURL.search);
+								d = deep.store(handler.store).get(handler.params.id || parsedURL.search);
 							break;
 
 						case "post" : // subcases : post, rpc, bulk
@@ -88,7 +91,7 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 								if(!handler.store.rpc)
 									d = deep.when(deep.errors.Rpc("rpc unmanaged by related store"));
 								else
-									d = deep(handler.store).rpc(request.body.method, request.body.params , handler.params.id)
+									d = deep.store(handler.store).rpc(request.body.method, request.body.params , handler.params.id)
 									.done(function  (result) {
 										// console.log("rpc call : response : ", result);
 										return {
@@ -117,9 +120,9 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 										var h = null;
 										var meth = message.method.toLowerCase();
 										if(deep.utils.inArray(meth, ["patch","put","post"]))
-											h = deep(handler.store)[meth](message.body, {id:message.to});
+											h = deep.store(handler.store)[meth](message.body, {id:message.to});
 										else
-											h = deep(handler.store)[meth](message.to, {id:message.to});
+											h = deep.store(handler.store)[meth](message.to, {id:message.to});
 										alls.push(h);
 									});
 									d = deep.all(alls)
@@ -143,7 +146,7 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 								if(!handler.store.post)
 									d = deep.when(deep.errors.Post("method not founded in related store"));
 								else
-									d = deep(handler.store).post(request.body, { id:handler.params.id });
+									d = deep.store(handler.store).post(request.body, { id:handler.params.id });
 							}
 							else
 								d = deep.when(deep.errors.Post("unrecognised content-type"));
@@ -155,7 +158,7 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 							else if(!handler.store.put)
 								d = deep.when(deep.errors.Put("method not founded in related store"));
 							else
-								d = deep(handler.store).put(request.body, { id:handler.params.id });
+								d = deep.store(handler.store).put(request.body, { id:handler.params.id });
 							break;
 
 						case "patch" :
@@ -164,14 +167,14 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 							if(!handler.store.patch)
 								d = deep.when(deep.errors.Patch("method not founded in related store"));
 							else
-								d = deep(handler.store).patch(request.body, { id:handler.params.id });
+								d = deep.store(handler.store).patch(request.body, { id:handler.params.id });
 							break;
 
 						case "delete" :
 							if(!handler.store.del)
 								d = deep.when(deep.errors.Delete("method not founded in related store"));
 							else
-								d = deep(handler.store).del(handler.params.id);
+								d = deep.store(handler.store).del(handler.params.id);
 							break;
 
 						default : // ASSUMING OPTIONS?
