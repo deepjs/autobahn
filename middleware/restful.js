@@ -183,8 +183,8 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 						response.end(JSON.stringify(s));
 					})
 					.fail(function(e){
-						res.writeHead(e.status || 400, {'Content-Type': 'text/html'});
-						res.end("error : "+JSON.stringify(e));
+						response.writeHead(e.status || 400, {'Content-Type': 'text/html'});
+						response.end("error : "+JSON.stringify(e));
 					});
 				}
 				else
