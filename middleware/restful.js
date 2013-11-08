@@ -50,7 +50,7 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 					if(request.session && request.session.user)
 						curRoles = request.session.user.roles || "guest";
 					deep.setModes({ roles:curRoles });
-					console.log("restful : store : ", handler.store);
+					//console.log("restful : store : ", handler.store);
 					switch(request.method.toLowerCase())
 					{
 						case "get" : // subcases : get, query, range
@@ -89,7 +89,7 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 							if(request.is("application/json-rpc"))	// RPC
 							{
 								if(!handler.store.rpc)
-									d = deep.when(deep.errors.Rpc("rpc unmanaged by related store"));
+									d = deep.when(deep.errors.MethodNotAllowed("rpc unmanaged by related store"));
 								else
 									d = deep.store(handler.store).rpc(request.body.method, request.body.params , handler.params.id)
 									.done(function  (result) {
@@ -144,7 +144,7 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 							else if(request.is("application/json"))  // POST
 							{
 								if(!handler.store.post)
-									d = deep.when(deep.errors.Post("method not founded in related store"));
+									d = deep.when(deep.errors.MethodNotAllowed());
 								else
 									d = deep.store(handler.store).post(request.body, { id:handler.params.id });
 							}
@@ -156,7 +156,7 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 							if(!request.is("application/json"))
 								d = deep.when(deep.errors.Put("unrecognised content-type"));
 							else if(!handler.store.put)
-								d = deep.when(deep.errors.Put("method not founded in related store"));
+								d = deep.when(deep.errors.MethodNotAllowed());
 							else
 								d = deep.store(handler.store).put(request.body, { id:handler.params.id });
 							break;
@@ -165,20 +165,20 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 							if(!request.is("application/json"))
 								d = deep.when(deep.errors.Patch("unrecognised content-type"));
 							if(!handler.store.patch)
-								d = deep.when(deep.errors.Patch("method not founded in related store"));
+								d = deep.when(deep.errors.MethodNotAllowed());
 							else
 								d = deep.store(handler.store).patch(request.body, { id:handler.params.id });
 							break;
 
 						case "delete" :
 							if(!handler.store.del)
-								d = deep.when(deep.errors.Delete("method not founded in related store"));
+								d = deep.when(deep.errors.MethodNotAllowed());
 							else
 								d = deep.store(handler.store).del(handler.params.id);
 							break;
 
 						default : // ASSUMING OPTIONS?
-
+								d = deep.when(deep.errors.MethodNotAllowed());
 					}
 					d.done(function(s){
 						if(!response.get('Content-Range'))
