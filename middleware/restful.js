@@ -27,9 +27,12 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 				var parsedURL = urlparse(request.url);
 				var pathname = parsedURL.pathname;
 				var headers = request.headers;
+				//var parsed = deep.utils.parseURL(request.url);
 				//console.log("restful map : parsed url : ", parsedURL);
+				//console.log("restful map : parsed uri : ", parsed);
 				//console.log("restful map : method : ", request.method);
 				//console.log("restful map : headers : ", request.headers);
+				
 				var handler = {};
 				var handled = usableMap.some(function (entry) {
 					handler.params = entry.router.match(pathname);
@@ -54,7 +57,7 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 					switch(request.method.toLowerCase())
 					{
 						case "get" : // subcases : get, query, range
-							
+							//console.log("will get : ", handler.params)
 							if(headers.range)
 							{
 								if(!handler.store.range)
@@ -162,6 +165,7 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 							break;
 
 						case "patch" :
+							//console.log("restful apply patch")
 							if(!request.is("application/json"))
 								d = deep.when(deep.errors.Patch("unrecognised content-type"));
 							if(!handler.store.patch)
@@ -186,6 +190,7 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 						response.end(JSON.stringify(s));
 					})
 					.fail(function(e){
+						console.log("restful error : ", e.toString());
 						response.writeHead(e.status || 400, {'Content-Type': 'text/html'});
 						response.end("error : "+JSON.stringify(e));
 					});
