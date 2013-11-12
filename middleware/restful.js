@@ -185,6 +185,7 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 								d = deep.when(deep.errors.MethodNotAllowed());
 					}
 					d.done(function(s){
+						//console.log(" restful result : ", s);
 						if(!response.get('Content-Range'))
 							response.writeHead(200, {'Content-Type': 'application/json'});
 						response.end(JSON.stringify(s));
