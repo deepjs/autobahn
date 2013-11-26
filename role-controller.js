@@ -13,7 +13,7 @@ if(typeof define !== 'function'){
 
 define(function RoleControllerDefine(require)
 {
-	var deep = require("deep/deep");
+	var deep = require("deepjs/deep");
 	var errors = require("autobahn/errors")
 	var FacetController = require("autobahn/facet-controller").Permissive;
 	//var RouteNode = require("autobahn/route-node-controller");

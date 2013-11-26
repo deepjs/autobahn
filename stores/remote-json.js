@@ -10,7 +10,7 @@ define(function (require)
 	var url = require('url');
 	var request = require("autobahn/promised-node-http");
 	var errors = require("autobahn/errors");
-	var deep = require("deep/deep");
+	var deep = require("deepjs/deep");
 	deep.protocoles.remotejson = new deep.Store();
 
 	deep.protocoles.remotejson.extensions = [

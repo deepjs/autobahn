@@ -1,5 +1,5 @@
 
-var deep = require("deep/deep");
+var deep = require("deepjs/deep");
 var AutobahnResponse = require("autobahn/autobahn-response");
 var errors = require("autobahn/errors");
 var AutobahnJSGI = exports.AutobahnJSGI = function(autobahnController, app){

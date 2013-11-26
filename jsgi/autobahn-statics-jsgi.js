@@ -1,5 +1,5 @@
 
-var deep = require("deep/deep");
+var deep = require("deepjs/deep");
 var	Static = require("pintura/jsgi/static").Static;
 var AutobahnResponse = require("autobahn/autobahn-response");
 
