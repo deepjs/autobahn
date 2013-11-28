@@ -152,7 +152,7 @@ var Accessors  = {
 		var self = this;
 
 
-
+		
 		return deep
 		.when(this.facet.store.query(query, options), null, { rethrow:false })
 		.done(function(result){
@@ -453,38 +453,46 @@ var Permissive = {
 	},
 	init : function(request, infos)
 	{
-		console.log("facet-controller.init() : ", this.name);
+		//console.log("facet-controller.init() : ", this.name);
 
 		if(!this.accessors.patch.schema && this.schema)
 			this.accessors.patch.schema = deep.utils.copy(this.schema);
 		if(this.accessors.patch.schema)
 			deep(this.accessors.patch.schema).replace(".//required", false);
 
+		// console.log('_____________zerzrezkjnzerkjzenrkjnze')
+
 		for(var i in this.accessors)
 		{
-			//console.log("______________________ init accessors from facet : ", this)
+			// console.log("______________________ init accessors from facet : ", i)
 			var accessor = this.accessors[i];
 			var schema = accessor.schema || this.schema;
 			var setupObject = {
-				facet:this,
 				name:i,
 				hasPrivates:deep(schema).query(".//?private=true").values().length>0,
 				hasReadOnly:deep(schema).query(".//?readOnly=true").values().length>0
 			};
+			// console.log("______________________ init accessors from facet 2: ", i)
 			if(accessor.hasBody)
 				setupObject.sanitize = createSanitizer(schema);
+			// console.log("______________________ init accessors from facet 3 : ", i, setupObject)
+			// console.log("______________________ init accessors from facet 3 : ", i, accessor)
 			deep.utils.up(setupObject, accessor);
+			accessor.facet = this;
 			var name = i + "";
+			// console.log("______________________ init accessors from facet 4 : ", i)
+
 			this[i] = function(arg1, options)
 			{
 				return accessors[i].handler(arg1, options);
 			}
 		}
+		//console.log("facet-controller.initialised() : ", this.name);
 	},
 	executeRPC:function(id, body, options)
 	{
 		var self = this;
-		console.log("execute rpc : ",id, body);
+		//console.log("execute rpc : ",id, body);
 
 
 

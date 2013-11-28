@@ -22,7 +22,7 @@ define(function RoleControllerDefine(require)
 	var	Static = require("pintura/jsgi/static").Static;
 	var RoleController = {
 		
-		init:function () 
+		init:function (node) 
 		{
 			console.log( "Role Controller init : ", this.name);
 			this.loaded = true;
@@ -48,7 +48,7 @@ define(function RoleControllerDefine(require)
 				//console.log("Role Give name to facet : ", this.facets[i].name)
 			}
 
-			return deep(this)
+			return deep(node)
 			.position("role")
 			//.log("______________ START INIT FACETS")
 			//.logValues()
@@ -67,15 +67,16 @@ define(function RoleControllerDefine(require)
 				brancher
 				.branch()
 				.query("./store?_schema.type=object")
-				.run("init");
+				.run("init")
+				.log()
 
 				brancher
 				.branch()
 				//.logValues()
 				.query("./store?_schema.type=string")
-				//.log("role controller load store : ")
+				.log("role controller load store : ")
 				//.logValues()
-				.load(null, true);
+				.load(null, true)
 				//.logValues();
 				//console.log("stores init launched")
 				return brancher;
