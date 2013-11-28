@@ -74,13 +74,13 @@ define(function (require){
 				else
 					request.autobahn.session = null;
 
-				if(request.url == "/logout/")
+				/*if(request.url == "/logout/")
 				{	
 					console.log("LOG OUT !!!!!")
 					if(session)
 						session.del();
 					return new AutobahnResponse(200,{"set-cookie":"autobahn-session=null;path=/;expires=0"},{msg:"logged out!", error:null})
-				}
+				}*/
 				context.session = request.autobahn.session;
 				//console.log("session will call next app")
 				// process the request
