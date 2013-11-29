@@ -50,7 +50,7 @@ define(function (require){
 			}
 			//var context = deep.context;
 			//if(!context)
-			var	context = deep.context = {};
+			var	context = deep.context;
 			context.request = request;
 
 			request.autobahn = request.autobahn || {};

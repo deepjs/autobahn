@@ -158,7 +158,7 @@ define(function (require)
 
 			if(!ctrl.loaded)
 			{
-				console.log("CONTROLLER NOT LOADED : load it : ", ctrl)
+				//console.log("CONTROLLER NOT LOADED : load it : ", ctrl)
 				ctrl.name = joined;
 				return deep(this)
 				.catchError()

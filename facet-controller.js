@@ -146,7 +146,7 @@ var Accessors  = {
 	},
 	query : function(query, options)
 	{
-		console.log("FacetController QUERY  : "+query+": options = ", this.facet.store);
+		//console.log("FacetController QUERY  : "+query+": options = ", this.facet.store);
 		if(!this.facet.store)
 			return new errors.Access(this.facet.name + " don't have store to query something");
 		var self = this;

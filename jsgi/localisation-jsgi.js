@@ -5,7 +5,6 @@ var errors = require("autobahn/errors");
 var LocalisationJSGI = exports.LocalisationJSGI = function(app){
 	//console.log("creation of autobahn jsgi : ", autobahnController);
 
-
 	return function (request) {
 		//console.log("LocalisationJSGI request", request);
 		if(request.pathInfo.match(/(localisation)$/gi))
@@ -15,7 +14,6 @@ var LocalisationJSGI = exports.LocalisationJSGI = function(app){
 		}
 		return app(request);
 	}
-
 
 	return function(request){
 		return deep.when(autobahnController.analyseRequest(request))
