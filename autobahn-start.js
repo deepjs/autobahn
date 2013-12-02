@@ -39,16 +39,21 @@ define(function FacetControllerDefine(require){
 	var util = require('util');
 	var http = require('http');
 	var deep = require("deepjs/deep");
+		var Cookies = require( "cookies" )
+
 	autobahn = require("./autobahn");
 	var AutobahnResponse = require("./autobahn-response");
 	var Facet = require("./facet-controller").Permissive;
 	var UploadFacet = require("./uploader-facet");
 	var UploadHandler = UploadFacet.UploadHandler;
 
+
 	var start = function(settings, jsgiStack)
 	{
 		http.createServer(function(request, res) 
 		{
+
+			var cookies = new Cookies( request, res );
 			var url = request.url;
 			var questionIndex = url.indexOf("?");
 			if(questionIndex > -1)
@@ -65,7 +70,7 @@ define(function FacetControllerDefine(require){
 			var method = String(request.method).toLowerCase();
 			deep.context = { request:request };
 			request.autobahn = { nodeResponse:res };
-			
+			request.cookies = cookies;
 			deep(request)
 			.catchError(true)
 			.done(function () {

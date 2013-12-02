@@ -55,8 +55,11 @@ define(function (require)
 			.flatten()
 			.log("______________________ autobahn flattened")
 			.query("/stores/*")
+			//.log("stores autobahn root?")
+			//.log()
 			.run("init")
-			.log("autobahn loaded");
+			.log("autobahn loaded")
+			//.log();
 		},
 		getRequestController: function(request)
 		{
@@ -162,8 +165,16 @@ define(function (require)
 				.query("./roles/_"+joined)
 				//.log("__________________ ROLES JOINED CATCHED TO INIT ")
 				.bottom(RoleController)
+				.nodes(function(ns){
+					var r = [];
+					ns.forEach(function(n){
+						if(n.value.init)
+							r.push(n.value.init(n));
+					});
+					return deep.all(r);
+				})
 				//.logValues()
-				.run("init")
+				//.run("init")
 				.log("role "+joined+" : flattened...")
 				.done(function (success) {
 					//console.log("success of role compilation : ", success)
