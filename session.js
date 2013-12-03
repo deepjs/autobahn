@@ -15,16 +15,19 @@ define(function (require){
 	var settings = require("perstore/util/settings"),
 	sha1 = require("pintura/util/sha1").hex_sha1;
 	var Memory = require("autobahn/stores/memory").store;
+
 	var AutobahnResponse = require("autobahn/autobahn-response");
 	var deep = require("deepjs/deep");
 	//var when = deep.when;
 	var Session = {
-
 	};
+
 	Session.jsgi = function(store, options, nextApp)
 	{
 		if(!store)
 			store = new Memory();
+		if(store.init)
+			store.init();
 		Session.store = store;
 		options = options || {};
 		Session.expires = options.expires || settings.sessionTTL || 300;
@@ -33,17 +36,14 @@ define(function (require){
 		//console.log("Session.jsgi : ", store)
 		return function(request){
 
-
-
-
 			var session = null;
 			// try to fetch the stored session
 			var cookieId, cookie = request.headers.cookie;
 			cookieId = cookie && cookie.match(/autobahn-session=([^;]+)/);
 			cookieId = cookieId && cookieId[1];
-			if (cookieId) 
+			if (cookieId)
 			{
-				if (cookieId === cookieVerification(request)) 
+				if (cookieId === cookieVerification(request))
 					// allow for cookie-based CSRF verification
 					delete request.crossSiteForgeable;
 				session = store.get(cookieId);
@@ -57,17 +57,23 @@ define(function (require){
 				// make session available as request.autobahn.session
 				if(session)
 				{
+					session.save = function(){
+						return Session.store.put(this);
+					};
+					session.del = function(){
+						return Session.store.del(this.id);
+					};
 					var timeout = null;
-					if(session.expires) 
+					if(session.expires)
 						timeout = new Date() > new Date(session.expires);
 					if(timeout != null)
 					{
-						store.delete(cookieId);
+						store.del(cookieId);
 						request.autobahn.session = null;
 						return new AutobahnResponse(403,{}," session timeout : please login! ");
 					}
 					else
-						request.autobahn.session = session;	
+						request.autobahn.session = session;
 				}
 				else
 					request.autobahn.session = null;
@@ -86,7 +92,7 @@ define(function (require){
 					// store session cookie
 					//console.log("session next app result : ", response)
 					if(request.autobahn.session) /// refresh cookies and session expiration
-					{	
+					{
 						var expires = null; //new Date().valueOf()+Session.expiresDeltaMS;
 						Session.setSessionCookie(response, request.autobahn.session.id, expires);
 						request.autobahn.session.expires = null;//new Date(expires)
@@ -107,18 +113,35 @@ define(function (require){
 				deep.when(Session.store.get(id)).then(function(session){
 					if(!session)
 						return;
+					session.save = function(){
+						return Session.store.put(this);
+					};
+					session.del = function(){
+						return Session.store.del(this.id);
+					};
 					var exp = new Date(session.expires);
 					if(new Date() >= exp)
-						Session.store["delete"](id);
+					{
+						Session.store.del(id);
+					}
 					else
 						checkTimeout(id, exp);
-				})
+				});
 			}, till);
 		else
 			deep.when(Session.store.get(id)).then(function(session){
 				if(session)
-					Session.store["delete"](id);
-			})
+				{
+					session.save = function(){
+						return Session.store.put(this);
+					};
+					session.del = function(){
+						return Session.store.del(this.id);
+					};
+						Session.store.del(id);
+				}
+					
+			});
 	}
 
 	// gets a session, creating a new one if necessary
@@ -129,7 +152,7 @@ define(function (require){
 			return session;
 		
 		var newSessionId = generateSessionKey();
-		if (typeof expires === 'undefined' && expires !== 0) 
+		if (typeof expires === 'undefined' && expires !== 0)
 			expires = - Session.expires;
 		if (expires < 0)
 			expires = ((new Date()).valueOf())-expires*1000;
@@ -140,19 +163,19 @@ define(function (require){
 			expires: null,//new Date(expiration).toISOString(),
 			id: newSessionId,
 			save:function(){
-				return Session.store.put(session);
+				return Session.store.put(this);
 			},
 			del:function(){
-				return Session.store["delete"](session.id);
+				return Session.store.del(this.id);
 			}
-		}; 
+		};
 		//console.log("forceSesison : ", session)
 		if(session.expires != null)
 			checkTimeout(session.id, expiration);
-		return deep.when(Session.store.put(session)).then(function(){
+		return deep.when(Session.store.post(session)).then(function(){
 			return session;
 		});
-	};
+	}
 
 	Session.getCurrentSession = function (createIfNecessary, expiration)
 	{
@@ -170,21 +193,23 @@ define(function (require){
 			}
 			return null;
 		}
+		if(!createIfNecessary)
+			return null;
 		var newSessionId = generateSessionKey();
 		var session = {
 			expires: null,//new Date(expiration).toISOString(),
 			id: newSessionId,
 			save:function(){
-				return Session.store.put(session);
+				return Session.store.put(this);
 			},
 			del:function(){
-				return Session.store["delete"](session.id);
+				return Session.store.del(this.id);
 			}
-		}
-		return deep.when(Session.store.put(session)).then(function(){
+		};
+		return deep.when(Session.store.post(session)).then(function(){
 			return session;
 		});
-	}
+	};
 
 	Session.produceInnerSession = function(login, roles){
 		return autobahn()
@@ -200,15 +225,15 @@ define(function (require){
 				passport : null,
 				roles : roles,
 				save:function(){
-					return Session.store.put(session);
+					return Session.store.put(this);
 				},
 				del:function(){
-					return Session.store["delete"](session.id);
+					return Session.store.del(this.id);
 				}
-			}
+			};
 			return session;
 		});
-	}
+	};
 
 	function cookieVerification(request){
 		var pinturaAuth = request.queryString.match(/autobahn-session=(\w+)/);
@@ -221,15 +246,15 @@ define(function (require){
 		if (!response.headers) response.headers = {};
 		expires = null;
 		response.headers["set-cookie"] = "autobahn-session=" + sessionId + ";" + (settings.security.httpOnlyCookies ? "HttpOnly;" : "") + "path=/" + (expires ? ";expires=" + new Date(expires).toUTCString() : "");
-	}
+	};
 	Session.killSessionCookie = function (response, sessionId, expires){
 		if (!response.headers) response.headers = {};
 		expires = null;
 		response.headers["set-cookie"] = "autobahn-session=null;path=/;expires=0";
-	}
+	};
 	function generateSessionKey(username, password){
 		return sha1(rnd()+rnd()+rnd()) + sha1(rnd()+rnd()+rnd());
-	};
+	}
 	function rnd(){
 		return Math.random().toString().substring(4);
 	}
