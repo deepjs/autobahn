@@ -53,8 +53,10 @@ define(function (require){
 			var	context = deep.context;
 			request.autobahn = request.autobahn || {};
 			// wait for promised session
-			return deep.when(session).then(function(session){
+			return deep.when(session)
+			.done(function(session){
 				// make session available as request.autobahn.session
+				deep.context.session = session;
 				if(session)
 				{
 					session.save = function(){
@@ -91,26 +93,44 @@ define(function (require){
 				return deep.when(nextApp(request)).then(function(response){
 					// store session cookie
 					//console.log("session next app result : ", response)
-					if(request.autobahn.session) /// refresh cookies and session expiration
+					if(deep.context.session) /// refresh cookies and session expiration
 					{
 						var expires = null; //new Date().valueOf()+Session.expiresDeltaMS;
-						Session.setSessionCookie(response, request.autobahn.session.id, expires);
-						request.autobahn.session.expires = null;//new Date(expires)
+						Session.setSessionCookie(response, deep.context.session.id, expires);
+						deep.context.session.expires = null;//new Date(expires)
 						// save session
-						return deep.when(store.put(request.autobahn.session )).then(function(){
+						return deep.when(store.put(deep.context.session )).then(function(){
 							return response;
 						});
 					}
 					return response;
 				});
-			});
+			})
+			.fail(function(error){
+				return deep.when(nextApp(request)).then(function(response){
+					// store session cookie
+					//console.log("session next app result : ", response)
+					if(deep.context.session) /// refresh cookies and session expiration
+					{
+						var expires = null; //new Date().valueOf()+Session.expiresDeltaMS;
+						Session.setSessionCookie(response, deep.context.session.id, expires);
+						deep.context.session.expires = null;//new Date(expires)
+						// save session
+						return deep.when(store.put(deep.context.session )).then(function(){
+							return response;
+						});
+					}
+					return response;
+				});
+			})
 		};
 	};
 	function checkTimeout(id, expires){
 		var till = (expires.valueOf() - new Date().valueOf()) + 5000;
 		if(till > 0)
 			setTimeout(function(){
-				deep.when(Session.store.get(id)).then(function(session){
+				deep.when(Session.store.get(id))
+				.done(function(session){
 					if(!session)
 						return;
 					session.save = function(){
@@ -129,7 +149,8 @@ define(function (require){
 				});
 			}, till);
 		else
-			deep.when(Session.store.get(id)).then(function(session){
+			deep.when(Session.store.get(id))
+			.done(function(session){
 				if(session)
 				{
 					session.save = function(){
@@ -172,9 +193,7 @@ define(function (require){
 		//console.log("forceSesison : ", session)
 		if(session.expires != null)
 			checkTimeout(session.id, expiration);
-		return deep.when(Session.store.post(session)).then(function(){
-			return session;
-		});
+		return deep.when(Session.store.post(session));
 	}
 
 	Session.getCurrentSession = function (createIfNecessary, expiration)
@@ -206,9 +225,7 @@ define(function (require){
 				return Session.store.del(this.id);
 			}
 		};
-		return deep.when(Session.store.post(session)).then(function(){
-			return session;
-		});
+		return deep.when(Session.store.post(session));
 	};
 
 	Session.produceInnerSession = function(login, roles){

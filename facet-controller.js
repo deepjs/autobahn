@@ -56,7 +56,7 @@ var Accessors  = {
 	},
 	get : function(id, options)
 	{
-		console.log("facets-controller ("+this.facet.name+") : get : ", id);
+		//console.log("facets-controller ("+this.facet.name+") : get : ", id);
 		var self = this;
 
 		var accessors = this.facet.accessors;
