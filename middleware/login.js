@@ -1,30 +1,31 @@
 
 var urlparse = require('url').parse;
 var crypto = require('crypto');
-exports.middleware = function(userStore, loginField){
+exports.middleware = function(userStore, loginField, successHandler){
 	loginField = loginField || "email";
 	return function (req, response, next)
 	{
-		//console.log("login : ", req.body);
-		var shasum = crypto.createHash('sha1');
+		if(!req.body || !req.body.password || !req.body[loginField])
+		{
+			response.writeHead(error.status || 400, {'Content-Type': 'text/html'});
+			response.end("error : misformed body provided for login");
+			return;
+		}
+
+		var digest = crypto.createHash('sha1').update(req.body.password).digest('hex');
+
 		deep.store(userStore)
 		.modes({ roles:"admin" })
-		.get("?"+loginField+"="+encodeURIComponent(req.body[loginField]))
+		.get("?"+loginField+"="+encodeURIComponent(req.body[loginField])+"&password="+digest)
 		.done(function(success){
 			//console.log("login get : ", success);
 			success = success.shift();
-			shasum.update(req.body.password);
-			var digest = shasum.digest('hex');
-			//console.log("pass : ", success.password, " - ", digest)
-			if(success.password === digest)
-			{
-				delete success.password;
-				req.session.user = success;
+			delete success.password;
+			req.session.user = success;
+			deep.when(successHandler(success)).done(function(success){
 				response.writeHead(200, {'Content-Type': 'application/json'});
 				response.end(JSON.stringify(success));
-			}
-			else
-				return deep.errors.Login("login failed");
+			});
 		})
 		.fail(function(error){
 			response.writeHead(error.status || 400, {'Content-Type': 'text/html'});
