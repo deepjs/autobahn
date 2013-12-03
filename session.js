@@ -51,8 +51,6 @@ define(function (require){
 			//var context = deep.context;
 			//if(!context)
 			var	context = deep.context;
-			context.request = request;
-
 			request.autobahn = request.autobahn || {};
 			// wait for promised session
 			return deep.when(session).then(function(session){

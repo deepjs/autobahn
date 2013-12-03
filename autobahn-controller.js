@@ -51,7 +51,7 @@ define(function (require)
 			//console.log("autobahn will load : ", this);
 			return deep(this)
 			//.logValues()
-			.log("autobahn flatten 1")
+			//.log("autobahn flatten 1")
 			.flatten()
 			.log("______________________ autobahn flattened")
 			.query("/stores/*")
@@ -65,20 +65,20 @@ define(function (require)
 		{
 			var session = request.autobahn.session;
 			var roles = ["public"];
-			if(session && session.passport)
+			if(session)
 			{
-				roles = session.passport.roles || ["user"];
-				if(console.flags["autobahn"])
-					console.log("autobahn", "getRole() : request.passport : ", session.passport);
-			}	
-			if(console.flags["autobahn"])
-				console.log("autobahn", "getRequestController() : will compil roles : ", roles, this);
+				var passport = session.passports[autobahn.layer.application];
+				if(passport)
+					roles = passport.roles;
+				else
+					roles = ["user"];
+			}
 			return deep.when(this.compileRoles(roles))
 			.done(function (ctrl) {
 				//console.log("getRequestController : role compiled : ", ctrl)
 				request.autobahn.roleController = ctrl;
 				if(request.autobahn.session)
-						request.autobahn.session.roleController = function(){ return ctrl };
+					request.autobahn.session.roleController = function(){ return ctrl };
 			});
 		},
 		analyseRequest : function(request)

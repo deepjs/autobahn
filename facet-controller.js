@@ -80,7 +80,7 @@ var Accessors  = {
 		//console.log("facet : ("+this.facet.name+") : get  : "+id+" : will call store. ")
 		return deep.when(this.facet.store.get(id, options), null, { rethrow:false })
 		.done(function(obj){
-			console.log("facet get stroe response : ", obj)
+			//console.log("facet get stroe response : ", obj)
 			if(typeof obj === 'undefined' || obj == null)
 				throw new errors.NotFound("("+self.facet.name+") facet return nothing");
 			if(self.restrictToOwner)
