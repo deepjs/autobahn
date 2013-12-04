@@ -2,7 +2,7 @@
 exports.middleware = function(initialiser){
 	return function (req, response, next)
 	{
-		deep.context = { request:req };
+		deep.context = { request:req, response:response };
 		if(initialiser)
 			deep.when(initialiser(deep.context))
 			.done(function(context){

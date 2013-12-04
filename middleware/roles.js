@@ -8,8 +8,10 @@ exports.middleware = function(getRoles){
 			deep.when(getRoles(req.session))
 			.done(function (roles) {
 				//console.log("roles get : ", roles);
-				deep.setModes({ roles:roles });
-				next();
+				deep.modes('roles',roles)
+				.done(function(){
+					next();
+				})
 			})
 			.fail(function(e){
 				console.log("autobahn session middleware error : ", e.toString());
