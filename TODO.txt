@@ -5,16 +5,25 @@ the idea is to have a stack that goes from less to more restrictive API
 
 var manager = deep.ocm({
 	full:{
+		config:{
+			owner:false
+		},
+
 		post:function(object){
+
 			return "full access to : "+JSON.stringify(object); // deep.store("something").mode("full").post(object);
 		}
 	},
 	middle:{
+		config:{
+			owner:true
+		},
 		backgrounds:["../full"],
 		post:deep.compose.before(function(object){
 			if(object.title != "hello")
 				return deep.errors.PreconditionFailed();
-		})
+		}),
+		del:deep.Store.forbidden()
 	},
 	less:{
 		backgrounds:["../middle"],
@@ -30,7 +39,7 @@ var manager = deep.ocm({
 
 
 manager.flatten()
-.mode("full")
+.modes({roles:"full"})
 .done(function(s){
 	manager().post({ title:"hello", userId:12 })
 })

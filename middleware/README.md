@@ -4,8 +4,9 @@ var express = require('express');
 
 var context = require("autobahn/middleware/context"),
 	roles = require("autobahn/middleware/roles"),
-	login = require("autobahn/middleware/roles"),
-	restful = require("autobahn/middleware/roles");
+	login = require("autobahn/middleware/login"),
+	logout = require("autobahn/middleware/logout"),
+	restful = require("autobahn/middleware/restful");
 
 	var services = {
 		"/test/:id?":deep.ocm({
@@ -22,7 +23,6 @@ var context = require("autobahn/middleware/context"),
 		}, { group:"roles" })
 	};
 
-
 	var MongoStore = require('connect-mongo')(express);
 	var conf = {
 		db: {
@@ -37,19 +37,24 @@ var context = require("autobahn/middleware/context"),
 	};
 
 	var app = express();
-	app.use(express.cookieParser());
-	app.use(express.session({
+
+	app
+	.use(express.cookieParser())
+	.use(express.session({
 		secret: conf.secret,
 		maxAge: new Date(Date.now() + 3600000),
 		store: new MongoStore(conf.db)
-	}));
-
-	app.use(express.bodyParser());
-	app.post("/login", login.middleware("user", "email", function(user){
-
-	}));
-
-	app
+	}))
+	.post("/logout", logout.middleware())
+	.use(express.bodyParser())
+	.post("/login", login.middleware("user", "email"))
+	.use(context.middleware())
+	.use(roles.middleware(function(session)
+	{
+		if(session.user)
+			return ["user"];
+		return ["public"];
+	}))
 	.use(restful.map(services))
 	.use(function(req, res, next){
 		res.writeHead(404, {'Content-Type': 'text/html'});
