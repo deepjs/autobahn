@@ -40,21 +40,16 @@ exports.middleware =  function(getLanguageFromContext, saveLanguage, avaiableLan
 		var languages = [defaultLanguage];
 		deep.context.language = defaultLanguage;
 
-			//console.log("-------------------- Request.url = ", request.url);
+		//console.log("-------------------- Request.url = ", request.url);
 		
-
 		if(request.pathInfo.split("/").length > 2)
 			return app(request);
-
 
 		var query = queryString.parse(request.queryString) || {};
 
 		var passport = null;
 		var languageFromCookie = null;
 
-		//regarder ds session 
-
-		//si y'en a une y'a passport et dedans y'a langue
 		var contextLanguages = getLanguageFromContext(deep.context);
 		
 		if(contextLanguages)
@@ -86,10 +81,8 @@ exports.middleware =  function(getLanguageFromContext, saveLanguage, avaiableLan
 					return obj.value;
 				})
 				: [];
-
 			console.log("Languages from Browser after parsing are : ", languages);
 		}
-
 
 		if(query && query.changelanguage)
 		{
@@ -130,14 +123,13 @@ exports.middleware =  function(getLanguageFromContext, saveLanguage, avaiableLan
 		{
 			console.log("-------------------- CHANGE LANGUAGE FOR CONTEXT= ", deep.context.language);
 			// save it in passport in db : so save session
-			saveLanguage(deep.context.language);
+			saveLanguage(deep.context);
 			/*
 			passport.language = deep.context.language;
 			autobahn().roles(["admin"]).facet("passport").put(passport).log();
 			deep.context.request.autobahn.session.save();
 			*/
 		}
-
 
 		console.log('__________________ language catched : ', deep.context.language);
 		//deep.context.languageCode = autobahn.layer.application + "-" + deep.context.language;
