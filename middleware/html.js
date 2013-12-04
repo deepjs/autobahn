@@ -13,6 +13,7 @@ exports.simpleMap = function(map){
 	}
 	return function (req, res, next)
 	{
+		//console.log("html mappers : ", req.url)
 		var pathname = urlparse(req.url).pathname;
 		var items = {};
 		var handled = usableMap.some(function (entry) {
@@ -27,18 +28,18 @@ exports.simpleMap = function(map){
 
 		if(handled)
 		{
-			//console.log("items : ", items, handled);
+			//console.log("html handled : ", items, handled);
 			deep(items.object)
 			.deepLoad(items.params, false)
 			.done(function(success){
-				//console.log("success map loaded : ", pathname, success);
+				console.log("success map loaded : ", pathname, success);
 				if(success.context.content && success.context.content.join)
 					success.context.content = success.context.content.join("\n");
 				res.writeHead(200, {'Content-Type': 'text/html', "Location":pathname});
 				res.end(success.page(success.context));
 			})
 			.fail(function(error){
-				//deep.utils.dumpError(error);
+				deep.utils.dumpError(error);
 				res.writeHead(error.status || 500, {'Content-Type': 'application/json', "Location":pathname});
 				res.end(JSON.stringify(error));
 			});
