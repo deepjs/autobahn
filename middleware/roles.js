@@ -7,7 +7,8 @@ exports.middleware = function(getRoles){
 		{
 			deep.when(getRoles(req.session))
 			.done(function (roles) {
-				deep.context.roles = roles;
+				//console.log("roles get : ", roles);
+				deep.setModes({ roles:roles });
 				next();
 			})
 			.fail(function(e){
