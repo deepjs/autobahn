@@ -2,9 +2,9 @@
 exports.middleware = function(initialiser){
 	return function (req, response, next)
 	{
-		deep.context = {};
+		deep.context = { request:req };
 		if(initialiser)
-			deep.when(initialiser(req.context))
+			deep.when(initialiser(deep.context))
 			.done(function(context){
 				next();
 			})
@@ -14,7 +14,8 @@ exports.middleware = function(initialiser){
 				response.end("error : "+JSON.stringify(e));
 			});
 		else
-			deep.when(context).done(function(){
+			deep.when(deep.context)
+			.done(function(){
 				next();
 			});
 	};
