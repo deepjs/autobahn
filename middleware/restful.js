@@ -49,10 +49,6 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 					//console.log("restful map : handled : params : ", handler.params);
 					//console.log("restful map : request.body : ", request.body);
 					var d = null;
-					var curRoles = "public";
-					if(request.session && request.session.user)
-						curRoles = request.session.user.roles || "guest";
-					deep.setModes({ roles:curRoles });
 					//console.log("restful : store : ", handler.store);
 					switch(request.method.toLowerCase())
 					{
