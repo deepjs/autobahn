@@ -86,7 +86,7 @@ FSStore.prototype = {
 				else
 					def.resolve(files);
 			})
-			return deep.promise(def);
+			return deep.when(def);
 		},
 		"delete": function(id, options){
 		//	console.log("Remote delete : ", id);
@@ -197,7 +197,7 @@ var FileSystem = function(options){
 				});
 			});
 			//console.log("before proise return of FSStore get")
-			return deep.promise(def);
+			return deep.when(def);
 		},
 		post: function(object, directives){
 			//console.log("fs : post : ", object, directives)

@@ -195,7 +195,7 @@ define(function RoleControllerDefine(require)
 				response.body = resolved;
 				def.resolve(response.body);
 			});
-			return deep.promise(def);
+			return deep.when(def);
 		}
 	}
 

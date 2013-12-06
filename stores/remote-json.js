@@ -234,7 +234,7 @@ define(function (require)
 			else
 				def.reject(new Error("deep.store.remotejson.bulk failed : "+uri+" - details : "+JSON.stringify(arguments)));
 		});
-		return deep(deep.promise(def))
+		return deep(deep.when(def))
 		.store(this)
 		.done(function (success) {
 			this.range = deep.Chain.range;

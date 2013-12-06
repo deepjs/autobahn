@@ -37,7 +37,7 @@ define(function (require)
 						request.body = null;
 						def.reject(error);
 					});
-				  return deep.promise(def);
+				  return deep.when(def);
 				}();
 		},
 		parseAcceptHeader:function (headers) 

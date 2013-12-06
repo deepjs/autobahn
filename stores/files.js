@@ -86,7 +86,7 @@ FSStore.prototype = {
 				else
 					def.resolve(files);
 			})
-			return deep.promise(def);
+			return deep.when(def);
 		},
 		"delete": function(id, options){
 		//	console.log("Remote delete : ", id);

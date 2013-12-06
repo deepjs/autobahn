@@ -470,7 +470,7 @@ define(function (require){
                 deferred.resolve(JSON.stringify(result))
             }
         };
-        infos.promise = deep.promise(deferred);
+        infos.promise = deep.when(deferred);
     }*/
 
     var UploadFacet = {

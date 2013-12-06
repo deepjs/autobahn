@@ -89,7 +89,7 @@ define(function (require)
 			if(!def.rejected)
 				def.reject(e);
 		}
-		return deep.promise(def);
+		return deep.when(def);
 	}
 	return requester;
 });
