@@ -1,6 +1,6 @@
 {
   "name": "autobahn",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Gilles Coomans",
   "description": "nodejs/expressjs/deep related tools and middlewares",
   "licenses": [
@@ -10,6 +10,6 @@
     "url":"https://github.com/nomocas/autobahn.git"
   },
   "dependencies": {
-    "deepjs":">=0.9.5"
+    "deepjs":">=0.9.9"
   }
 }
