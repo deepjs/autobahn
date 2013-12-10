@@ -63,6 +63,7 @@ define(function (require){
 						return Session.store.put(this);
 					};
 					session.del = function(){
+						delete deep.context.session;
 						return Session.store.del(this.id);
 					};
 					var timeout = null;
@@ -137,6 +138,7 @@ define(function (require){
 						return Session.store.put(this);
 					};
 					session.del = function(){
+						delete deep.context.session;
 						return Session.store.del(this.id);
 					};
 					var exp = new Date(session.expires);
@@ -157,6 +159,7 @@ define(function (require){
 						return Session.store.put(this);
 					};
 					session.del = function(){
+						delete deep.context.session;
 						return Session.store.del(this.id);
 					};
 						Session.store.del(id);
