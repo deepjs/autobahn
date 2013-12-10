@@ -69,7 +69,7 @@ define(function (require){
 					var timeout = null;
 					if(session.expires)
 						timeout = new Date() > new Date(session.expires);
-					if(timeout != null)
+					if(timeout !== null)
 					{
 						store.del(cookieId);
 						request.autobahn.session = null;
@@ -123,7 +123,7 @@ define(function (require){
 					}
 					return response;
 				});
-			})
+			});
 		};
 	};
 	function checkTimeout(id, expires){
