@@ -1,5 +1,5 @@
 {
-  "name"          : "autobahn",
+  "name"          : "autobahnjs",
   "version"       : "0.3.0",
   "author"        : "Gilles Coomans <gilles.coomans@gmail.com>",
   "description"   : "nodejs/expressjs/deepjs related tools and middlewares",
