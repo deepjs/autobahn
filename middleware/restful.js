@@ -195,4 +195,10 @@
 		}
 	};
 
-	modules.exports = mapper;
+	module.exports = mapper;
+
+
+
+
+
+	
