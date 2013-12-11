@@ -1,3 +1,8 @@
+/**
+ * @author Gilles Coomans <gilles.coomans@gmail.com>
+ *
+ */
+var deep = require("deepjs");
 var queryString = require("querystring");
 
 exports.middleware =  function(getLanguageFromContext, saveLanguage, avaiableLanguages, defaultLanguage){

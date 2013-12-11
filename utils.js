@@ -7,8 +7,7 @@ if(typeof define !== 'function')
 
 define(function (require)
 {
-	var AutobahnResponse = require("autobahn/autobahn-response");
-	var deep = require("deepjs/deep");
+	var deep = require("deepjs");
 	var utils = {
 		setNoCacheHeaders : function (infos) {
 	        deep.utils.up( {

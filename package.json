@@ -1,15 +1,27 @@
 {
-  "name": "autobahn",
-  "version": "0.2.0",
-  "author": "Gilles Coomans",
-  "description": "nodejs/expressjs/deep related tools and middlewares",
+  "name"          : "autobahn",
+  "version"       : "0.3.0",
+  "author"        : "Gilles Coomans <gilles.coomans@gmail.com>",
+  "description"   : "nodejs/expressjs/deepjs related tools and middlewares",
+  "contributors"  : ["Philippe Delabye <phil@chemicalrules.net>"],
+  "keywords"      : ["util", "promise", "asynch", "AOP", "query", "composition", "restful", "OCM"],
   "licenses": [
+    {
+         "type": "LGPLv3.0",
+         "url": "http://www.gnu.org/licenses/lgpl-3.0.txt"
+     }
   ],
   "repository": {
     "type":"git",
-    "url":"https://github.com/nomocas/autobahn.git"
+    "url":"https://github.com/deepjs/autobahn.git"
   },
   "dependencies": {
-    "deepjs":">=0.9.9"
+    "amdefine":"*",
+    "deepjs":">=0.9.10",
+    "deep-routes":">=0.1.1"
+  },
+  "main": "./autobahn.js",
+  "engines": {
+        "node": ">=0.10.0"
   }
 }

@@ -3,11 +3,8 @@
  *
  */
  
-if(typeof define !== 'function')
-	var define = require('amdefine')(module);
 
-
-define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
+	var deep = require("deepjs");
 	var router = require("deep-routes/route");
 	var urlparse = require('url').parse;
 	var mapper = {
@@ -197,5 +194,5 @@ define(["require", "deepjs/deep"], function restfulMapperDefine(require, deep){
 			};
 		}
 	};
-	return mapper;
-});
+
+	modules.exports = mapper;

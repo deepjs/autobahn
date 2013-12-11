@@ -1,3 +1,8 @@
+/**
+ * @author Gilles Coomans <gilles.coomans@gmail.com>
+ *
+ */
+var deep = require("deepjs");
 
 var urlparse = require('url').parse;
 var crypto = require('crypto');

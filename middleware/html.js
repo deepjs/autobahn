@@ -1,4 +1,8 @@
-
+/**
+ * @author Gilles Coomans <gilles.coomans@gmail.com>
+ *
+ */
+var deep = require("deepjs");
 var router = require("deep-routes/route");
 var urlparse = require('url').parse;
 exports.simpleMap = function(map){
