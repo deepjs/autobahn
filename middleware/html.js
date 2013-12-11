@@ -36,7 +36,7 @@ exports.simpleMap = function(map){
 			deep(items.object)
 			.deepLoad(items.params, false)
 			.done(function(success){
-				console.log("success map loaded : ", pathname, success);
+				//console.log("success map loaded : ", pathname, success);
 				if(success.context.content && success.context.content.join)
 					success.context.content = success.context.content.join("\n");
 				res.writeHead(200, {'Content-Type': 'text/html', "Location":pathname});
