@@ -1,6 +1,6 @@
 {
   "name": "autobahnjs",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": {
     "name": "Gilles Coomans",
     "email": "gilles.coomans@gmail.com"
@@ -42,7 +42,5 @@
     "node": ">=0.10.0"
   },
   "readme": "autobahn\n====\n\n\ndeepjs oriented tools for managing nodejs/expressjs middlwares and routes.\n\nExperimental use for the moment... Docs coming soon.\n\n",
-  "readmeFilename": "README.md",
-  "_id": "autobahnjs@0.3.0",
-  "_from": "autobahnjs@>=0.3.0"
+  "readmeFilename": "README.md"
 }
