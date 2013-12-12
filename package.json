@@ -1,27 +1,48 @@
 {
-  "name"          : "autobahnjs",
-  "version"       : "0.3.0",
-  "author"        : "Gilles Coomans <gilles.coomans@gmail.com>",
-  "description"   : "nodejs/expressjs/deepjs related tools and middlewares",
-  "contributors"  : ["Philippe Delabye <phil@chemicalrules.net>"],
-  "keywords"      : ["util", "promise", "asynch", "AOP", "query", "composition", "restful", "OCM"],
+  "name": "autobahnjs",
+  "version": "0.3.0",
+  "author": {
+    "name": "Gilles Coomans",
+    "email": "gilles.coomans@gmail.com"
+  },
+  "description": "nodejs/expressjs/deepjs related tools and middlewares",
+  "contributors": [
+    {
+      "name": "Philippe Delabye",
+      "email": "phil@chemicalrules.net"
+    }
+  ],
+  "keywords": [
+    "util",
+    "promise",
+    "asynch",
+    "AOP",
+    "query",
+    "composition",
+    "restful",
+    "OCM"
+  ],
   "licenses": [
     {
-         "type": "LGPLv3.0",
-         "url": "http://www.gnu.org/licenses/lgpl-3.0.txt"
-     }
+      "type": "LGPLv3.0",
+      "url": "http://www.gnu.org/licenses/lgpl-3.0.txt"
+    }
   ],
   "repository": {
-    "type":"git",
-    "url":"https://github.com/deepjs/autobahn.git"
+    "type": "git",
+    "url": "https://github.com/deepjs/autobahn.git"
   },
   "dependencies": {
-    "amdefine":"*",
-    "deepjs":">=0.9.10",
-    "deep-routes":">=0.1.1"
+    "amdefine": "*",
+    "deepjs": ">=0.9.10",
+    "deep-routes": ">=0.1.1"
   },
   "main": "./autobahn.js",
   "engines": {
-        "node": ">=0.10.0"
-  }
+    "node": ">=0.10.0"
+  },
+  "readme": "autobahn\n====\n\n\ndeepjs oriented tools for managing nodejs/expressjs middlwares and routes.\n\nExperimental use for the moment... Docs coming soon.\n\n",
+  "readmeFilename": "README.md",
+  "_id": "autobahnjs@0.3.0",
+  "_from": "autobahnjs@>=0.3.0"
 }
