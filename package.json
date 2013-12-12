@@ -35,7 +35,8 @@
   "dependencies": {
     "amdefine": "*",
     "deepjs": ">=0.9.10",
-    "deep-routes": ">=0.1.1"
+    "deep-routes": ">=0.1.1",
+    "send":">=0.1.4"
   },
   "main": "./autobahn.js",
   "engines": {
