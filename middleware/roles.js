@@ -8,15 +8,17 @@ exports.middleware = function(getRoles){
 
 	return function (req, response, next)
 	{
+
 		if(req.session)
 		{
 			deep.when(getRoles(req.session))
 			.done(function (roles) {
-				//console.log("roles get : ", roles);
+				//deep.setModes({ roles:roles });
 				deep.modes('roles',roles)
 				.done(function(){
+					//console.log("roles get : ", roles, deep.context.modes);
 					next();
-				})
+				});
 			})
 			.fail(function(e){
 				console.log("autobahn session middleware error : ", e.toString());
@@ -25,6 +27,10 @@ exports.middleware = function(getRoles){
 			});
 		}
 		else
-			next();
+			deep.modes('roles',"public")
+			.done(function(){
+				//deep.setModes({ roles:"public" });
+				next();
+			});
 	};
 };
