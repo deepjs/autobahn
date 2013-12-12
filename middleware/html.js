@@ -30,9 +30,15 @@ exports.simpleMap = function(map){
 			return false;
 		});
 
+
+		//console.log("autobahn.html : ", deep.context.modes);
+
 		if(handled)
 		{
 			//console.log("html handled : ", items, handled);
+			var obj = items.object;
+			if(obj._deep_ocm_)
+				obj = obj();
 			deep(items.object)
 			.deepLoad(items.params, false)
 			.done(function(success){
@@ -49,6 +55,6 @@ exports.simpleMap = function(map){
 			});
 		}
 		else
-			return next();
+			next();
 	};
 };
