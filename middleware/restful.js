@@ -21,6 +21,7 @@
 			return function(request, response, next)
 			{
 				//console.log("restful : session : ", request.session);
+				//console.log("restful : context : ", deep.context.modes);
 				var parsedURL = urlparse(request.url);
 				var pathname = parsedURL.pathname;
 				var headers = request.headers;
@@ -196,8 +197,6 @@
 	};
 
 	module.exports = mapper;
-
-
 
 
 
