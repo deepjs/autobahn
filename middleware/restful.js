@@ -12,16 +12,18 @@
 			var usableMap = [];
 			for(var i in obj)
 			{
+				var store = obj[i];
 				var r = router.createRouter(i, false);
 				usableMap.push({
 					router:r,
-					store:obj[i]
+					store:store
 				});
+				if(store._deep_ocm_)
+					store.flatten();//.log("restful entry is ocm : flattened").log();
 			}
 			return function(request, response, next)
 			{
 				//console.log("restful : session : ", request.session);
-				//console.log("restful : context : ", deep.context.modes);
 				var parsedURL = urlparse(request.url);
 				var pathname = parsedURL.pathname;
 				var headers = request.headers;
@@ -44,17 +46,28 @@
 
 				if(handled)
 				{
+					//console.log("restful map : pathname : ", pathname);
 					//console.log("restful map : handled : params : ", handler.params);
 					//console.log("restful map : request.body : ", request.body);
 					var d = null;
 					//console.log("restful : store : ", handler.store);
+					//console.log("restful : context : ", deep.context.modes);
+
+					var store = handler.store;
+					if(store._deep_ocm_)
+						store = store();
+
+					var options = {
+						params:handler.params
+					}
+
 					switch(request.method.toLowerCase())
 					{
 						case "get" : // subcases : get, query, range
-							//console.log("will get : ", handler.params)
+							//console.log("will get : ", handler.params);
 							if(headers.range)
 							{
-								if(!handler.store.range)
+								if(!store.range)
 									d = deep.when(deep.errors.Range("range unmanaged by related store"));
 								else
 								{
@@ -63,7 +76,7 @@
 									{
 										var start = parseInt(res[1], 10);
 										var end = parseInt(res[2], 10);
-										d = deep.store(handler.store).range(start, end, parsedURL.search)
+										d = deep.store(store).range(start, end, parsedURL.search , options)
 										.done(function(range){
 											response.status((range.start === 0 && range.total -1 === end) ? 200 : 206);
 											response.set({
@@ -78,17 +91,17 @@
 								}
 							}
 							else
-								d = deep.store(handler.store).get(handler.params.id || parsedURL.search);
+								d = deep.store(store).get(handler.params.id || parsedURL.search, options);
 							break;
 
 						case "post" : // subcases : post, rpc, bulk
 
 							if(request.is("application/json-rpc"))	// RPC
 							{
-								if(!handler.store.rpc)
+								if(!store.rpc)
 									d = deep.when(deep.errors.MethodNotAllowed("rpc unmanaged by related store"));
 								else
-									d = deep.store(handler.store).rpc(request.body.method, request.body.params , handler.params.id)
+									d = deep.store(store).rpc(request.body.method, request.body.params , handler.params.id, options)
 									.done(function  (result) {
 										// console.log("rpc call : response : ", result);
 										return {
@@ -116,10 +129,11 @@
 										//console.log("BULK UPDATE : message : ", message);
 										var h = null;
 										var meth = message.method.toLowerCase();
+										var opt = deep.utils.bottom(options, {id:message.to});
 										if(deep.utils.inArray(meth, ["patch","put","post"]))
-											h = deep.store(handler.store)[meth](message.body, {id:message.to});
+											h = deep.store(store)[meth](message.body, opt);
 										else
-											h = deep.store(handler.store)[meth](message.to, {id:message.to});
+											h = deep.store(store)[meth](message.to, opt);
 										alls.push(h);
 									});
 									d = deep.all(alls)
@@ -140,39 +154,42 @@
 							}
 							else if(request.is("application/json"))  // POST
 							{
-								if(!handler.store.post)
+								var opt = deep.utils.bottom(options, {id:handler.params.id});
+								if(!store.post)
 									d = deep.when(deep.errors.MethodNotAllowed());
 								else
-									d = deep.store(handler.store).post(request.body, { id:handler.params.id });
+									d = deep.store(store).post(request.body, opt);
 							}
 							else
 								d = deep.when(deep.errors.Post("unrecognised content-type"));
 							break;
 
 						case "put" :
+								var opt = deep.utils.bottom(options, {id:handler.params.id});
 							if(!request.is("application/json"))
 								d = deep.when(deep.errors.Put("unrecognised content-type"));
-							else if(!handler.store.put)
+							else if(!store.put)
 								d = deep.when(deep.errors.MethodNotAllowed());
 							else
-								d = deep.store(handler.store).put(request.body, { id:handler.params.id });
+								d = deep.store(store).put(request.body, opt);
 							break;
 
 						case "patch" :
 							//console.log("restful apply patch")
+								var opt = deep.utils.bottom(options, {id:handler.params.id});
 							if(!request.is("application/json"))
 								d = deep.when(deep.errors.Patch("unrecognised content-type"));
-							if(!handler.store.patch)
+							if(!store.patch)
 								d = deep.when(deep.errors.MethodNotAllowed());
 							else
-								d = deep.store(handler.store).patch(request.body, { id:handler.params.id });
+								d = deep.store(store).patch(request.body, opt);
 							break;
 
 						case "delete" :
-							if(!handler.store.del)
+							if(!store.del)
 								d = deep.when(deep.errors.MethodNotAllowed());
 							else
-								d = deep.store(handler.store).del(handler.params.id);
+								d = deep.store(store).del(handler.params.id, options);
 							break;
 
 						default : // ASSUMING OPTIONS?
