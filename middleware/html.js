@@ -29,10 +29,7 @@ exports.simpleMap = function(map){
 			}
 			return false;
 		});
-
-
-		//console.log("autobahn.html : ", deep.context.modes);
-
+		
 		if(handled)
 		{
 			//console.log("html handled : ", items, handled);
