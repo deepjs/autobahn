@@ -1,0 +1,19 @@
+middlewares 
+====
+
+/**
+ * paranos : ocmise all ocm protocol in deep.context.protocols
+ * @return {[type]} [description]
+ */
+autobahn.paranos = function(){
+	// args : list of groups to ocmise in deep.protocols (check any OCM protocol)
+}
+
+
+
+add default roles in autobahn.context.middleware
+
+
+
+
+use node-range-parser to parse range header
