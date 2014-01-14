@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "amdefine": "*",
-    "deepjs": ">=0.10.1",
+    "deepjs": ">=0.10.2",
     "deep-routes": ">=0.1.1",
     "send":">=0.1.4"
   },
