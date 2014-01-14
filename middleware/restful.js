@@ -59,7 +59,7 @@
 
 					var options = {
 						params:handler.params
-					}
+					};
 
 					switch(request.method.toLowerCase())
 					{
