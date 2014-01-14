@@ -39,7 +39,7 @@ function produceMapper(map)
 			if(middlewares.length === 0)
 				return next();
 			var follow = middlewares.shift();
-			follow(req, res, hackedNext);
+			return follow(req, res, hackedNext);
 		};
 		hackedNext();
 	};
@@ -71,19 +71,22 @@ exports.middleware = function(map){
 		closure.cache = produceMapper(map, {});
 		return closure.cache;
 	};
+	if(map._deep_ocm_)
+		map.flatten();
+
 	return function (req, res, next)
 	{
-		var map = getMap();
-		if(map instanceof Error)
+		var m = getMap();
+		if(m instanceof Error)
 		{
-			if(map.status == 404)
+			if(m.status == 404)
 				return next();
-			deep.utils.dumpError(map);
-			res.writeHead(map.status || 500, {'Content-Type': 'application/json'});
-			res.end(JSON.stringify(map));
+			deep.utils.dumpError(m);
+			res.writeHead(m.status || 500, {'Content-Type': 'application/json'});
+			res.end(JSON.stringify(m));
 		}
 		else
-			map(req, res, next);
+			m(req, res, next);
 	};
 };
 
