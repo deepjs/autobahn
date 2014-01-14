@@ -14,10 +14,12 @@ exports.simpleMap = function(map){
 			router:r,
 			object:map[i]
 		});
+		if(map[i]._deep_ocm_)
+			map[i].flatten().logError();
 	}
 	return function (req, res, next)
 	{
-		//console.log("html mappers : ", req.url)
+		// console.log("html mappers : ", req.url)
 		var pathname = urlparse(req.url).pathname;
 		var items = {};
 		var handled = usableMap.some(function (entry) {
@@ -36,7 +38,7 @@ exports.simpleMap = function(map){
 			var obj = items.object;
 			if(obj._deep_ocm_)
 				obj = obj();
-			deep(items.object)
+			deep(obj)
 			.deepLoad(items.params, false)
 			.done(function(success){
 				//console.log("success map loaded : ", pathname, success);
@@ -46,7 +48,8 @@ exports.simpleMap = function(map){
 				res.end(success.page(success.context));
 			})
 			.fail(function(error){
-				deep.utils.dumpError(error);
+				if(deep.debug)
+					deep.utils.dumpError(error);
 				res.writeHead(error.status || 500, {'Content-Type': 'application/json', "Location":pathname});
 				res.end(JSON.stringify(error));
 			});
