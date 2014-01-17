@@ -165,7 +165,7 @@
 							break;
 
 						case "put" :
-								var opt = deep.utils.bottom(options, {id:handler.params.id});
+							var opt = deep.utils.bottom(options, {id:handler.params.id});
 							if(!request.is("application/json"))
 								d = deep.when(deep.errors.Put("unrecognised content-type"));
 							else if(!store.put)
@@ -176,7 +176,7 @@
 
 						case "patch" :
 							//console.log("restful apply patch")
-								var opt = deep.utils.bottom(options, {id:handler.params.id});
+							var opt = deep.utils.bottom(options, {id:handler.params.id});
 							if(!request.is("application/json"))
 								d = deep.when(deep.errors.Patch("unrecognised content-type"));
 							if(!store.patch)
