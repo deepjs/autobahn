@@ -1,7 +1,7 @@
 /**
  * @author Gilles Coomans <gilles.coomans@gmail.com>
- *
- */
+ * TODO : map interpretation : if entry is array : loop on it, else, direct descriptor
+ **/
 var deep = require("deepjs");
 var express = require('express');
 var router = require("deep-routes/route");
@@ -73,7 +73,6 @@ exports.middleware = function(map){
 	};
 	if(map._deep_ocm_)
 		map.flatten();
-
 	return function (req, res, next)
 	{
 		var m = getMap();
