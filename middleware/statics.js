@@ -4,9 +4,8 @@
  **/
 var deep = require("deepjs");
 var express = require('express');
-var router = require("deep-routes/route");
+var router = require("deep-routes/flat");
 var urlparse = require('url').parse;
-
 
 function produceMapper(map)
 {

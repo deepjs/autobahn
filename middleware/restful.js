@@ -3,7 +3,7 @@
 */
 
 var deep = require("deepjs");
-var router = require("deep-routes/route");
+var router = require("deep-routes/flat");
 var urlparse = require('url').parse;
 var mapper = {
 	map:function(obj){

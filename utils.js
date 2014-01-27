@@ -39,30 +39,6 @@ define(function (require)
 				  return deep.when(def);
 				}();
 		},
-		parseAcceptHeader:function (headers) 
-		{
-			var res = [];
-			var asked = headers["accept"];
-			if(!asked)
-				return null;
-			asked = asked.split(",");
-			asked.forEach(function (ask) 
-			{
-				ask = ask.split(";");
-				var q = ask[ask.length-1];
-				var quality = 1;
-				if(q.indexOf("q=") == 0)
-					quality = parseFloat(q.substring(2));
-				res.push({
-					quality:quality,
-					media:ask.shift()
-				});
-			});
-			//return deep(res).select("./*?sort(-quality)");
-			var d = deep(res);
-			return deep.chain.select(d,"./*?sort(-quality)");
-
-		},
 		parseRange : function (request) {
 			var rangeSum = request.autobahn.range = {};
 			// handle the range header, TODO: maybe handle ranges with another piece of middleware
