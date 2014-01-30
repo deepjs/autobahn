@@ -7,7 +7,7 @@ exports.middleware = function(initialiser){
 	return function (req, response, next)
 	{
 		// console.log("context middleware")
-		deep.context = { request:req, response:response };
+		deep.context = { request:req, response:response, modes:{} };
 		deep.when(initialiser?initialiser(deep.context):deep.context)
 		.done(function(context){
 			// console.log("context middleware initialised")

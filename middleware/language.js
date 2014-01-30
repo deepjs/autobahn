@@ -45,30 +45,32 @@ exports.middleware =  function(getLanguageFromContext, saveLanguage, avaiableLan
 		var languages = [defaultLanguage];
 		deep.context.language = defaultLanguage;
 
+		//console.log("-------------------- deep.context.language = ", deep.context.language);
 		//console.log("-------------------- Request.url = ", request.url);
 		
-		if(request.pathInfo.split("/").length > 2)
-			return app(request);
+		if(request.url.split("/").length > 2)
+			return nextApp();
 
 		var query = queryString.parse(request.queryString) || {};
 
 		var passport = null;
 		var languageFromCookie = null;
 
-		var contextLanguages = getLanguageFromContext(deep.context);
+		// var contextLanguages = getLanguageFromContext(deep.context);
 		
-		if(contextLanguages)
+		// if(contextLanguages)
+		// {
+		// 	console.log("Languages from CONTEXT : ", languages);
+		// 	languages = contextLanguages;
+		// 	/*
+		// 	passport = deep.context.session.passports[autobahn.layer.application];
+		// 	languages = [passport.language];
+		// 	 */
+		// }
+		//console.log("Request cookies = ", request.cookies);
+		if( request.cookies && request.cookies.language )
 		{
-			console.log("Languages from CONTEXT : ", languages);
-			languages = contextLanguages;
-			/*
-			passport = deep.context.session.passports[autobahn.layer.application];
-			languages = [passport.language];
-			 */
-		}
-		else if( request.cookies && request.cookies.get("language") )
-		{
-			languages = [request.cookies.get("language")];
+			languages = [request.cookies.language];
 			console.log("Languages from COOKIES : ", languages);
 		}
 
@@ -119,9 +121,10 @@ exports.middleware =  function(getLanguageFromContext, saveLanguage, avaiableLan
 
 		if(languageFromCookie !== deep.context.language)
 		{
-			var d = new Date();
-			d.setMonth( d.getMonth( ) + 6 );
-			request.cookies.set("language", deep.context.language, {expires:d});
+			// var d = new Date();
+			// d.setMonth( d.getMonth( ) + 6 );
+			// request.cookies.set("language", deep.context.language, {expires:d});
+			response.cookie('language', deep.context.language, { maxAge: 15120000000, httpOnly: true });
 		}
 
 		if(saveLanguage && contextLanguages && contextLanguages != deep.context.language)
@@ -142,6 +145,6 @@ exports.middleware =  function(getLanguageFromContext, saveLanguage, avaiableLan
 		if(query && query.changelanguage)
 			return response.redirect("/");
 
-		return app(request);
+		return nextApp();
 	};
 };
