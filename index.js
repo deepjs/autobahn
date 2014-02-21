@@ -5,7 +5,7 @@
 var express = require('express'),
 	deep = require("deepjs"),
 	crypto = require("crypto");
-
+	require("deepjs/lib/unit");
 var closure = {
 	app:null
 };
@@ -32,14 +32,20 @@ deep.session = function(session){
 deep.Chain.addHandle("session", function (session) {
 	var self = this;
 	var func = function (s, e) {
+		if(!closure.app)
+			return deep.errors.Error(500, "No app setted in deep to manipulate session.");
 		if(!self._contextCopied)
 			deep.context = self._context = deep.utils.simpleCopy(self._context);
 		self._contextCopied = true;
 		self._context.session = session;
 		self.oldQueue = self._queue;
 		self._queue = [];
-		if(!closure.app)
-			return deep.errors.Error(500, "No app setted in deep to manipulate session.");
+		if(session.user && closure.app.autobahn.loggedIn)
+			return deep.when(closure.app.autobahn.loggedIn(session))
+			.done(function(session){
+				self.roles((closure.app.autobahn.getRoles)(session));
+				return s;
+			});
 		self.roles((closure.app.autobahn.getRoles)(session));
 		return s;
 	};
@@ -57,12 +63,24 @@ deep.Chain.addHandle("session", function (session) {
  * @return {[type]}     [description]
  */
 deep.login = function(obj){
-	return deep.store("json").post(obj, "/login" ).log();
+	return deep({}).login(obj);
 };
 deep.Chain.addHandle("login", function (datas) {
 	var self = this;
 	var func = function (s, e) {
-		return deep.login(datas);
+		if(!closure.app)
+			return deep.errors.Error(500, "No app setted in deep to manipulate session.");
+		if(!self._contextCopied)
+			deep.context = self._context = deep.utils.simpleCopy(self._context);
+		self._contextCopied = true;
+		self._context.session = {};
+		self.oldQueue = self._queue;
+		self._queue = [];
+		return deep.when(closure.app.autobahn.userHandlers.login(datas, self._context.session))
+		.done(function(user){
+			self.roles((closure.app.autobahn.getRoles)(self._context.session));
+			return s;
+		});
 	};
 	func._isDone_ = true;
 	addInChain.call(self, func);
@@ -76,7 +94,13 @@ deep.Chain.addHandle("login", function (datas) {
 deep.Chain.addHandle("logout", function () {
 	var self = this;
 	var func = function (s, e) {
-		delete self._context.session;
+		if(self._context.session)
+		{
+			if(self._context.session.impersonations)
+				self._context.session = self._context.impersonations.pop();
+			else
+				delete self._context.session;
+		}
 		return s;
 	};
 	func._isDone_ = true;
@@ -92,9 +116,7 @@ deep.Chain.addHandle("logout", function () {
  * @return {[type]}      [description]
  */
 deep.impersonate = function(user){
-	if(!session)
-		return (deep.context && deep.context.session)?deep.context.session.user:undefined;
-	return deep({}).sessionUser(user);
+	return deep({}).impersonate(user);
 };
 deep.Chain.addHandle("impersonate", function (user) {
 	var self = this;
@@ -102,18 +124,18 @@ deep.Chain.addHandle("impersonate", function (user) {
 		if(!self._contextCopied)
 			deep.context = self._context = deep.utils.simpleCopy(self._context);
 		self._contextCopied = true;
-		if(self._context.session)
-			self._context.session = deep.utils.simpleCopy(self._context.session);
-		else
-			self._context.session = {};
-		if(typeof user === 'string')
-			self._context.session.user = { id:user };
-		else
-			self._context.session.user = user;
+		var oldSession = self._context.session;
+		self.context.impersonations = self.context.impersonations;
+		if(oldSession)
+			self.context.impersonations.push(oldSession);
+		self._context.session = {};
 		self.oldQueue = self._queue;
 		self._queue = [];
-		self.modes("roles", closure.app.autobahn.getRoles(self._context.session));
-		return s;
+		return deep.when(closure.app.autobahn.userHandlers.impersonate(user, self._context.session))
+		.done(function(user){
+			self.roles((closure.app.autobahn.getRoles)(self._context.session));
+			return s;
+		});
 	};
 	func._isDone_ = true;
 	deep.utils.addInChain.call(self, func);
@@ -206,8 +228,13 @@ module.exports = {
 			config.user.login.encryption = config.user.encryption;
 			config.user.login.loginField = config.user.login.loginField || "email";
 			config.user.login.passwordField = config.user.login.passwordField || "password";
+			config.user.login.loggedIn = config.user.loggedIn || null;
+			config.user.login.userStore = config.user.store || "user";
 
-			app.post("/login", this.login.middleware(config.user.login)); // use this middleware to login. it will look after 'user' protocol (or you could give directly the store reference (or its OCM manager)), and check posted email/password combination in provided store.
+			if(!config.loginHandler)
+				config.userHandlers = this.login.createHandler(config.user.login);
+
+			app.post("/login", this.login.middleware(config.userHandlers)); // use this middleware to login. it will look after 'user' protocol (or you could give directly the store reference (or its OCM manager)), and check posted email/password combination in provided store.
 			
 			if(config.user.register)
 			{
@@ -251,11 +278,7 @@ module.exports = {
 		})
 		.listen(config.port || 3000);
 
-		app.autobahn = {
-			services:config.services,
-			htmls:config.htmls,
-			statics:config.statics
-		};
+		app.autobahn = config;
 
 		deep.setApp(app);
 		return app;

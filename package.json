@@ -34,11 +34,11 @@
   },
   "dependencies": {
     "amdefine": "*",
-    "deepjs": ">=0.10.2",
+    "deepjs": ">=0.10.8",
     "deep-routes": ">=0.1.1",
     "send":">=0.1.4"
   },
-  "main": "./autobahn.js",
+  "main": "./index.js",
   "engines": {
     "node": ">=0.10.0"
   },

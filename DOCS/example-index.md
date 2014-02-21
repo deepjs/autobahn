@@ -1,18 +1,13 @@
-
-## example
-
-```javascript
-var express = require('express');
-var deep = require("deepjs");
+require("deepjs")
 deep.globals.rootPath = __dirname+"/";
-require("deep-node-fs/json").createDefault();
-require("deep-swig").createDefault();
-require("deep-mongo");
-var autobahn = require("autobahn");
+var autobahn = require("autobahnjs");
+require("deep-node/lib/stores/fs/json").createDefault(); // allow to load or post/put/patch/del json files with deep("json::/path/from/root/file.json").log() or deep.store("json").post({ aProp:true }, { id:"/path/from/root/output.json"}).log()
+require("deep-swig").createDefault(); // allow to load swigjs template files with deep("swig::/path/from/root/file.html").log()
 
-//______________________________________________________________________________
 
-var services = {								// exposed services
+//__________________________________ exposed services ____________________________________________
+
+var services = {
 	"/test/:id?":deep.ocm({
 		"public":{
 			get:function(id, options){
@@ -28,27 +23,29 @@ var services = {								// exposed services
 };
 
 
+//__________________________________ exposed htmls routes ____________________________________________
 var htmls = {
 	"/":{
 		page:"swig::./www/index.swig",
 		context:{
-			mainPath:"/main"
 		}
 	}
 };
+//__________________________________ exposed statics files and folder ________________________________
 
 var statics = {
 	"/":[ { path:__dirname + '/www', options:{ maxAge: 86400000, redirect:false } } ],
 	"/libs/deepjs":[ { path:__dirname + '/node_modules/deepjs', options : { maxAge: 86400000, redirect:false } } ],
 	"/libs/deep-swig":[ { path:__dirname + '/node_modules/deep-swig', options : { maxAge: 86400000, redirect:false } } ],
+	"/libs/deep-routes":[ { path:__dirname + '/node_modules/deep-routes', options : { maxAge: 86400000, redirect:false } } ],
 	"/libs/rql":[ { path:__dirname + '/node_modules/rql', options : { maxAge: 86400000, redirect:false } } ]
 };
 
 //______________________________________________________________________________
 
 deep.store.Mongo.create("user", "mongodb://127.0.0.1:27017/my_db", "user"); // user store
-var MongoStore = require('connect-mongo')(express);									// session store
-var conf = {
+var MongoStore = require('connect-mongo')(express);							// session store
+var confSessionStore = {
 	db: {
 		db: 'sessions',
 		host: '127.0.0.1',
@@ -57,52 +54,62 @@ var conf = {
 		//password: 'secret', // optional
 		collection: 'sessions' // optional, default: sessions
 	},
-	secret: 'my_secret'
+	secret: '82YBkLU_DG09bIUYiLDH6_23KZDJN92I4'
 };
 
-var app = express();
 
-app
-.use(express.cookieParser())
-.use(express.session({
-	secret: conf.secret,
-	maxAge: new Date(Date.now() + 3600000),
-	store: new MongoStore(conf.db)
-}))
-.use(function(req, res, next){
-	deep.setModes({ roles:"public" });
-	next();
-})
-.use(express.bodyParser())
-.use(app.router)
-.use(autobahn.context.middleware())
-.post("/logout", autobahn.logout.middleware())
-.post("/login", autobahn.login.middleware("user", "email"))
-.use(autobahn.roles.middleware(function(session)
-{
-	if(session && session.user)
-		return ["user"];
-	return ["public"];
-}));
+var config = {
+	port:3000,
+	services:services,
+	htmls:htmls,
+	statics:statics,
+	modules:[],
+	routerParser:'deep', // or express
+	user:{
+		store:"user",
+		encryption:"sha1",
+		session:{
+			secret: conf.secret,
+			maxAge: new Date(Date.now() + 3600000),
+			store: new MongoStore(conf.db)
+		},
+		getRoles:function(session){
+			if(session && session.passport)
+				return session.passport.roles;
+			return "public";
+		},
+		loggedIn:function(session){
+				// session has been decorated with user's object.
+				// do asynch stuffs to get passport etc
+			return session;
+		},
+		login:{
+			loginField:"email",
+			passwordField:"password",
+			schema:{},
+			allowImpersonation:["admin"],
+			
+		}/*,
+		register:{
+			redirection:"/#/register/confirmation",
+			email:{
+				template:"swig::/templates/...",
+				reply:"info@brol.com"
+			}
+		},
+		changePassword:{
+			redirection:"/#/change-password/confirmation",
+			email:{
+				//...
+			}
+		}*/
+	}
+};
 
-///____________________________________________________
 
-autobahn.statics.map(statics, app);
+var app = autobahn.init(config);
 
-app
-.use(autobahn.html.simpleMap(htmls))
-.use(autobahn.restful.map(services));
-
-///_________________________________________________
-
-app.use(function(req, res, next){
-	console.log("nothing to do with : ", req.url);
-	res.writeHead(404, {'Content-Type': 'text/html'});
-	res.end("error : 404");
-})
-.listen(3000);
-
-console.log("server listening on port : ", 3000);
+console.log("server listening on port : ", config.port);
 
 var  repl = require("repl");
 repl.start({
@@ -113,6 +120,8 @@ repl.start({
 
 
 
-```
+
+
+
 
 
