@@ -18,15 +18,6 @@ deep.utils.Hash = function(string, algo)
 {
 	return crypto.createHash(algo || 'sha1').update(string).digest('hex');
 };
-deep.getRoles = function(session){
-	if(session && session.user)
-	{
-		if(session.user.roles)
-			return session.user.roles;
-		return "user";
-	}
-	return "public";
-};
 //_________________________
 /**
  * start a chain with provided session.
@@ -49,7 +40,7 @@ deep.Chain.addHandle("session", function (session) {
 		self._queue = [];
 		if(!closure.app)
 			return deep.errors.Error(500, "No app setted in deep to manipulate session.");
-		self.roles((closure.app.autobahn.getRoles || deep.getRoles)(session));
+		self.roles((closure.app.autobahn.getRoles)(session));
 		return s;
 	};
 	func._isDone_ = true;
@@ -79,16 +70,14 @@ deep.Chain.addHandle("login", function (datas) {
 });
 //_________________________
 /**
- * logout : means  : if you have previously use deep.login or chain.login : it will destroy the session of curren chain context.
+ * logout : means  : if you have previously use deep.login or chain.login : it will destroy the session of current chain context.
  * @return {[type]} [description]
  */
-deep.logout = function(){
-	return deep.store("json").post({}, "/logout" ).log();
-};
 deep.Chain.addHandle("logout", function () {
 	var self = this;
 	var func = function (s, e) {
-		return deep.logout();
+		delete self._context.session;
+		return s;
 	};
 	func._isDone_ = true;
 	addInChain.call(self, func);
@@ -118,12 +107,12 @@ deep.Chain.addHandle("impersonate", function (user) {
 		else
 			self._context.session = {};
 		if(typeof user === 'string')
-			self._context.session.remoteUser = { id:user };
+			self._context.session.user = { id:user };
 		else
-			self._context.session.remoteUser = user;
+			self._context.session.user = user;
 		self.oldQueue = self._queue;
 		self._queue = [];
-		self.modes("roles", (deep.context.getRoles || deep.getRoles)(self._context.session));
+		self.modes("roles", closure.app.autobahn.getRoles(self._context.session));
 		return s;
 	};
 	func._isDone_ = true;
@@ -201,13 +190,13 @@ module.exports = {
 			if(!config.user.session)
 				throw deep.errors.Error(500, "autobahn init failed : no session params found in config");
 			// set simple session management (pure expressjs)
-			app.autobahn.getRoles = config.user.getRoles = config.user.getRoles || deep.getRoles;
+			app.autobahn.getRoles = config.user.getRoles || this.getRoles;
 			app.autobahn.loggedIn = config.user.loggedIn || null;
 			app.use(express.cookieParser())
 			.use(express.session(config.user.session))
 			// to get body parsed automatically (json/files/..)
 			.use(express.bodyParser())
-			.use(this.roles.middleware(config.user.getRoles))
+			.use(this.roles.middleware(app.autobahn.getRoles))
 
 			// ------ USER LOGIN/LOGOUT/ROLES MANAGEMENT
 			.post("/logout", this.logout.middleware());	// use this middleware to logout : you just need to post anything on it.
@@ -270,6 +259,15 @@ module.exports = {
 
 		deep.setApp(app);
 		return app;
+	},
+	getRoles : function(session){
+		if(session && session.user)
+		{
+			if(session.user.roles)
+				return session.user.roles;
+			return "user";
+		}
+		return "public";
 	},
 	context:require("./middleware/context"),
 	html:require("./middleware/html"),
