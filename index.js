@@ -6,6 +6,7 @@ var express = require('express'),
 	deep = require("deepjs"),
 	crypto = require("crypto");
 	require("deepjs/lib/unit");
+	require("deepjs/lib/schema");
 var closure = {
 	app:null
 };
@@ -83,7 +84,7 @@ deep.Chain.addHandle("login", function (datas) {
 		});
 	};
 	func._isDone_ = true;
-	addInChain.call(self, func);
+	deep.utils.addInChain.call(self, func);
 	return this;
 });
 //_________________________
@@ -104,7 +105,7 @@ deep.Chain.addHandle("logout", function () {
 		return s;
 	};
 	func._isDone_ = true;
-	addInChain.call(self, func);
+	deep.utils.addInChain.call(self, func);
 	return this;
 });
 
@@ -196,6 +197,7 @@ module.exports = {
 	init:function(config){
 		config = config || {};
 		var app = express();
+		app.autobahn = config;
 
 		if(typeof config.services === 'string')
 			config.services = require(config.services);
@@ -277,8 +279,6 @@ module.exports = {
 			res.end("error : 404");
 		})
 		.listen(config.port || 3000);
-
-		app.autobahn = config;
 
 		deep.setApp(app);
 		return app;

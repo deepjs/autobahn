@@ -22,8 +22,9 @@ exports.createHandler = function(config){
 
 			var digest = crypto.createHash(config.encryption || "sha1").update(password).digest('hex');
 
-			return deep.store(config.userStore)
+			return deep
 			.roles("admin")
+			.store(config.userStore)
 			.get("?"+(config.loginField || "email")+"="+encodeURIComponent(loginVal)+"&password="+digest)
 			.done(function(user){
 				//console.log("login get : ", user);
@@ -81,7 +82,7 @@ exports.middleware = function(handlers){
 		deep.when(handler(req.body, req.session))
 		.done(function(user){
 			response.writeHead(200, {'Content-Type': 'application/json'});
-			response.end(JSON.stringify(success));
+			response.end(JSON.stringify(user));
 		})
 		.fail(function(e){
 			response.writeHead(400, {'Content-Type': 'text/html'});

@@ -8,9 +8,10 @@ exports.middleware = function(getRoles){
 
 	return function (req, response, next)
 	{
+		deep.context.session = req.session;
 		deep.when(getRoles(req.session))
 		.done(function (roles) {
-			// console.log("middleware roles : roles getted : ", roles)
+			 //console.log("middleware roles : roles getted : ", roles, req.session)
 			deep.modes('roles',roles)
 			.done(function(){
 				//console.log("roles middleware : execute next", this._context.modes)
