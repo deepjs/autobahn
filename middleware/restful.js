@@ -2,30 +2,44 @@
 * @author Gilles Coomans <gilles.coomans@gmail.com>
 */
 
+
+
 var deep = require("deepjs");
 var router = require("deep-routes/lib/flat");
+require("deep-routes/lib/route");
 var urlparse = require('url').parse;
 var mapper = {
-	map:function(obj){
+	map:function(obj, serviceRouteType){
 		// console.log("restful map : ", obj)
 		var usableMap = [];
 		for(var i in obj)
 		{
 			// console.log("map restful : ",i, obj[i])
 			var store = obj[i];
-			var r = router.createRouter(i, false);
+			//if(serviceRouteType !== 'deep')
+			//	r = router.createRouter(i, false);
+			var standard = false;
+			if(i.indexOf(":") == -1)
+			{
+				standard = true;
+				if(i[i.length-1]=='/')
+					i += "?[(s:id/?p:path),q:query]";
+				else
+					i += "/?[(s:id/?p:path),q:query]";
+			}
+			var r = new deep.Route(i);
 			usableMap.push({
+				standard:standard,
 				router:r,
 				store:store
 			});
 			if(store._deep_ocm_)
 				store.flatten();//.log("restful entry is ocm : flattened").log();
 		}
+
 		return function(request, response, next)
 		{
 			//console.log("restful : session : ", request.session);
-			var parsedURL = urlparse(request.url);
-			var pathname = parsedURL.pathname;
 			var headers = request.headers;
 			//var parsed = deep.utils.parseURL(request.url);
 			//console.log("restful map : parsed url : ", parsedURL);
@@ -35,9 +49,11 @@ var mapper = {
 			
 			var handler = {};
 			var handled = usableMap.some(function (entry) {
-				handler.params = entry.router.match(pathname);
+				handler.params = entry.router.match(request.url);
 				if(handler.params)
 				{
+					handler.standard = entry.standard;
+					handler.params = handler.params.output;
 					handler.store = entry.store;
 					return true;
 				}
@@ -60,6 +76,22 @@ var mapper = {
 				var options = {
 					params:handler.params
 				};
+				if(handler.standard)
+				{
+					if(handler.params.id)
+					{
+						id = handler.params.id;
+						if(handler.params.path && handler.params.path !== '/')
+							id += handler.params.path;
+					}
+					else if(handler.params.query)
+						id = handler.params.query;
+					else
+						id = "?";
+				}
+				else id = handler.params;
+				if(typeof id !== 'object')
+					options.id = id;
 
 				switch(request.method.toLowerCase())
 				{
@@ -91,7 +123,7 @@ var mapper = {
 							}
 						}
 						else
-							d = deep.store(store).get(handler.params.id || parsedURL.search, options);
+							d = deep.store(store).get(id, options);
 						break;
 
 					case "post" : // subcases : post, rpc, bulk
@@ -196,7 +228,7 @@ var mapper = {
 							d = deep.when(deep.errors.MethodNotAllowed());
 				}
 				d.done(function(s){
-					//console.log(" restful result : ", s);
+					console.log(" restful result : ", s);
 					if(!response.get('Content-Range'))
 						response.writeHead(200, {'Content-Type': 'application/json'});
 					response.end(JSON.stringify(s));
