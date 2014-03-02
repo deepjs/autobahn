@@ -228,10 +228,15 @@ var mapper = {
 							d = deep.when(deep.errors.MethodNotAllowed());
 				}
 				d.done(function(s){
-					console.log(" restful result : ", s);
-					if(!response.get('Content-Range'))
-						response.writeHead(200, {'Content-Type': 'application/json'});
-					response.end(JSON.stringify(s));
+					if(s && s._deep_redirection_)
+						response.redirect(s.to);
+					else
+					{
+						//console.log(" restful result : ", s);
+						if(!response.get('Content-Range'))
+							response.writeHead(200, {'Content-Type': 'application/json'});
+						response.end(JSON.stringify(s));
+					}
 				})
 				.fail(function(e){
 					console.log("restful error : ", e.toString());
