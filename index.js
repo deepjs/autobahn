@@ -272,12 +272,13 @@ module.exports = {
 		}
 		///____________________________________________________  USE YOUR MAPS
 
-		if(config.htmls)
-			app.use(this.html.simpleMap(config.htmls));
+
 		if(config.services)
 			app.use(this.restful.map(config.services));
 		if(config.statics)
 			app.use(this.statics.middleware(config.statics));
+		if(config.htmls)
+			app.use(this.html.simpleMap(config.htmls));
 		///____________________________________________________      Finish app construction
 		app.use(app.router)
 		.use((config.errors && config.errors.NotFound)? config.errors.NotFound : function(req, res, next){
