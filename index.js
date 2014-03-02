@@ -10,6 +10,15 @@ var closure = {
 	app:null
 };
 
+/**
+ * TODO : 
+ *
+ * app.autobahn.service.use("/campaign/s:id", { get:..., post:... })
+ * app.autobahn.service.use("/campaign/s:id", function(object, options){})
+ * app.autobahn.service.get("/campaign/[(s:id/p:path),q:query]", function(param, options){})
+ * 
+ */
+
 deep.setApp = function(app){
 	closure.app = app;
 };
