@@ -9,9 +9,8 @@ var urlparse = require('url').parse;
 
 function produceMapper(map)
 {
-	var keys = Object.keys(map);
 	var routes = [];
-	keys.forEach(function(i){
+	Object.keys(map).forEach(function(i){
 		var entries = map[i];
 		var handler = {
 			path:i,
