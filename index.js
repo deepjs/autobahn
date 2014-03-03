@@ -229,10 +229,13 @@ module.exports = {
 			.use(express.session(config.user.session))
 			// to get body parsed automatically (json/files/..)
 			.use(express.bodyParser())
-			.use(this.roles.middleware(app.autobahn.getRoles))
+			.use(this.roles.middleware(app.autobahn.getRoles));
+
+			if(config.protocols)
+				app.use(this.protocols.middleware(config.protocols));
 
 			// ------ USER LOGIN/LOGOUT/ROLES MANAGEMENT
-			.post("/logout", this.logout.middleware());	// use this middleware to logout : you just need to post anything on it.
+			app.post("/logout", this.logout.middleware());	// use this middleware to logout : you just need to post anything on it.
 			
 			config.user.login = config.user.login || {};
 			config.user.login.store = config.user.store;
@@ -280,7 +283,7 @@ module.exports = {
 		if(config.statics)
 			app.use(this.statics.middleware(config.statics));
 		if(config.htmls)
-			app.use(this.html.simpleMap(config.htmls));
+			app.use(this.html.map(config.htmls));
 		///____________________________________________________      Finish app construction
 		app.use(app.router)
 		.use((config.errors && config.errors.NotFound)? config.errors.NotFound : function(req, res, next){
@@ -310,6 +313,7 @@ module.exports = {
 	restful:require("./middleware/restful"),
 	roles:require("./middleware/roles"),
 	statics:require("./middleware/statics"),
+	protocols:require("./middleware/protocols"),
 	register:null,
 	changePassword:null
 };
