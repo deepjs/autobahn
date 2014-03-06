@@ -7,7 +7,7 @@ var deep = require("deepjs");
 var urlparse = require('url').parse;
 var crypto = require('crypto');
 
-exports.createHandler = function(config){
+exports.createHandlers = function(config){
 	return {
 		login:function(object, session){
 
@@ -73,12 +73,9 @@ exports.middleware = function(handlers){
 	{
 		if(!req.body)
 			return deep.errors.Error(400);
-		var handler = null;
-		if(req.body && req.body._deep_impersonate_)
+		var handler = handlers.login;
+		if(req.body._deep_impersonate_)
 			handler = handlers.impersonate;
-		else
-			handler = handlers.login;
-
 		deep.when(handler(req.body, req.session))
 		.done(function(user){
 			response.writeHead(200, {'Content-Type': 'application/json'});

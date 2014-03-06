@@ -4,15 +4,15 @@
  */
 var deep = require("deepjs");
 
-exports.middleware = function(getRoles){
+exports.middleware = function(getModes){
 
 	return function (req, response, next)
 	{
 		deep.context.session = req.session;
-		deep.when(getRoles(req.session))
-		.done(function (roles) {
+		deep.when(getModes(req.session))
+		.done(function (modes) {
 			 //console.log("middleware roles : roles getted : ", roles, req.session)
-			deep.modes('roles',roles)
+			deep.modes(modes)
 			.done(function(){
 				//console.log("roles middleware : execute next", this._context.modes)
 				next();

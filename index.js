@@ -23,7 +23,7 @@ var closure = {
 deep.setApp = function(app){
 	closure.app = app;
 };
-//________________________________________
+//________________________________________ 
 deep.utils.Hash = function(string, algo)
 {
 	return crypto.createHash(algo || 'sha1').update(string).digest('hex');
@@ -52,11 +52,12 @@ deep.Chain.addHandle("session", function (session) {
 		self._queue = [];
 		if(session.user && closure.app.autobahn.loggedIn)
 			return deep.when(closure.app.autobahn.loggedIn(session))
-			.done(function(session){
-				self.roles((closure.app.autobahn.getRoles)(session));
+			.done(closure.app.autobahn.getModes)
+			.done(function(modes){
+				self.modes(modes);
 				return s;
 			});
-		self.roles((closure.app.autobahn.getRoles)(session));
+		self.modes(closure.app.autobahn.getModes(session));
 		return s;
 	};
 	func._isDone_ = true;
@@ -88,7 +89,7 @@ deep.Chain.addHandle("login", function (datas) {
 		self._queue = [];
 		return deep.when(closure.app.autobahn.userHandlers.login(datas, self._context.session))
 		.done(function(user){
-			self.roles((closure.app.autobahn.getRoles)(self._context.session));
+			self.modes(closure.app.autobahn.getModes(self._context.session));
 			return s;
 		});
 	};
@@ -143,7 +144,7 @@ deep.Chain.addHandle("impersonate", function (user) {
 		self._queue = [];
 		return deep.when(closure.app.autobahn.userHandlers.impersonate(user, self._context.session))
 		.done(function(user){
-			self.roles((closure.app.autobahn.getRoles)(self._context.session));
+			self.modes(closure.app.autobahn.getModes(self._context.session));
 			return s;
 		});
 	};
@@ -166,37 +167,50 @@ deep.Chain.addHandle("impersonate", function (user) {
 		user:{
 			store:"user",
 			encryption:"sha1",
-			session:{
-				secret: 'paezijp7YlhgiGOUYgtogz',
-				maxAge: new Date(Date.now() + 3600000)
-			},
-			getRoles:function(session){
-				if(session && session.user)
-					return "user";
-				return "public";
-			},
 			login:{
-				login:"email",
-				password:"password",
+				loginField:"email",
+				passwordField:"password",
 				schema:{},
 				allowImpersonation:["admin"],
 				loggedIn:function(session, user){
-					// do asynch stuffs to get passport etc
+					// do (a)synch stuffs to decorate session
 				}
 			},
 			register:{
+				services:{
+					"/register/s:id/s:email":{
+						get:function(params, options){}
+					},
+					"/register":{
+						schema:{},
+						post:function(object, options){}
+					}
+				}
 				redirection:"/#/register-confirmation",
 				email:{
-					template:"./templates/...",
+					template:"swig::./templates/...",
 					reply:"info@brol.com"
 				}
 			},
 			changePassword:{
+				schema:{},
 				redirection:"/#/changePassword-confirmation",
 				email:{
 					//...
 				}
 			}
+		},
+		session:{
+			secret: 'paezijp7YlhgiGOUYgtogz',
+			maxAge: new Date(Date.now() + 3600000)
+		},
+		getModes:function(session){
+			if(session && session.user)
+				return { roles:"user" };
+			return { roles:"public" };
+		},
+		protocols:{
+			
 		}
 	}
 
@@ -215,41 +229,40 @@ module.exports = {
 		if(typeof config.statics === 'string')
 			config.statics = require(config.statics);
 
-		app
-		.use(this.context.middleware());	// required : it set deep.context for each request (it means that it set a unique environnement for each request)
-		
+		app.autobahn.getModes = config.getModes || this.getModes;
+		app.use(express.cookieParser());
+		if(config.session)
+			app.use(express.session(config.session));
+		app.use(express.bodyParser())
+		.use(this.context.middleware(config.contextInit))
+		.use(this.modes.middleware(app.autobahn.getModes));
+		if(config.protocols)
+			app.use(this.protocols.middleware(config.protocols));
+
 		if(config.user)
 		{
-			if(!config.user.session)
-				throw deep.errors.Error(500, "autobahn init failed : no session params found in config");
+			if(!config.session)
+				throw deep.errors.Error(500, "autobahn init failed : you need session to manage users");
 			// set simple session management (pure expressjs)
-			app.autobahn.getRoles = config.user.getRoles || this.getRoles;
 			app.autobahn.loggedIn = config.user.loggedIn || null;
-			app.use(express.cookieParser())
-			.use(express.session(config.user.session))
-			// to get body parsed automatically (json/files/..)
-			.use(express.bodyParser())
-			.use(this.roles.middleware(app.autobahn.getRoles));
 
-			if(config.protocols)
-				app.use(this.protocols.middleware(config.protocols));
+			// to get body parsed automatically (json/files/..)
 
 			// ------ USER LOGIN/LOGOUT/ROLES MANAGEMENT
 			app.post("/logout", this.logout.middleware());	// use this middleware to logout : you just need to post anything on it.
 			
 			config.user.login = config.user.login || {};
-			config.user.login.store = config.user.store;
+			config.user.login.store =config.user.store || "user";
 			config.user.login.encryption = config.user.encryption;
 			config.user.login.loginField = config.user.login.loginField || "email";
 			config.user.login.passwordField = config.user.login.passwordField || "password";
 			config.user.login.loggedIn = config.user.loggedIn || null;
-			config.user.login.userStore = config.user.store || "user";
 
-			if(!config.loginHandler)
-				config.userHandlers = this.login.createHandler(config.user.login);
+			if(!config.loginHandlers)
+				config.loginHandlers = this.login.createHandlers(config.user.login);
 
-			app.post("/login", this.login.middleware(config.userHandlers)); // use this middleware to login. it will look after 'user' protocol (or you could give directly the store reference (or its OCM manager)), and check posted email/password combination in provided store.
-			
+			app.post("/login", this.login.middleware(config.loginHandlers)); // use this middleware to login. it will look after 'user' protocol (or you could give directly the store reference (or its OCM manager)), and check posted email/password combination in provided store.
+			/*
 			if(config.user.register)
 			{
 				config.user.register.store = config.user.store;
@@ -263,7 +276,7 @@ module.exports = {
 				config.user.changePassword.encryption = config.user.encryption;
 				config.services = config.services || {};
 				this.changePassword(config.services, config.user.changePassword);
-			}
+			}*/
 		}
 
 		if(config.modules)
@@ -276,7 +289,6 @@ module.exports = {
 			});
 		}
 		///____________________________________________________  USE YOUR MAPS
-
 
 		if(config.services)
 			app.use(this.restful.map(config.services));
@@ -296,14 +308,14 @@ module.exports = {
 		deep.setApp(app);
 		return app;
 	},
-	getRoles : function(session){
+	getModes : function(session){
 		if(session && session.user)
 		{
 			if(session.user.roles)
-				return session.user.roles;
-			return "user";
+				return { roles:session.user.roles };
+			return { roles:"user" };
 		}
-		return "public";
+		return { roles:"public" };
 	},
 	context:require("./middleware/context"),
 	html:require("./middleware/html"),
@@ -311,7 +323,7 @@ module.exports = {
 	login:require("./middleware/login"),
 	logout:require("./middleware/logout"),
 	restful:require("./middleware/restful"),
-	roles:require("./middleware/roles"),
+	modes:require("./middleware/modes"),
 	statics:require("./middleware/statics"),
 	protocols:require("./middleware/protocols"),
 	register:null,
