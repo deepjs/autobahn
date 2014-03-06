@@ -4,14 +4,14 @@
  */
 
 /**
- * Example : 
- * var htmls = {
+ * Map example : 
+ * var map = {
 	head:deep.View({
 		how:"<title>html from server</title>",
 		where:"dom.appendTo::head"
 	}),
 	body:deep.View({
-		how:"<div>body<div id='topbar'></div><div id='content'></div></div>",
+		how:"<div><div id='topbar'></div><div id='content'></div></div>",
 		where:"dom.htmlOf::body",
 		subs:{
 			topbar:deep.View({
@@ -19,7 +19,13 @@
 				where:"dom.htmlOf::#topbar"
 			}),
 			content:deep.View({
+				route:"/$",
 				how:"<div>content</div>",
+				where:"dom.htmlOf::#content"
+			}),
+			hello:deep.View({
+				route:"/hello/?s:name",
+				how:"<div>hello { name+'!' | 'dude!'}</div>",
 				where:"dom.htmlOf::#content"
 			})
 		}
@@ -67,7 +73,7 @@ exports.map = function(map, config)
 			response.end($.html());
 		})
 		.fail(function(e){
-			response.writeHead(error.status || 500, {'Content-Type': 'application/json'});
+			response.writeHead(e.status || 500, {'Content-Type': 'application/json'});
 			response.end(JSON.stringify(e));
 		});
 	};
