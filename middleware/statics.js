@@ -70,7 +70,7 @@ exports.middleware = function(map){
 		return closure.cache;
 	};
 	if(map._deep_ocm_)
-		map.flatten();
+		deep.flatten(map);
 	return function (req, res, next)
 	{
 		var m = getMap();
