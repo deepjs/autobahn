@@ -27,28 +27,23 @@
 };
  */
 
-var deep = require("deepjs");
-require("deep-routes");
-require("deep-jquery");
-
-var urlparse = require('url').parse,
+var deep = require("deepjs"),
+	urlparse = require('url').parse,
 	cheerio = require('cheerio');
+require("deep-routes");
+require("deep-jquery").addDomProtocols();
 
-deep.jquery.addDomProtocols();
-exports.map = function(map, config){
-
+exports.map = function(map, config)
+{
 	var closure = {};
 	config = config || {};
 	if(typeof config.allowRoot === 'undefined')
 		config.allowRoot = true;
-
-	var usableMap = [];
 	var d = deep.createRouteMap(map)
 	.done(function(map){
 		closure.map = map;
 	})
 	.logError();
-
 	return function (request, response, next)
 	{
 		//console.log("html mappers : ", request.url , " - ", request.headers);
