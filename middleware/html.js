@@ -62,7 +62,7 @@ exports.map = function(map, config)
 			if(!config.allowRoot)
 				return next();
 		}
-		else if(match.endChilds === 0)
+		else if(match.endChilds === 0 || match.endChilds !== match.route.length)
 			return next();
 
 		var $ = deep.context.$ = cheerio.load('<!doctype html><html><head></head><body></body></html>');
