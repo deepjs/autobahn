@@ -47,6 +47,9 @@ var mapper = {
 			//console.log("restful map : method : ", request.method);
 			//console.log("restful map : headers : ", request.headers);
 			
+			// console.log("restfulCall : ", request.method)
+
+
 			var handler = {};
 			var handled = usableMap.some(function (entry) {
 				handler.params = entry.router.match(request.url);
@@ -93,8 +96,12 @@ var mapper = {
 				if(typeof id !== 'object')
 					options.id = id;
 
+
 				switch(request.method.toLowerCase())
 				{
+					case "head" : 
+						d = deep.when("head response");
+						break;
 					case "get" : // subcases : get, query, range
 						//console.log("will get : ", handler.params);
 						if(headers.range)
