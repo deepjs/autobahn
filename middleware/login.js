@@ -24,10 +24,10 @@ exports.createHandlers = function(config){
 
 			return deep
 			.roles("admin")
-			.store(config.userStore)
+			.store(config.store || 'user')
 			.get("?"+(config.loginField || "email")+"="+encodeURIComponent(loginVal)+"&password="+digest)
 			.done(function(user){
-				//console.log("login get : ", user);
+				//console.log("************ login get : ", user, config.loggedIn);
 				if(user.length === 0)
 					return deep.errors.NotFound();
 				user = user.shift();

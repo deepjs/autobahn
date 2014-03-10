@@ -48,12 +48,13 @@ deep.Chain.add("session", function (session) {
 			deep.context = self._context = deep.utils.simpleCopy(self._context);
 		self._contextCopied = true;
 		self._context.session = session;
-		self.oldQueue = self._queue;
-		self._queue = [];
+		
 		if(session.user && closure.app.autobahn.loggedIn)
 			return deep.when(closure.app.autobahn.loggedIn(session))
 			.done(closure.app.autobahn.getModes)
 			.done(function(modes){
+				self.oldQueue = self._queue;
+				self._queue = [];
 				self.modes(modes);
 				return s;
 			});
@@ -85,13 +86,16 @@ deep.Chain.add("login", function (datas) {
 			deep.context = self._context = deep.utils.simpleCopy(self._context);
 		self._contextCopied = true;
 		self._context.session = {};
-		self.oldQueue = self._queue;
-		self._queue = [];
-		return deep.when(closure.app.autobahn.userHandlers.login(datas, self._context.session))
-		.done(function(user){
+		
+		return deep.when(closure.app.autobahn.loginHandlers.login(datas, self._context.session))
+		.done(function(session){
+			//console.log("---------Login get modes : ", session, self._context);
+			self.oldQueue = self._queue;
+			self._queue = [];
 			self.modes(closure.app.autobahn.getModes(self._context.session));
 			return s;
-		});
+		})
+
 	};
 	func._isDone_ = true;
 	deep.utils.addInChain.call(self, func);
@@ -140,10 +144,11 @@ deep.Chain.add("impersonate", function (user) {
 		if(oldSession)
 			self.context.impersonations.push(oldSession);
 		self._context.session = {};
-		self.oldQueue = self._queue;
-		self._queue = [];
-		return deep.when(closure.app.autobahn.userHandlers.impersonate(user, self._context.session))
+		
+		return deep.when(closure.app.autobahn.loginHandlers.impersonate(user, self._context.session))
 		.done(function(user){
+			self.oldQueue = self._queue;
+			self._queue = [];
 			self.modes(closure.app.autobahn.getModes(self._context.session));
 			return s;
 		});
