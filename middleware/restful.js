@@ -99,8 +99,8 @@ var mapper = {
 
 				switch(request.method.toLowerCase())
 				{
-					case "head" : 
-						d = deep.when("head response");
+					case "head" :
+						d = deep.store(store).head(id, options);
 						break;
 					case "get" : // subcases : get, query, range
 						//console.log("will get : ", handler.params);

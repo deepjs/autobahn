@@ -39,7 +39,7 @@ deep.session = function(session){
 		return deep.context.session;
 	return deep({}).session(session);
 };
-deep.Chain.addHandle("session", function (session) {
+deep.Chain.add("session", function (session) {
 	var self = this;
 	var func = function (s, e) {
 		if(!closure.app)
@@ -76,7 +76,7 @@ deep.Chain.addHandle("session", function (session) {
 deep.login = function(obj){
 	return deep({}).login(obj);
 };
-deep.Chain.addHandle("login", function (datas) {
+deep.Chain.add("login", function (datas) {
 	var self = this;
 	var func = function (s, e) {
 		if(!closure.app)
@@ -102,7 +102,7 @@ deep.Chain.addHandle("login", function (datas) {
  * logout : means  : if you have previously use deep.login or chain.login : it will destroy the session of current chain context.
  * @return {[type]} [description]
  */
-deep.Chain.addHandle("logout", function () {
+deep.Chain.add("logout", function () {
 	var self = this;
 	var func = function (s, e) {
 		if(self._context.session)
@@ -129,7 +129,7 @@ deep.Chain.addHandle("logout", function () {
 deep.impersonate = function(user){
 	return deep({}).impersonate(user);
 };
-deep.Chain.addHandle("impersonate", function (user) {
+deep.Chain.add("impersonate", function (user) {
 	var self = this;
 	var func = function (s, e) {
 		if(!self._contextCopied)
