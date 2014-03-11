@@ -3,30 +3,54 @@
  *
  */
 var express = require('express'),
-	deep = require("deepjs"),
-	crypto = require("crypto");
-	require("deepjs/lib/unit");
-	require("deepjs/lib/schema");
+    deep = require("deepjs"),
+    crypto = require("crypto");
+require("deepjs/lib/unit");
+require("deepjs/lib/schema");
 var closure = {
-	app:null
+    app: null
 };
 
 /**
- * TODO : 
+ * TODO :
  *
- * app.autobahn.service.use("/campaign/s:id", { get:..., post:... })
- * app.autobahn.service.use("/campaign/s:id", function(object, options){})
- * app.autobahn.service.get("/campaign/[(s:id/p:path),q:query]", function(param, options){})
- * 
+ * config.service.use("/campaign/s:id", { get:..., post:... })
+ * config.service.use("/campaign/s:id", function(object, options){})
+ * config.service.get("/campaign/[(s:id/p:path),q:query]", function(param, options){})
+ *
  */
 
-deep.setApp = function(app){
-	closure.app = app;
+deep.App = function(app) {
+    if (app)
+        closure.app = app;
+    return deep(closure.app).app(closure.app);
 };
+deep.app = function(app) {
+    return deep(app || deep.context.app || closure.app).app(app || deep.context.app || closure.app);
+};
+
+deep.Chain.add("app", function(app) {
+    var self = this;
+    var func = function(s, e) {
+        app = app || deep.context.app || closure.app;
+        if (!app)
+            return deep.errors.Error(500, "No app provided on deep.Chain.app(...)");
+        if (!self._contextCopied)
+            deep.context = self._context = deep.utils.simpleCopy(self._context);
+        self._contextCopied = true;
+        self._context.session = self._context.session || {};
+        self._context.protocols = app.protocols;
+        self._context.app = app;
+        return s;
+    };
+    func._isDone_ = true;
+    deep.utils.addInChain.call(self, func);
+    return this;
+});
+
 //________________________________________ 
-deep.utils.Hash = function(string, algo)
-{
-	return crypto.createHash(algo || 'sha1').update(string).digest('hex');
+deep.utils.Hash = function(string, algo) {
+    return crypto.createHash(algo || 'sha1').update(string).digest('hex');
 };
 //_________________________
 /**
@@ -34,36 +58,41 @@ deep.utils.Hash = function(string, algo)
  * @param  {[type]} session [description]
  * @return {[type]}         [description]
  */
-deep.session = function(session){
-	if(!session)
-		return deep.context.session;
-	return deep({}).session(session);
+deep.session = function(session) {
+    if (!session)
+        return deep.context.session;
+    return deep({}).session(session);
 };
-deep.Chain.add("session", function (session) {
-	var self = this;
-	var func = function (s, e) {
-		if(!closure.app)
-			return deep.errors.Error(500, "No app setted in deep to manipulate session.");
-		if(!self._contextCopied)
-			deep.context = self._context = deep.utils.simpleCopy(self._context);
-		self._contextCopied = true;
-		self._context.session = session;
-		
-		if(session.user && closure.app.autobahn.loggedIn)
-			return deep.when(closure.app.autobahn.loggedIn(session))
-			.done(closure.app.autobahn.getModes)
-			.done(function(modes){
-				self.oldQueue = self._queue;
-				self._queue = [];
-				self.modes(modes);
-				return s;
-			});
-		self.modes(closure.app.autobahn.getModes(session));
-		return s;
-	};
-	func._isDone_ = true;
-	deep.utils.addInChain.call(self, func);
-	return this;
+deep.Chain.add("session", function(session) {
+    var self = this;
+    var func = function(s, e) {
+        var app = deep.context.app || closure.app;
+        if (!app)
+            return deep.errors.Error(500, "No app setted in deep to manipulate session.");
+        if (!self._contextCopied)
+            deep.context = self._context = deep.utils.simpleCopy(self._context);
+        self._contextCopied = true;
+        if (typeof session === 'function')
+            self._context.session = session();
+        else
+            self._context.session = session;
+        self._context.protocols = app.protocols;
+
+        if (session.user && app.loggedIn)
+            return deep.when(app.loggedIn(session))
+                .done(app.getModes)
+                .done(function(modes) {
+                    self.oldQueue = self._queue;
+                    self._queue = [];
+                    self.modes(modes);
+                    return s;
+                });
+        self.modes(app.getModes(session));
+        return s;
+    };
+    func._isDone_ = true;
+    deep.utils.addInChain.call(self, func);
+    return this;
 });
 //_________________________
 
@@ -74,53 +103,57 @@ deep.Chain.add("session", function (session) {
  * @param  {[type]} obj [description]
  * @return {[type]}     [description]
  */
-deep.login = function(obj){
-	return deep({}).login(obj);
+deep.login = function(obj) {
+    return deep({}).login(obj);
 };
-deep.Chain.add("login", function (datas) {
-	var self = this;
-	var func = function (s, e) {
-		if(!closure.app)
-			return deep.errors.Error(500, "No app setted in deep to manipulate session.");
-		if(!self._contextCopied)
-			deep.context = self._context = deep.utils.simpleCopy(self._context);
-		self._contextCopied = true;
-		self._context.session = {};
-		
-		return deep.when(closure.app.autobahn.loginHandlers.login(datas, self._context.session))
-		.done(function(session){
-			//console.log("---------Login get modes : ", session, self._context);
-			self.oldQueue = self._queue;
-			self._queue = [];
-			self.modes(closure.app.autobahn.getModes(self._context.session));
-			return s;
-		})
-
-	};
-	func._isDone_ = true;
-	deep.utils.addInChain.call(self, func);
-	return this;
+deep.Chain.add("login", function(datas) {
+    var self = this;
+    var func = function(s, e) {
+        var app = deep.context.app || closure.app;
+        if (!app)
+            return deep.errors.Error(500, "No app setted in deep to manipulate session.");
+        if (!self._contextCopied)
+            deep.context = self._context = deep.utils.simpleCopy(self._context);
+        self._contextCopied = true;
+        self._context.session = {};
+        self._context.protocols = app.protocols;
+        return deep.when(app.loginHandlers.login(datas, self._context.session))
+            .done(function(session) {
+                self.oldQueue = self._queue;
+                self._queue = [];
+                self.modes(app.getModes(session));
+                return session;
+            });
+    };
+    func._isDone_ = true;
+    deep.utils.addInChain.call(self, func);
+    return this;
 });
 //_________________________
 /**
  * logout : means  : if you have previously use deep.login or chain.login : it will destroy the session of current chain context.
  * @return {[type]} [description]
  */
-deep.Chain.add("logout", function () {
-	var self = this;
-	var func = function (s, e) {
-		if(self._context.session)
-		{
-			if(self._context.session.impersonations)
-				self._context.session = self._context.impersonations.pop();
-			else
-				delete self._context.session;
-		}
-		return s;
-	};
-	func._isDone_ = true;
-	deep.utils.addInChain.call(self, func);
-	return this;
+deep.Chain.add("logout", function() {
+    var self = this;
+    var func = function(s, e) {
+        var app = deep.context.app || closure.app;
+        if (!app)
+            return deep.errors.Error(500, "No app setted in deep to manipulate session.");
+        if (self._context.session) {
+            if (self._context.session.parent)
+                self._context.session = self._context.session.parent;
+            else
+                self._context.session = {};
+        }
+        self.oldQueue = self._queue;
+        self._queue = [];
+        self.modes(app.getModes(self._context.session));
+        return s;
+    };
+    func._isDone_ = true;
+    deep.utils.addInChain.call(self, func);
+    return this;
 });
 
 //_________________________
@@ -130,32 +163,34 @@ deep.Chain.add("logout", function () {
  * @param  {[type]} user [description]
  * @return {[type]}      [description]
  */
-deep.impersonate = function(user){
-	return deep({}).impersonate(user);
+deep.impersonate = function(user) {
+    return deep({}).impersonate(user);
 };
-deep.Chain.add("impersonate", function (user) {
-	var self = this;
-	var func = function (s, e) {
-		if(!self._contextCopied)
-			deep.context = self._context = deep.utils.simpleCopy(self._context);
-		self._contextCopied = true;
-		var oldSession = self._context.session;
-		self.context.impersonations = self.context.impersonations;
-		if(oldSession)
-			self.context.impersonations.push(oldSession);
-		self._context.session = {};
-		
-		return deep.when(closure.app.autobahn.loginHandlers.impersonate(user, self._context.session))
-		.done(function(user){
-			self.oldQueue = self._queue;
-			self._queue = [];
-			self.modes(closure.app.autobahn.getModes(self._context.session));
-			return s;
-		});
-	};
-	func._isDone_ = true;
-	deep.utils.addInChain.call(self, func);
-	return this;
+deep.Chain.add("impersonate", function(user) {
+    var self = this;
+    var func = function(s, e) {
+        var app = deep.context.app || closure.app;
+        if (!app)
+            return deep.errors.Error(500, "No app setted in deep to manipulate session for impersonation.");
+        if (!self._contextCopied)
+            deep.context = self._context = deep.utils.simpleCopy(self._context);
+        //console.log("login : session 2 : ", self._context.session)
+        self._contextCopied = true;
+        var oldSession = self._context.session = self._context.session || {};
+        var session = self._context.session = {};
+        session.parent = oldSession.parent || oldSession;
+        self._context.protocols = app.protocols;
+        return deep.when(app.loginHandlers.impersonate(user, self._context.session))
+            .done(function(session) {
+                self.oldQueue = self._queue;
+                self._queue = [];
+                self.modes(app.getModes(session));
+                return s;
+            });
+    };
+    func._isDone_ = true;
+    deep.utils.addInChain.call(self, func);
+    return this;
 });
 
 
@@ -222,52 +257,51 @@ deep.Chain.add("impersonate", function (user) {
 
  */
 module.exports = {
-	init:function(config){
-		config = config || {};
-		var app = express();
-		app.autobahn = config;
+    init: function(config) {
+        config = config || {};
+        var app = express();
+        config.express = app;
 
-		if(typeof config.services === 'string')
-			config.services = require(config.services);
-		if(typeof config.htmls === 'string')
-			config.htmls = require(config.htmls);
-		if(typeof config.statics === 'string')
-			config.statics = require(config.statics);
+        if (typeof config.services === 'string')
+            config.services = require(config.services);
+        if (typeof config.htmls === 'string')
+            config.htmls = require(config.htmls);
+        if (typeof config.statics === 'string')
+            config.statics = require(config.statics);
 
-		app.autobahn.getModes = config.getModes || this.getModes;
-		app.use(express.cookieParser());
-		if(config.session)
-			app.use(express.session(config.session));
-		app.use(express.bodyParser())
-		.use(this.context.middleware(config.contextInit))
-		.use(this.modes.middleware(app.autobahn.getModes));
-		if(config.protocols)
-			app.use(this.protocols.middleware(config.protocols));
+        config.getModes = config.getModes || this.getModes;
+        app.use(express.cookieParser());
+        if (config.session)
+            app.use(express.session(config.session));
+        app.use(express.bodyParser())
+            .use(this.context.middleware(config.contextInit))
+            .use(this.modes.middleware(config.getModes));
+        if (config.protocols)
+            app.use(this.protocols.middleware(config.protocols));
 
-		if(config.user)
-		{
-			if(!config.session)
-				throw deep.errors.Error(500, "autobahn init failed : you need session to manage users");
-			// set simple session management (pure expressjs)
-			app.autobahn.loggedIn = config.user.loggedIn || null;
+        if (config.user) {
+            if (!config.session)
+                throw deep.errors.Error(500, "autobahn init failed : you need session to manage users");
+            // set simple session management (pure expressjs)
+            config.loggedIn = config.user.loggedIn || null;
 
-			// to get body parsed automatically (json/files/..)
+            // to get body parsed automatically (json/files/..)
 
-			// ------ USER LOGIN/LOGOUT/ROLES MANAGEMENT
-			app.post("/logout", this.logout.middleware());	// use this middleware to logout : you just need to post anything on it.
-			
-			config.user.login = config.user.login || {};
-			config.user.login.store =config.user.store || "user";
-			config.user.login.encryption = config.user.encryption;
-			config.user.login.loginField = config.user.login.loginField || "email";
-			config.user.login.passwordField = config.user.login.passwordField || "password";
-			config.user.login.loggedIn = config.user.loggedIn || null;
+            // ------ USER LOGIN/LOGOUT/ROLES MANAGEMENT
+            app.post("/logout", this.logout.middleware()); // use this middleware to logout : you just need to post anything on it.
 
-			if(!config.loginHandlers)
-				config.loginHandlers = this.login.createHandlers(config.user.login);
+            config.user.login = config.user.login || {};
+            config.user.login.store = config.user.login.store || config.user.store || 'user';
+            config.user.login.encryption = config.user.login.encryption || config.user.encryption || 'sha1';
+            config.user.login.loginField = config.user.login.loginField || 'email';
+            config.user.login.passwordField = config.user.login.passwordField || 'password';
+            config.user.login.loggedIn = config.user.loggedIn || null;
 
-			app.post("/login", this.login.middleware(config.loginHandlers)); // use this middleware to login. it will look after 'user' protocol (or you could give directly the store reference (or its OCM manager)), and check posted email/password combination in provided store.
-			/*
+            if (!config.loginHandlers)
+                config.loginHandlers = this.login.createHandlers(config.user.login);
+
+            app.post("/login", this.login.middleware(config.loginHandlers)); // use this middleware to login. it will look after 'user' protocol (or you could give directly the store reference (or its OCM manager)), and check posted email/password combination in provided store.
+            /*
 			if(config.user.register)
 			{
 				config.user.register.store = config.user.store;
@@ -282,56 +316,68 @@ module.exports = {
 				config.services = config.services || {};
 				this.changePassword(config.services, config.user.changePassword);
 			}*/
-		}
+        }
 
-		if(config.modules)
-		{
-			config.services = config.services || {};
-			config.htmls = config.htmls || {};
-			config.statics = config.statics || {};
-			config.modules.forEach(function(module){
-				require(module)(config.services, config.htmls, config.statics);
-			});
-		}
-		///____________________________________________________  USE YOUR MAPS
+        if (config.modules) {
+            config.services = config.services ||  {};
+            config.htmls = config.htmls ||  {};
+            config.statics = config.statics ||  {};
+            config.modules.forEach(function(module) {
+                require(module)(config.services, config.htmls, config.statics);
+            });
+        }
+        ///____________________________________________________  USE YOUR MAPS
 
-		if(config.services)
-			app.use(this.restful.map(config.services));
-		if(config.statics)
-			app.use(this.statics.middleware(config.statics));
-		if(config.htmls)
-			app.use(this.html.map(config.htmls));
-		///____________________________________________________      Finish app construction
-		app.use(app.router)
-		.use((config.errors && config.errors.NotFound)? config.errors.NotFound : function(req, res, next){
-			console.log("nothing to do with : ", req.url);
-			res.writeHead(404, {'Content-Type': 'text/html'});
-			res.end("error : 404");
-		})
-		.listen(config.port || 3000);
+        if (config.services)
+            app.use(this.restful.map(config.services));
+        if (config.statics)
+            app.use(this.statics.middleware(config.statics));
+        if (config.htmls)
+            app.use(this.html.map(config.htmls));
+        ///____________________________________________________      Finish app construction
+        app.use(app.router)
+            .use((config.errors && config.errors.NotFound) ? config.errors.NotFound : function(req, res, next) {
+                console.log("nothing to do with : ", req.url);
+                res.writeHead(404, {
+                    'Content-Type': 'text/html'
+                });
+                res.end("error : 404");
+            })
+            .listen(config.port || 3000);
 
-		deep.setApp(app);
-		return app;
-	},
-	getModes : function(session){
-		if(session && session.user)
-		{
-			if(session.user.roles)
-				return { roles:session.user.roles };
-			return { roles:"user" };
-		}
-		return { roles:"public" };
-	},
-	context:require("./middleware/context"),
-	html:require("./middleware/html"),
-	language:require("./middleware/language"),
-	login:require("./middleware/login"),
-	logout:require("./middleware/logout"),
-	restful:require("./middleware/restful"),
-	modes:require("./middleware/modes"),
-	statics:require("./middleware/statics"),
-	protocols:require("./middleware/protocols"),
-	register:null,
-	changePassword:null
+        deep.App(config);
+        return config;
+    },
+    getModes: function(session) {
+        if (session && session.user) {
+            if (session.user.roles)
+                return {
+                    roles: session.user.roles
+                };
+            return {
+                roles: "user"
+            };
+        }
+        return {
+            roles: "public"
+        };
+    },
+    context: require("./middleware/context"),
+    html: require("./middleware/html"),
+    language: require("./middleware/language"),
+    login: require("./middleware/login"),
+    logout: require("./middleware/logout"),
+    restful: require("./middleware/restful"),
+    modes: require("./middleware/modes"),
+    statics: require("./middleware/statics"),
+    protocols: require("./middleware/protocols"),
+    register: null,
+    changePassword: null
 };
 
+
+
+deep.coreUnits = deep.coreUnits || [];
+deep.coreUnits.push(
+    "js::autobahnjs/units/login"
+);
