@@ -198,6 +198,11 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         return deep.context.modes.roles;
                     })
                     .equal('user')
+                    .logout()
+                    .done(function() {
+                        return deep.context.modes.roles;
+                    })
+                    .equal('public')
             },
             protocols_public: function() {
                 return deep.app(this)
