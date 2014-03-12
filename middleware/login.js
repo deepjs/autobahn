@@ -49,8 +49,8 @@ exports.createHandlers = function(config) {
             var toCatch = keys.shift();
             var query = "?" + toCatch + "=" + encodeURIComponent(object[toCatch]);
 
-            return deep.store(config.store || 'user')
-                .roles("admin")
+            return deep.roles("admin")
+            	.store(config.store || 'user')
                 .get(query)
                 .done(function(user) {
                     //console.log("login get : ", user);
@@ -77,11 +77,11 @@ exports.middleware = function(handlers) {
         if (req.body._deep_impersonate_)
             handler = handlers.impersonate;
         deep.when(handler(req.body, req.session))
-            .done(function(user) {
+            .done(function(session) {
                 response.writeHead(200, {
                     'Content-Type': 'application/json'
                 });
-                response.end(JSON.stringify(user));
+                response.end(JSON.stringify(session.user));
             })
             .fail(function(e) {
                 response.writeHead(400, {

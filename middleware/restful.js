@@ -79,6 +79,7 @@ var mapper = {
 				var options = {
 					params:handler.params
 				};
+				var id = null;
 				if(handler.standard)
 				{
 					if(handler.params.id)
@@ -89,11 +90,10 @@ var mapper = {
 					}
 					else if(handler.params.query)
 						id = handler.params.query;
-					else
-						id = "?";
 				}
-				else id = handler.params;
-				if(typeof id !== 'object')
+				else 
+					id = handler.params;
+				if(id && typeof id !== 'object')
 					options.id = id;
 
 
@@ -104,6 +104,9 @@ var mapper = {
 						break;
 					case "get" : // subcases : get, query, range
 						//console.log("will get : ", handler.params);
+						if(!id && !options.id)
+							options.id = id = "?";
+
 						if(headers.range)
 						{
 							if(!store.range)
@@ -134,7 +137,6 @@ var mapper = {
 						break;
 
 					case "post" : // subcases : post, rpc, bulk
-
 						if(request.is("application/json-rpc"))	// RPC
 						{
 							if(!store.rpc)
@@ -214,7 +216,7 @@ var mapper = {
 						break;
 
 					case "patch" :
-						//console.log("restful apply patch")
+						// console.log("restful apply patch")
 						var opt = deep.utils.bottom(options, {id:handler.params.id});
 						if(!request.is("application/json"))
 							d = deep.when(deep.errors.Patch("unrecognised content-type"));
