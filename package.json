@@ -34,9 +34,10 @@
   },
   "dependencies": {
     "amdefine": "*",
+    "cheerio": "0.13.1",
+    "send":"0.2.0",
     "deepjs": ">=0.10.8",
-    "deep-routes": ">=0.1.1",
-    "send":">=0.1.4"
+    "deep-routes": ">=0.1.1"
   },
   "main": "./index.js",
   "engines": {
