@@ -6,7 +6,7 @@ require("deep-mail");
 chains.Chain.add("register", function(user) {
 	var self = this;
 	var func = function() {
-
+		return store.post()
 	};
 	func._isDone_ = true;
 	return addInChain.call(this, func);
@@ -16,12 +16,19 @@ var store = new deep.Store({
 	protocol:"register",
 	mail:{
 		options:{
-			from:"...",
-			to:"...",
-			subject:"...",
-			//...
+			from: "Fred Foo ✔ <foo@blurdybloop.com>", // sender address
+		    to: "bar@blurdybloop.com, baz@blurdybloop.com", // list of receivers
+		    subject: "Hello ✔", // Subject line
+		    text: "Hello world ✔", // plaintext body       
+		    html: "swig::/your/template.html" // html body
 		},
-		transporter:null
+		transporter:deep.mail.nodemailer("SMTP", {
+			service: "Gmail",
+		    auth: {
+		        user: "gmail.user@gmail.com",
+		        pass: "userpass"
+		    }
+		})
 	},
 	schema:{
 		properties:{
@@ -43,7 +50,7 @@ var store = new deep.Store({
 		.done(function(user){
 			if(user.length > 0)
 				//user already exist
-				return deep.errors.Error();
+				return deep.errors.Store();
 			else
 			{
 				object.confirmationKey = deep.utils.Hash(object.email + new Date().valueOf() + (Math.random()*2846537) + (Math.random()*956676));
@@ -58,8 +65,8 @@ var store = new deep.Store({
 		.done(function(){
 			return true;
 		})
-		.fail(function(error){
-			throw deep.errors.Internal("error during registering");
+		.fail(function(error){ // by security : we mask any error by anonymous 400
+			throw deep.errors.Store();
 		});
 	},
 	get:function(params, options){
@@ -70,18 +77,18 @@ var store = new deep.Store({
 		.get("?email="+encodeURIComponent(params.email))
 		.done(function(user)
 		{
-			console.log("user key: ", user," get Key : ", params.key);
+			console.log("user key: ", user, " get Key : ", params.key);
 			console.log("user.confirmationKey: ", user.confirmationKey);
 			if(user.confirmationKey !== res.key)
-				return  deep.errors.NotFound();
+				return  deep.errors.Store();
 			console.log("confirmation key match : trying validate user");
 			this.patch({id:user.id,valid:true});
 		})
 		.done(function(){
 			return true;
 		})
-		.fail(function(error){
-			return deep.errors.NotFound();
+		.fail(function(error){	// by security : we mask any error by anonymous 400
+			return deep.errors.Store();
 		});
 	}
 };

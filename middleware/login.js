@@ -69,49 +69,26 @@ exports.createHandlers = function(config) {
         }
     };
 };
-exports.middleware = function(handlers) {
-    return function(req, response, next) {
-        if (!req.body)
-            return deep.errors.Error(400);
-        var handler = handlers.login;
-        if (req.body._deep_impersonate_) {
-            handler = handlers.impersonate;
-            delete req.body._deep_impersonate_;
-        }
-        deep.when(handler(req.body, req.session))
-            .done(function(session) {
-                response.writeHead(200, {
-                    'Content-Type': 'application/json'
-                });
-                response.end(JSON.stringify(session.user));
-            })
-            .fail(function(e) {
-                response.writeHead(400, {
-                    'Content-Type': 'text/html'
-                });
-                response.end("error.");
-            });
-    };
-};
+
 exports.middleware = function(handlers) {
     return function(req, response, next) {
         if (!req.body)
             return deep.errors.Error(400);
         var handler = handlers.login;
         deep.when(handler(req.body, req.session))
-            .done(function(session) {
-                req.session = session;
-                response.writeHead(200, {
-                    'Content-Type': 'application/json'
-                });
-                response.end(JSON.stringify(session.user));
-            })
-            .fail(function(e) {
-                response.writeHead(400, {
-                    'Content-Type': 'text/html'
-                });
-                response.end("error.");
+        .done(function(session) {
+            req.session = session;
+            response.writeHead(200, {
+                'Content-Type': 'application/json'
             });
+            response.end(JSON.stringify(session.user));
+        })
+        .fail(function(e) {
+            response.writeHead(400, {
+                'Content-Type': 'text/html'
+            });
+            response.end("error.");
+        });
     };
 };
 

@@ -75,6 +75,10 @@ var mapper = {
 				var store = handler.store;
 				if(store._deep_ocm_)
 					store = store();
+				if(typeof store === 'function')
+					store = {
+						get:store
+					};
 
 				var options = {
 					params:handler.params
