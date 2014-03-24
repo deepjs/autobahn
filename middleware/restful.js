@@ -122,7 +122,7 @@ var mapper = {
 								{
 									var start = parseInt(res[1], 10);
 									var end = parseInt(res[2], 10);
-									d = deep.store(store).range(start, end, parsedURL.search , options)
+									d = deep.store(store).range(start, end, handler.params.query , options)
 									.done(function(range){
 										response.status((range.start === 0 && range.total -1 === end) ? 200 : 206);
 										response.set({

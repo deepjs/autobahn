@@ -26,7 +26,7 @@ exports.createHandlers = function(config) {
             return deep
                 .roles("admin")
                 .store(config.store || 'user')
-                .get("?" + (config.loginField || "email") + "=" + encodeURIComponent(loginVal) + "&password=" + password)
+                .get("?" + (config.loginField || "email") + "=" + encodeURIComponent(loginVal) + "&password=" + password + "&valid=true")
                 .done(function(user) {
                     //console.log("************ login get : ", user, session, config.loggedIn);
                     if (user.length === 0)
