@@ -46,11 +46,13 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                     store: deep.store.Collection.create(null, [{
                         id: 'u1',
                         email: 'toto@bloup.com',
-                        password: deep.utils.Hash('test', 'sha1')
+                        password: deep.utils.Hash('test', 'sha1'),
+                        valid:true
                     }, {
                         id: 'u2',
                         email: 'toti@bloup.com',
-                        password: deep.utils.Hash('test', 'sha1')
+                        password: deep.utils.Hash('test', 'sha1'),
+                        valid:true
                     }]),
                     loginField: 'email',
                     passwordField: 'password',
@@ -69,7 +71,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                     .equal({
                         user: {
                             id: 'u1',
-                            email: 'toto@bloup.com'
+                            email: 'toto@bloup.com', valid:true
                         },
                         decorated: true
                     })
@@ -115,7 +117,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         parent: {},
                         user: {
                             id: 'u1',
-                            email: 'toto@bloup.com'
+                            email: 'toto@bloup.com', valid:true
                         },
                         decorated: true
                     })
@@ -137,7 +139,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         parent: {},
                         user: {
                             id: 'u1',
-                            email: 'toto@bloup.com'
+                            email: 'toto@bloup.com', valid:true
                         },
                         decorated: true
                     })
