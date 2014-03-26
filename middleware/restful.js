@@ -143,26 +143,23 @@ var mapper = {
 					case "post" : // subcases : post, rpc, bulk
 						if(request.is("application/json-rpc"))	// RPC
 						{
-							if(!store.rpc)
-								d = deep.when(deep.errors.MethodNotAllowed("rpc unmanaged by related store"));
-							else
-								d = deep.store(store).rpc(request.body.method, request.body.params , handler.params.id, options)
-								.done(function  (result) {
-									// console.log("rpc call : response : ", result);
-									return {
-										id:request.body.id,
-										error:null,
-										result:result
-									};
-								})
-								.fail(function (error) {
-									//console.log("rpc failed : response : ", error);
-									return {
-										id:request.body.id,
-										error:JSON.stringify(error),
-										result:null
-									};
-								});
+							d = deep.store(store).rpc(request.body.method, request.body.params , handler.params.id, options)
+							.done(function  (result) {
+								// console.log("rpc call : response : ", result);
+								return {
+									id:request.body.id,
+									error:null,
+									result:result
+								};
+							})
+							.fail(function (error) {
+								//console.log("rpc failed : response : ", error);
+								return {
+									id:request.body.id,
+									error:JSON.stringify(error),
+									result:null
+								};
+							});
 						}
 						else if(request.is("message/*"))			// BULK
 						{
@@ -198,36 +195,22 @@ var mapper = {
 							}
 						}
 						else if(request.is("application/json"))  // POST
-						{
-							var opt = deep.utils.bottom(options, {id:handler.params.id});
-							if(!store.post)
-								d = deep.when(deep.errors.MethodNotAllowed());
-							else
-								d = deep.store(store).post(request.body, opt);
-						}
+							d = deep.store(store).post(request.body, options);
 						else
 							d = deep.when(deep.errors.Post("unrecognised content-type"));
 						break;
 
 					case "put" :
-						var opt = deep.utils.bottom(options, {id:handler.params.id});
 						if(!request.is("application/json"))
 							d = deep.when(deep.errors.Put("unrecognised content-type"));
-						else if(!store.put)
-							d = deep.when(deep.errors.MethodNotAllowed());
-						else
-							d = deep.store(store).put(request.body, opt);
+						d = deep.store(store).put(request.body, options);
 						break;
 
 					case "patch" :
 						// console.log("restful apply patch")
-						var opt = deep.utils.bottom(options, {id:handler.params.id});
 						if(!request.is("application/json"))
 							d = deep.when(deep.errors.Patch("unrecognised content-type"));
-						if(!store.patch)
-							d = deep.when(deep.errors.MethodNotAllowed());
-						else
-							d = deep.store(store).patch(request.body, opt);
+						d = deep.store(store).patch(request.body, options);
 						break;
 
 					case "delete" :
