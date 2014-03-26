@@ -273,7 +273,7 @@ module.exports = {
         app.use(express.cookieParser());
         if (config.session)
             app.use(express.session(config.session));
-        app.use(express.bodyParser())
+        app.use(express.bodyParser({ strict:false }))
             .use(this.context.middleware(config.contextInit))
             .use(this.modes.middleware(config.getModes));
         if (config.protocols)
