@@ -62,7 +62,6 @@ exports.map = function(map, config) {
             return next();
 
         var $ = deep.context.$ = cheerio.load('<!doctype html><html><head></head><body></body></html>');
-        deep.jquery.init($);
         deep.when(deep.RouteNode.refresh(match))
             .done(function(s) {
                 response.writeHead(200, {
