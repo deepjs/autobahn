@@ -86,14 +86,14 @@ deep.Chain.add("session", function(session) {
 
         if (session.user && app.loggedIn)
             return deep.when(app.loggedIn(session))
-                .done(app.getModes)
+                .done(app.sessionModes)
                 .done(function(modes) {
                     self.oldQueue = self._queue;
                     self._queue = [];
                     self.modes(modes);
                     return s;
                 });
-        self.modes(app.getModes(session));
+        self.modes(app.sessionModes(session));
         return s;
     };
     func._isDone_ = true;
@@ -127,7 +127,7 @@ deep.Chain.add("login", function(datas) {
             .done(function(session) {
                 self.oldQueue = self._queue;
                 self._queue = [];
-                self.modes(app.getModes(session));
+                self.modes(app.sessionModes(session));
                 return session;
             });
     };
@@ -154,7 +154,7 @@ deep.Chain.add("logout", function() {
         }
         self.oldQueue = self._queue;
         self._queue = [];
-        self.modes(app.getModes(self._context.session));
+        self.modes(app.sessionModes(self._context.session));
         return s;
     };
     func._isDone_ = true;
@@ -190,7 +190,7 @@ deep.Chain.add("impersonate", function(user) {
             .done(function(session) {
                 self.oldQueue = self._queue;
                 self._queue = [];
-                self.modes(app.getModes(session));
+                self.modes(app.sessionModes(session));
                 return s;
             });
     };
@@ -250,7 +250,7 @@ deep.Chain.add("impersonate", function(user) {
 			secret: 'paezijp7YlhgiGOUYgtogz',
 			maxAge: new Date(Date.now() + 3600000)
 		},
-		getModes:function(session){
+		sessionModes:function(session){
 			if(session && session.user)
 				return { roles:"user" };
 			return { roles:"public" };
@@ -275,13 +275,13 @@ module.exports = {
         if (typeof config.statics === 'string')
             config.statics = require(config.statics);
 
-        config.getModes = config.getModes || this.getModes;
+        config.sessionModes = config.sessionModes || this.sessionModes;
         app.use(express.cookieParser());
         if (config.session)
             app.use(express.session(config.session));
         app.use(express.bodyParser({ strict:false }))
             .use(this.context.middleware(config.contextInit))
-            .use(this.modes.middleware(config.getModes));
+            .use(this.modes.middleware(config.sessionModes));
         if (config.protocols)
             app.use(this.protocols.middleware(config.protocols));
 
@@ -354,7 +354,7 @@ module.exports = {
         deep.App(config);
         return config;
     },
-    getModes: function(session) {
+    sessionModes: function(session) {
         if (session && session.user) {
             if (session.user.roles)
                 return {

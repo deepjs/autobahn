@@ -31,8 +31,8 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                     group: 'roles'
                 }),
                 loggedIn: loggedIn,
-                getModes: function(session) {
-                    //console.log('testcase : getModes : ', session)
+                sessionModes: function(session) {
+                    //console.log('testcase : sessionModes : ', session)
                     if (session && session.user)
                         return {
                             roles: 'user'
