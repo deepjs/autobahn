@@ -26,12 +26,16 @@ exports.createHandlers = function(config) {
             return deep
                 .roles("admin")
                 .store(config.store || 'user')
-                .get("?" + (config.loginField || "email") + "=" + encodeURIComponent(loginVal) + "&password=" + password + "&valid=true")
+                .get("?" + (config.loginField || "email") + "=" + encodeURIComponent(loginVal) + "&password=" + password)
                 .done(function(user) {
                     //console.log("************ login get : ", user, session, config.loggedIn);
                     if (user.length === 0)
                         return deep.errors.NotFound();
                     user = user.shift();
+
+                    if (user.valid === false)
+                        return deep.errors.Unauthorized('Account is not active.');
+
                     delete user.password;
                     session.user = user;
                     if (config.loggedIn)
