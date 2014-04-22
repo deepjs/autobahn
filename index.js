@@ -7,18 +7,10 @@ var express = require('express'),
     crypto = require("crypto");
 require("deepjs/lib/unit");
 require("deepjs/lib/schema");
+require("deepjs/lib/stores/object");
 var closure = {
     app: null
 };
-
-/**
- * TODO :
- *
- * config.service.use("/campaign/s:id", { get:..., post:... })
- * config.service.use("/campaign/s:id", function(object, options){})
- * config.service.get("/campaign/[(s:id/p:path),q:query]", function(param, options){})
- *
- */
 
 deep.App = function(app) {
     if (app)
@@ -88,7 +80,7 @@ deep.Chain.add("session", function(session) {
             return deep.when(app.loggedIn(session))
                 .done(app.sessionModes)
                 .done(function(modes) {
-                    self.oldQueue = self._queue;
+                    self._oldQueue = self._queue;
                     self._queue = [];
                     self.modes(modes);
                     return s;
@@ -125,7 +117,7 @@ deep.Chain.add("login", function(datas) {
         self._context.protocols = app.protocols;
         return deep.when(app.loginHandlers.login(datas, self._context.session))
             .done(function(session) {
-                self.oldQueue = self._queue;
+                self._oldQueue = self._queue;
                 self._queue = [];
                 self.modes(app.sessionModes(session));
                 return session;
@@ -152,7 +144,7 @@ deep.Chain.add("logout", function() {
             else
                 self._context.session = {};
         }
-        self.oldQueue = self._queue;
+        self._oldQueue = self._queue;
         self._queue = [];
         self.modes(app.sessionModes(self._context.session));
         return s;
@@ -188,7 +180,7 @@ deep.Chain.add("impersonate", function(user) {
         self._context.protocols = app.protocols;
         return deep.when(app.loginHandlers.impersonate(user, self._context.session))
             .done(function(session) {
-                self.oldQueue = self._queue;
+                self._oldQueue = self._queue;
                 self._queue = [];
                 self.modes(app.sessionModes(session));
                 return s;
