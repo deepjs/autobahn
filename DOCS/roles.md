@@ -18,10 +18,10 @@ Example of soustractive synthesis : "admin" is full rights, "user" and "public" 
 var myServiceMap = {
 	admin:deep.store.Collection.create(null, [{ id:"e1", title:"hello" }, { id:"e2", title:"world" }]),
 	public:{
-		backgrounds:["this::../admin", deep.store.AllowOnly("get","range")]
+		backgrounds:["this::../admin", deep.AllowOnly("get","range")]
 	},
 	user:{
-		backgrounds:["this::../admin", deep.store.Restrictions("del")]
+		backgrounds:["this::../admin", deep.Restrictions("del")]
 	}
 };
 
@@ -39,8 +39,8 @@ myService("public").range(1,4).log();							// ok
 var myServiceMap = {
 	dev:deep.store.Collection.create(null, ...),
 	prod:deep.store.Mongo.create(null, ...),
-	public:deep.store.AllowOnly("get","range"),
-	user:deep.store.Restrictions("del"),
+	public:deep.AllowOnly("get","range"),
+	user:deep.Restrictions("del"),
 	admin:{}
 	// if strict:false : all other roles (as admin) have all rights
 };
