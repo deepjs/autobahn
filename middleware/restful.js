@@ -79,7 +79,6 @@ var mapper = {
 					store = {
 						get:store
 					};
-
 				var options = {
 					params:handler.params
 				};
@@ -104,7 +103,7 @@ var mapper = {
 				switch(request.method.toLowerCase())
 				{
 					case "head" :
-						d = deep.store(store).head(id, options);
+						d = deep.rest(store).head(id, options);
 						break;
 					case "get" : // subcases : get, query, range
 						//console.log("will get : ", handler.params);
@@ -122,7 +121,7 @@ var mapper = {
 								{
 									var start = parseInt(res[1], 10);
 									var end = parseInt(res[2], 10);
-									d = deep.store(store).range(start, end, handler.params.query , options)
+									d = deep.rest(store).range(start, end, handler.params.query , options)
 									.done(function(range){
 										response.status((range.start === 0 && range.total -1 === end) ? 200 : 206);
 										response.set({
@@ -137,13 +136,14 @@ var mapper = {
 							}
 						}
 						else
-							d = deep.store(store).get(id, options);
+							d = deep.rest(store).get(id, options);
 						break;
 
 					case "post" : // subcases : post, rpc, bulk
 						if(request.is("application/json-rpc"))	// RPC
 						{
-							d = deep.store(store).rpc(request.body.method, request.body.params , handler.params.id, options)
+							d = deep.rest(store)
+							.rpc(request.body.method, request.body.params , handler.params.id, options)
 							.done(function  (result) {
 								// console.log("rpc call : response : ", result);
 								return {
@@ -173,9 +173,9 @@ var mapper = {
 									var meth = message.method.toLowerCase();
 									var opt = deep.utils.bottom(options, {id:message.to});
 									if(deep.utils.inArray(meth, ["patch","put","post"]))
-										h = deep.store(store)[meth](message.body, opt);
+										h = deep.rest(store)[meth](message.body, opt);
 									else
-										h = deep.store(store)[meth](message.to, opt);
+										h = deep.rest(store)[meth](message.to, opt);
 									alls.push(h);
 								});
 								d = deep.all(alls)
@@ -195,7 +195,7 @@ var mapper = {
 							}
 						}
 						else if(request.is("application/json"))  // POST
-							d = deep.store(store).post(request.body, options);
+							d = deep.rest(store).post(request.body, options);
 						else
 							d = deep.when(deep.errors.Post("unrecognised content-type"));
 						break;
@@ -203,21 +203,21 @@ var mapper = {
 					case "put" :
 						if(!request.is("application/json"))
 							d = deep.when(deep.errors.Put("unrecognised content-type"));
-						d = deep.store(store).put(request.body, options);
+						d = deep.rest(store).put(request.body, options);
 						break;
 
 					case "patch" :
 						// console.log("restful apply patch")
 						if(!request.is("application/json"))
 							d = deep.when(deep.errors.Patch("unrecognised content-type"));
-						d = deep.store(store).patch(request.body, options);
+						d = deep.rest(store).patch(request.body, options);
 						break;
 
 					case "delete" :
 						if(!store.del)
 							d = deep.when(deep.errors.MethodNotAllowed());
 						else
-							d = deep.store(store).del(handler.params.id, options);
+							d = deep.rest(store).del(handler.params.id, options);
 						break;
 
 					default : // ASSUMING OPTIONS?
