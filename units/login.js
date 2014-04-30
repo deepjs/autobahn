@@ -7,7 +7,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
 
     //_______________________________________________________________ GENERIC STORE TEST CASES
     var unit = {
-        title: 'autobahnjs/units/login',
+        title: 'js::autobahnjs/units/login',
         stopOnError: false,
         setup: function() {
             var loggedIn = function(session) {
@@ -43,7 +43,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                 },
                 loginHandlers: autobahn.login.createHandlers({
                     encryption: 'sha1',
-                    store: deep.store.Collection.create(null, [{
+                    store: deep.Collection(null, [{
                         id: 'u1',
                         email: 'toto@bloup.com',
                         password: deep.utils.Hash('test', 'sha1'),
@@ -207,14 +207,23 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                     .equal('public')
             },
             protocols_public: function() {
+                console.log("protocol public  : protocols ", deep.context )
                 return deep.app(this)
                     .roles('public')
+                    //.logContext("protocols")
+                    /*.done(function(){
+                        console.log("_____________________________________________protocols : ", this._context.protocols())
+                    })*/
                     .deep('test::local')
                     .equal('hello : public : local');
             },
             protocols_user: function() {
                 return deep.app(this)
                     .roles('user')
+                    //.logContext("protocols")
+                    .done(function(){
+                        console.log("protocols : ", this._context.protocols())
+                    })
                     .deep('test::local')
                     .equal('hello : user : local');
             },
@@ -225,6 +234,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         email: 'toto@bloup.com',
                         password: 'test'
                     })
+                    //.logContext("protocols")
                     .deep('test::local')
                     .equal('hello : user : local')
                     .logout()
