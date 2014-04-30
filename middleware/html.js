@@ -39,6 +39,8 @@ var deep = require("deepjs"),
 require("deep-routes");
 require("deep-jquery").DOM.create("dom");
 
+
+
 exports.map = function(map, config) {
     var closure = {};
     config = config || {};
@@ -60,6 +62,8 @@ exports.map = function(map, config) {
                 return next();
         } else if (match.endChilds === 0 || match.endChilds !== match.route.length)
             return next();
+
+        deep.context.concurrency = true;
 
         var $ = deep.context.$ = cheerio.load('<!doctype html><html><head></head><body></body></html>');
         deep.when(deep.RouteNode.refresh(match))
