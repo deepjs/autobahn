@@ -18,28 +18,28 @@ deep.App = function(app) {
     return deep(closure.app).app(closure.app);
 };
 deep.app = function(app) {
-    return deep(app || deep.context.app || closure.app).app(app || deep.context.app || closure.app);
+    //console.log("deep.app : context : ", deep.context);
+    return deep(app || deep.context.app || closure.app).app(app || deep.context.app || closure.app)
 };
 
-deep.Chain.add("app", function(app) {
+deep.Promise.API.app = function(app) {
     var self = this;
     var func = function(s, e) {
         app = app || deep.context.app || closure.app;
         if (!app)
             return deep.errors.Error(500, "No app provided on deep.Chain.app(...)");
         if (!self._contextCopied)
-            deep.context = self._context = deep.utils.simpleCopy(self._context);
+            deep.context = self._context = deep.utils.shallowCopy(self._context);
         self._contextCopied = true;
         self._context.session = self._context.session || {};
         self._context.protocols = app.protocols;
         self._context.app = app;
+        //console.log("promise.Chain.app : ", self._context);
         return s;
     };
     func._isDone_ = true;
-    deep.utils.addInChain.call(self, func);
-    return this;
-});
-
+    return this._enqueue(func);
+}
 //________________________________________ 
 deep.utils.Hash = function(string, algo) {
     return crypto.createHash(algo || 'sha1').update(string).digest('hex');
@@ -68,7 +68,7 @@ deep.Chain.add("session", function(session) {
         if (!app)
             return deep.errors.Error(500, "No app setted in deep to manipulate session.");
         if (!self._contextCopied)
-            deep.context = self._context = deep.utils.simpleCopy(self._context);
+            deep.context = self._context = deep.utils.shallowCopy(self._context);
         self._contextCopied = true;
         if (typeof session === 'function')
             self._context.session = session();
@@ -87,8 +87,7 @@ deep.Chain.add("session", function(session) {
         return s;
     };
     func._isDone_ = true;
-    deep.utils.addInChain.call(self, func);
-    return this;
+    return this._enqueue(func);
 });
 //_________________________
 
@@ -109,7 +108,7 @@ deep.Chain.add("login", function(datas) {
         if (!app)
             return deep.errors.Error(500, "No app setted in deep to manipulate session.");
         if (!self._contextCopied)
-            deep.context = self._context = deep.utils.simpleCopy(self._context);
+            deep.context = self._context = deep.utils.shallowCopy(self._context);
         self._contextCopied = true;
         self._context.session = {};
         self._context.protocols = app.protocols;
@@ -120,8 +119,7 @@ deep.Chain.add("login", function(datas) {
             });
     };
     func._isDone_ = true;
-    deep.utils.addInChain.call(self, func);
-    return this;
+    return this._enqueue(func);
 });
 //_________________________
 /**
@@ -144,8 +142,7 @@ deep.Chain.add("logout", function() {
         return s;
     };
     func._isDone_ = true;
-    deep.utils.addInChain.call(self, func);
-    return this;
+    return this._enqueue(func);
 });
 
 //_________________________
@@ -165,7 +162,7 @@ deep.Chain.add("impersonate", function(user) {
         if (!app)
             return deep.errors.Error(500, "No app setted in deep to manipulate session for impersonation.");
         if (!self._contextCopied)
-            deep.context = self._context = deep.utils.simpleCopy(self._context);
+            deep.context = self._context = deep.utils.shallowCopy(self._context);
         //console.log("login : session 2 : ", self._context.session)
         self._contextCopied = true;
         var oldSession = self._context.session = self._context.session || {};
@@ -179,8 +176,7 @@ deep.Chain.add("impersonate", function(user) {
             });
     };
     func._isDone_ = true;
-    deep.utils.addInChain.call(self, func);
-    return this;
+    return this._enqueue(func);
 });
 
 
