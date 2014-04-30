@@ -25,7 +25,7 @@ exports.createHandlers = function(config) {
 
             return deep
                 .roles("admin")
-                .store(config.store || 'user')
+                .rest(config.store || 'user')
                 .get("?" + (config.loginField || "email") + "=" + encodeURIComponent(loginVal) + "&password=" + password)
                 .done(function(user) {
                     //console.log("************ login get : ", user, session, config.loggedIn);
@@ -54,7 +54,7 @@ exports.createHandlers = function(config) {
             var query = "?" + toCatch + "=" + encodeURIComponent(object[toCatch]);
 
             return deep.roles("admin")
-            	.store(config.store || 'user')
+            	.rest(config.store || 'user')
                 .get(query)
                 .done(function(user) {
                     //console.log("login get : ", user);
