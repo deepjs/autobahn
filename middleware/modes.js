@@ -8,7 +8,7 @@ exports.middleware = function(sessionModes){
 
 	return function (req, response, next)
 	{
-		deep.context.session = req.session;
+		deep.Promise.context.session = req.session;
 		deep.when(sessionModes(req.session))
 		.done(function (modes) {
 			 //console.log("middleware roles : roles getted : ", roles, req.session)

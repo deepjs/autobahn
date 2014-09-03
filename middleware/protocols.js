@@ -8,10 +8,10 @@ exports.middleware = function(initialiser){
 	{
 		// console.log("protocols middleware")
 		if(typeof initialiser === 'object')
-			deep.context.protocols = initialiser;
+			deep.Promise.context.protocols = initialiser;
 		else if(typeof initialiser === 'function')
-			deep.context.protocols = initialiser();
-		deep.when(deep.context.protocols)
+			deep.Promise.context.protocols = initialiser();
+		deep.when(deep.Promise.context.protocols)
 		.done(function(context){
 			// console.log("context middleware initialised")
 			next();

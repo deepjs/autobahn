@@ -18,17 +18,21 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
             return {
                 protocols: deep.ocm({
                     'public': {
-                        test: function(path) {
-                            return 'hello : public : ' + path;
+                        test: { 
+                            get: function(path) {
+                                return 'hello : public : ' + path;
+                            }
                         }
                     },
                     user: {
-                        test: function(path) {
-                            return 'hello : user : ' + path;
+                        test: {
+                            get: function(path) {
+                                return 'hello : user : ' + path;
+                            }
                         }
                     }
                 }, {
-                    group: 'roles'
+                    sensibleTo: 'roles'
                 }),
                 loggedIn: loggedIn,
                 sessionModes: function(session) {
@@ -76,7 +80,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         decorated: true
                     })
                     .done(function() {
-                        return deep.context.modes.roles;
+                        return deep.Promise.context.modes.roles;
                     })
                     .equal('user');
             },
@@ -90,7 +94,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         }
                     })
                     .done(function() {
-                        return deep.context.session;
+                        return deep.Promise.context.session;
                     })
                     .equal({
                         user: {
@@ -100,7 +104,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         decorated: true
                     })
                     .done(function() {
-                        return deep.context.modes.roles;
+                        return deep.Promise.context.modes.roles;
                     })
                     .equal('user');
             },
@@ -111,7 +115,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         id: 'u1'
                     })
                     .done(function() {
-                        return deep.context.session;
+                        return deep.Promise.context.session;
                     })
                     .equal({
                         parent: {},
@@ -122,7 +126,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         decorated: true
                     })
                     .done(function() {
-                        return deep.context.modes.roles;
+                        return deep.Promise.context.modes.roles;
                     })
                     .equal('user');
             },
@@ -133,7 +137,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         email: 'toto@bloup.com'
                     })
                     .done(function() {
-                        return deep.context.session;
+                        return deep.Promise.context.session;
                     })
                     .equal({
                         parent: {},
@@ -144,7 +148,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         decorated: true
                     })
                     .done(function() {
-                        return deep.context.modes.roles;
+                        return deep.Promise.context.modes.roles;
                     })
                     .equal('user');
             },
@@ -156,12 +160,12 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         password: 'test'
                     })
                     .done(function() {
-                        return deep.context.modes.roles;
+                        return deep.Promise.context.modes.roles;
                     })
                     .equal('user')
                     .logout()
                     .done(function() {
-                        return deep.context.modes.roles;
+                        return deep.Promise.context.modes.roles;
                     })
                     .equal('public');
             },
@@ -172,12 +176,12 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         email: 'toto@bloup.com'
                     })
                     .done(function() {
-                        return deep.context.modes.roles;
+                        return deep.Promise.context.modes.roles;
                     })
                     .equal('user')
                     .logout()
                     .done(function() {
-                        return deep.context.modes.roles;
+                        return deep.Promise.context.modes.roles;
                     })
                     .equal('public');
             },
@@ -192,22 +196,21 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         email: 'toti@bloup.com'
                     })
                     .done(function() {
-                        return deep.context.modes.roles;
+                        return deep.Promise.context.modes.roles;
                     })
                     .equal('user')
                     .logout()
                     .done(function() {
-                        return deep.context.modes.roles;
+                        return deep.Promise.context.modes.roles;
                     })
                     .equal('user')
                     .logout()
                     .done(function() {
-                        return deep.context.modes.roles;
+                        return deep.Promise.context.modes.roles;
                     })
                     .equal('public')
             },
             protocols_public: function() {
-                console.log("protocol public  : protocols ", deep.context )
                 return deep.app(this)
                     .roles('public')
                     //.logContext("protocols")

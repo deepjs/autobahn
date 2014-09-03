@@ -37,7 +37,7 @@ var deep = require("deepjs"),
     urlparse = require('url').parse,
     cheerio = require('cheerio');
 require("deep-routes");
-require("deep-jquery").DOM.create("dom");
+require("deep-jquery/lib/dom")("dom");
 
 
 
@@ -50,7 +50,7 @@ exports.map = function(map, config) {
         .done(function(map) {
             closure.map = map;
         })
-        .logError();
+        .elog();
     return function(request, response, next) {
         //console.log("html mappers : ", request.url , " - ", request.headers);
         if (!request.accepts("html"))
@@ -63,9 +63,9 @@ exports.map = function(map, config) {
         } else if (match.endChilds === 0 || match.endChilds !== match.route.length)
             return next();
 
-        deep.context.concurrency = true;
+        deep.Promise.context.concurrency = true;
 
-        var $ = deep.context.$ = cheerio.load('<!doctype html><html><head></head><body></body></html>');
+        var $ = deep.Promise.context.$ = cheerio.load('<!doctype html><html><head></head><body></body></html>');
         deep.when(deep.RouteNode.refresh(match))
             .done(function(s) {
                 response.writeHead(200, {

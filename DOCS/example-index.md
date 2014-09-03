@@ -19,7 +19,7 @@ var services = {
 				return "user test : "+id;
 			}
 		}
-	}, { group:"roles", protocol:"test" })
+	}, { sensibleTo:"roles", protocol:"test" })
 };
 
 

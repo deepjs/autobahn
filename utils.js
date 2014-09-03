@@ -10,7 +10,7 @@ define(function (require)
 	var deep = require("deepjs");
 	var utils = {
 		setNoCacheHeaders : function (infos) {
-	        deep.utils.up( {
+	        deep.aup( {
 	            'Pragma': 'no-cache',
 	            'Cache-Control': 'no-store, no-cache, must-revalidate',
 	        }, infos.response.headers);

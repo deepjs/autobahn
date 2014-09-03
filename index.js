@@ -7,7 +7,14 @@ var express = require('express'),
     crypto = require("crypto");
 require("deepjs/lib/unit");
 require("deepjs/lib/schema");
-require("deepjs/lib/stores/object");
+require("deep-restful/lib/object");
+require("deep-restful/lib/chain");
+
+var cookieParser = require('cookie-parser')
+var session = require('express-session')
+var bodyParser = require('body-parser')
+
+
 var closure = {
     app: null
 };
@@ -19,17 +26,17 @@ deep.App = function(app) {
 };
 deep.app = function(app) {
     //console.log("deep.app : context : ", deep.context);
-    return deep(app || deep.context.app || closure.app).app(app || deep.context.app || closure.app)
+    return deep(app || deep.Promise.context.app || closure.app).app(app || deep.Promise.context.app || closure.app)
 };
 
 deep.Promise.API.app = function(app) {
     var self = this;
     var func = function(s, e) {
-        app = app || deep.context.app || closure.app;
+        app = app || deep.Promise.context.app || closure.app;
         if (!app)
             return deep.errors.Error(500, "No app provided on deep.Chain.app(...)");
         if (!self._contextCopied)
-            deep.context = self._context = deep.utils.shallowCopy(self._context);
+            deep.Promise.context = self._context = deep.utils.shallowCopy(self._context);
         self._contextCopied = true;
         self._context.session = self._context.session || {};
         self._context.protocols = app.protocols;
@@ -58,17 +65,17 @@ deep.transformers.Hash = function(algo){
  */
 deep.session = function(session) {
     if (!session)
-        return deep.context.session;
+        return deep.Promise.context.session;
     return deep({}).session(session);
 };
 deep.Chain.add("session", function(session) {
     var self = this;
     var func = function(s, e) {
-        var app = deep.context.app || closure.app;
+        var app = deep.Promise.context.app || closure.app;
         if (!app)
             return deep.errors.Error(500, "No app setted in deep to manipulate session.");
         if (!self._contextCopied)
-            deep.context = self._context = deep.utils.shallowCopy(self._context);
+            deep.Promise.context = self._context = deep.utils.shallowCopy(self._context);
         self._contextCopied = true;
         if (typeof session === 'function')
             self._context.session = session();
@@ -104,11 +111,11 @@ deep.login = function(obj) {
 deep.Chain.add("login", function(datas) {
     var self = this;
     var func = function(s, e) {
-        var app = deep.context.app || closure.app;
+        var app = deep.Promise.context.app || closure.app;
         if (!app)
             return deep.errors.Error(500, "No app setted in deep to manipulate session.");
         if (!self._contextCopied)
-            deep.context = self._context = deep.utils.shallowCopy(self._context);
+            deep.Promise.context = self._context = deep.utils.shallowCopy(self._context);
         self._contextCopied = true;
         self._context.session = {};
         self._context.protocols = app.protocols;
@@ -129,7 +136,7 @@ deep.Chain.add("login", function(datas) {
 deep.Chain.add("logout", function() {
     var self = this;
     var func = function(s, e) {
-        var app = deep.context.app || closure.app;
+        var app = deep.Promise.context.app || closure.app;
         if (!app)
             return deep.errors.Error(500, "No app setted in deep to manipulate session.");
         if (self._context.session) {
@@ -158,11 +165,11 @@ deep.impersonate = function(user) {
 deep.Chain.add("impersonate", function(user) {
     var self = this;
     var func = function(s, e) {
-        var app = deep.context.app || closure.app;
+        var app = deep.Promise.context.app || closure.app;
         if (!app)
             return deep.errors.Error(500, "No app setted in deep to manipulate session for impersonation.");
         if (!self._contextCopied)
-            deep.context = self._context = deep.utils.shallowCopy(self._context);
+            deep.Promise.context = self._context = deep.utils.shallowCopy(self._context);
         //console.log("login : session 2 : ", self._context.session)
         self._contextCopied = true;
         var oldSession = self._context.session = self._context.session || {};
@@ -256,10 +263,10 @@ module.exports = {
             config.statics = require(config.statics);
 
         config.sessionModes = config.sessionModes || this.sessionModes;
-        app.use(express.cookieParser());
+        app.use(cookieParser());
         if (config.session)
-            app.use(express.session(config.session));
-        app.use(express.bodyParser({ strict:false }))
+            app.use(session(config.session));
+        app.use(bodyParser({ strict:false }))
             .use(this.context.middleware(config.contextInit))
             .use(this.modes.middleware(config.sessionModes));
         if (config.protocols)
@@ -321,7 +328,7 @@ module.exports = {
         if (config.htmls)
             app.use(this.html.map(config.htmls));
         ///____________________________________________________      Finish app construction
-        app.use(app.router)
+        app///.use(app.router)
             .use((config.errors && config.errors.NotFound) ? config.errors.NotFound : function(req, res, next) {
                 console.log("nothing to do with : ", req.url);
                 res.writeHead(404, {

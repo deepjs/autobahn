@@ -31,9 +31,9 @@ function produceMapper(map)
 			if(pathname.match(new RegExp("^("+entry.path+")")))
 				middlewares = middlewares.concat(entry.middlewares);
 		});
-		var context = deep.context;
+		var context = deep.Promise.context;
 		var hackedNext = function(){
-			deep.context = context;
+			deep.Promise.context = context;
 			if(middlewares.length === 0)
 				return next();
 			var follow = middlewares.shift();
@@ -51,9 +51,9 @@ exports.middleware = function(map){
 		if(map._deep_ocm_)
 		{
 			closure.cache = closure.cache || {};
-			if(deep.context.modes && deep.context.modes.roles)
+			if(deep.Promise.context.modes && deep.Promise.context.modes.roles)
 			{
-				var joined = deep.context.modes.roles;
+				var joined = deep.Promise.context.modes.roles;
 				if(joined.join)
 					joined.join(".");
 				if(closure.cache[joined])
@@ -98,9 +98,11 @@ exports.middleware = function(map){
  * Module dependencies.
  */
 
+var parseurl = require('parseurl');
+var escapeHtml = require('escape-html');
+
+
 var send = require('send')
-  , utils = require('connect/lib/utils')
-  , parse = utils.parseUrl
   , url = require('url');
 
 /**
@@ -142,15 +144,15 @@ function CreateManager(root, fakePath, options){
 
   return function staticMiddleware(req, res, next) {
     if ('GET' != req.method && 'HEAD' != req.method) return next();
-    var path = parse(req).pathname;
-    var pause = utils.pause(req);
+    var path = parseurl(req).pathname;
+    //var pause = utils.pause(req);
 
     if(path.length > fakePath.length)
 		path = path.substring(fakePath.length);
 
     function resume() {
       next();
-      pause.resume();
+     // pause.resume();
     }
 
     function directory() {
@@ -161,7 +163,7 @@ function CreateManager(root, fakePath, options){
       target = url.format(originalUrl);
       res.statusCode = 303;
       res.setHeader('Location', target);
-      res.end('Redirecting to ' + utils.escape(target));
+      res.end('Redirecting to ' + escapeHtml(target));
     }
 
     function error(err) {

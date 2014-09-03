@@ -43,9 +43,9 @@ exports.middleware =  function(getLanguageFromContext, saveLanguage, avaiableLan
 
 	return function(request, response, nextApp){
 		var languages = [defaultLanguage];
-		deep.context.language = defaultLanguage;
+		deep.Promise.context.language = defaultLanguage;
 
-		//console.log("-------------------- deep.context.language = ", deep.context.language);
+		//console.log("-------------------- deep.Promise.context.language = ", deep.Promise.context.language);
 		//console.log("-------------------- Request.url = ", request.url);
 		
 		if(request.url.split("/").length > 2)
@@ -56,14 +56,14 @@ exports.middleware =  function(getLanguageFromContext, saveLanguage, avaiableLan
 		var passport = null;
 		var languageFromCookie = null;
 
-		// var contextLanguages = getLanguageFromContext(deep.context);
+		// var contextLanguages = getLanguageFromContext(deep.Promise.context);
 		
 		// if(contextLanguages)
 		// {
 		// 	console.log("Languages from CONTEXT : ", languages);
 		// 	languages = contextLanguages;
 		// 	/*
-		// 	passport = deep.context.session.passports[autobahn.layer.application];
+		// 	passport = deep.Promise.context.session.passports[autobahn.layer.application];
 		// 	languages = [passport.language];
 		// 	 */
 		// }
@@ -114,33 +114,33 @@ exports.middleware =  function(getLanguageFromContext, saveLanguage, avaiableLan
 			return false;
 		});
 		if(!ok)
-			deep.context.language = defaultLanguage;
+			deep.Promise.context.language = defaultLanguage;
 		else
-			deep.context.language = languages[0];
+			deep.Promise.context.language = languages[0];
 		
 
-		if(languageFromCookie !== deep.context.language)
+		if(languageFromCookie !== deep.Promise.context.language)
 		{
 			// var d = new Date();
 			// d.setMonth( d.getMonth( ) + 6 );
-			// request.cookies.set("language", deep.context.language, {expires:d});
-			response.cookie('language', deep.context.language, { maxAge: 15120000000, httpOnly: true });
+			// request.cookies.set("language", deep.Promise.context.language, {expires:d});
+			response.cookie('language', deep.Promise.context.language, { maxAge: 15120000000, httpOnly: true });
 		}
 
-		if(saveLanguage && contextLanguages && contextLanguages != deep.context.language)
+		if(saveLanguage && contextLanguages && contextLanguages != deep.Promise.context.language)
 		{
-			console.log("-------------------- CHANGE LANGUAGE FOR CONTEXT= ", deep.context.language);
+			console.log("-------------------- CHANGE LANGUAGE FOR CONTEXT= ", deep.Promise.context.language);
 			// save it in passport in db : so save session
-			saveLanguage(deep.context);
+			saveLanguage(deep.Promise.context);
 			/*
-			passport.language = deep.context.language;
+			passport.language = deep.Promise.context.language;
 			autobahn().roles(["admin"]).facet("passport").put(passport).log();
-			deep.context.request.autobahn.session.save();
+			deep.Promise.context.request.autobahn.session.save();
 			*/
 		}
 
-		console.log('__________________ language catched : ', deep.context.language);
-		//deep.context.languageCode = autobahn.layer.application + "-" + deep.context.language;
+		console.log('__________________ language catched : ', deep.Promise.context.language);
+		//deep.Promise.context.languageCode = autobahn.layer.application + "-" + deep.Promise.context.language;
 
 		if(query && query.changelanguage)
 			return response.redirect("/");

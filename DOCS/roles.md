@@ -21,7 +21,7 @@ var myServiceMap = {
 		backgrounds:["this::../admin", deep.AllowOnly("get","range")]
 	},
 	user:{
-		backgrounds:["this::../admin", deep.Restrictions("del")]
+		backgrounds:["this::../admin", deep.Disallow("del")]
 	}
 };
 
@@ -40,11 +40,11 @@ var myServiceMap = {
 	dev:deep.store.Collection.create(null, ...),
 	prod:deep.store.Mongo.create(null, ...),
 	public:deep.AllowOnly("get","range"),
-	user:deep.Restrictions("del"),
+	user:deep.Disallow("del"),
 	admin:{}
 	// if strict:false : all other roles (as admin) have all rights
 };
-var myService = deep.ocm(myServiceMap, { group:"roles", strict:true });
+var myService = deep.ocm(myServiceMap, { sensibleTo:"roles", strict:true });
 (strict:true means : if any of asked modes is not present : return empty object (+ debug log))
 
 ==> on usage :

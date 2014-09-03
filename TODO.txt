@@ -2,7 +2,7 @@ middlewares
 ====
 
 /**
- * paranos : ocmise all ocm protocol in deep.context.protocols
+ * paranos : ocmise all ocm protocol in deep.Promise.context.protocols
  * @return {[type]} [description]
  */
 autobahn.paranos = function(){
