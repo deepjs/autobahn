@@ -1,57 +1,57 @@
 {
-  "name": "autobahnjs",
-  "version": "0.4.0",
-  "author": {
-    "name": "Gilles Coomans",
-    "email": "gilles.coomans@gmail.com"
-  },
-  "description": "nodejs/expressjs/deepjs related tools and middlewares",
-  "contributors": [
-    {
-      "name": "Philippe Delabye",
-      "email": "phil@chemicalrules.net"
-    }
-  ],
-  "keywords": [
-    "util",
-    "promise",
-    "asynch",
-    "AOP",
-    "query",
-    "composition",
-    "restful",
-    "OCM"
-  ],
-  "licenses": [
-    {
-      "type": "LGPLv3.0",
-      "url": "http://www.gnu.org/licenses/lgpl-3.0.txt"
-    }
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/deepjs/autobahn.git"
-  },
-  "dependencies": {
-    "amdefine": "*",
-    "send":"0.8.3",
-    "escape-html": "1.0.1",
-    "serve-static": "1.5.3",
-    "body-parser": "1.7.0",
-    "cookie-parser": "1.3.2",
-    "cookie-session": "1.0.2",
-    "express": "4.8.7",
-    "express-session": "1.7.6",
-    "parseurl": "1.3.0",
-    "cheerio": "0.13.1",
-    "deepjs": ">=0.13.1",
-    "deep-routes": ">=0.3.4",
-    "deep-restful": ">=0.2.1"
-  },
-  "main": "./index.js",
-  "engines": {
-    "node": ">=0.10.0"
-  },
-  "readme": "autobahn\n====\n\n\ndeepjs oriented tools for managing nodejs/expressjs middlwares and routes.\n\nExperimental use for the moment... Docs coming soon.\n\n",
-  "readmeFilename": "README.md"
+ "name": "autobahnjs",
+ "version": "0.4.1",
+ "author": {
+  "name": "Gilles Coomans",
+  "email": "gilles.coomans@gmail.com"
+ },
+ "description": "nodejs/expressjs/deepjs related tools and middlewares",
+ "contributors": [
+  {
+   "name": "Philippe Delabye",
+   "email": "phil@chemicalrules.net"
+  }
+ ],
+ "keywords": [
+  "util",
+  "promise",
+  "asynch",
+  "AOP",
+  "query",
+  "composition",
+  "restful",
+  "OCM"
+ ],
+ "licenses": [
+  {
+   "type": "LGPLv3.0",
+   "url": "http://www.gnu.org/licenses/lgpl-3.0.txt"
+  }
+ ],
+ "repository": {
+  "type": "git",
+  "url": "https://github.com/deepjs/autobahn.git"
+ },
+ "dependencies": {
+  "amdefine": "*",
+  "send": "0.8.3",
+  "escape-html": "1.0.1",
+  "serve-static": "1.5.3",
+  "body-parser": "1.7.0",
+  "cookie-parser": "1.3.2",
+  "cookie-session": "1.0.2",
+  "express": "4.8.7",
+  "express-session": "1.7.6",
+  "parseurl": "1.3.0",
+  "cheerio": "0.13.1",
+  "deepjs": ">=0.13.1",
+  "deep-routes": ">=0.3.4",
+  "deep-restful": ">=0.2.1"
+ },
+ "main": "./index.js",
+ "engines": {
+  "node": ">=0.10.0"
+ },
+ "readme": "autobahn\n====\n\n\ndeepjs oriented tools for managing nodejs/expressjs middlwares and routes.\n\nExperimental use for the moment... Docs coming soon.\n\n",
+ "readmeFilename": "README.md"
 }
