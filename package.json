@@ -34,7 +34,7 @@
  },
  "dependencies": {
   "amdefine": "*",
-  "send": "0.8.3",
+  "send": "0.9.1",
   "escape-html": "1.0.1",
   "serve-static": "1.5.3",
   "body-parser": "1.7.0",
