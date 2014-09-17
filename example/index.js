@@ -76,9 +76,9 @@ app
 .post("/logout", autobahn.logout.middleware()) 	// catch post on /logout and break session.
 .post("/login", autobahn.login.middleware(autobahnApp))  // catch post on /login and try to login
 // ------ Your maps-to-* middleware
-.use(autobahn.restful.map(require("./server/services")))	// deep-restful map-to-services
-.use(autobahn.html.map(require("./server/html")))			// deep-views/deep-routes map-to-html rendering.
-.use(autobahn.statics.middleware(require("./server/statics"))) // map-to-statics file server
+.use(autobahn.restful.map(require("./maps/services")))	// deep-restful map-to-services
+.use(autobahn.html.map(require("./maps/html")))			// deep-views/deep-routes map-to-html rendering.
+.use(autobahn.statics.middleware(require("./maps/statics"))) // map-to-statics file server
 ///____________________________________________________      Finish app construction
 .use(function(req, res, next) {
 	console.log("nothing to do with : ", req.url);

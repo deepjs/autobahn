@@ -19,7 +19,7 @@ module.exports = {
 		where:"dom.appendTo::head"
 	}),
 	index:deep.View({
-		how:"swig::/app.html",	// load index from www
+		how:"swig::/template.html",	// load index from www
 		where:"dom.appendTo::",		// NO Selector says : use html merge rules (see deep-jquery)
 		subs:{
 			topbar:deep.View({
