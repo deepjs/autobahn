@@ -27,11 +27,12 @@ var autobahnApp = autobahn.app({
 	port:3000,
 	// initialise context for each request
 	initContext: function(context){
-		// do something
+		// do something (could be asynch : if so return a promise)
 		return context;
 	},
 	// Decorate session when logged in. 
 	// Used by login middleware and chained API
+	// (could be asynch : if so return a promise)
 	loggedIn: function(session) {
 		// logged user is already stored in session.
 		session.myDecoration = true;
@@ -63,13 +64,13 @@ app
 .use(session({
 	resave:false,
 	saveUninitialized:true,
-	secret: 'paezijp7YlhgiGOUYgtogz',
+	secret: 'zfpDkjdJOIPDIHDHO9U0H2NHDILZUHNILY92A',
 	maxAge: new Date(Date.now() + 3600000)
 }))
 // to get body parsed automatically (json/files/..)
 .use(bodyParser.json({ strict:false, extended:true }))
 // ------ context and modes
-.use(autobahn.context.middleware())	// create and bind unique context to each incoming request
+.use(autobahn.context.middleware(autobahnApp.initContext))	// create and bind unique context to each incoming request
 .use(autobahn.modes.middleware(autobahnApp.sessionModes)) // assign OCM modes to each incoming req. store it in previously created context
 // ------ login and logout
 .post("/logout", autobahn.logout.middleware()) 	// catch post on /logout and break session.
