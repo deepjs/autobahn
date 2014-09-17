@@ -21,8 +21,17 @@ As autobahnjs is an environnement that tie a bunch of tools together and should 
 You should use the yeoman autobahnjs generator to get a workable structure.
 
 ```
-
+coming really soon.
 ```
+
+Or simply use the example folder, provided in autobahn lib under autobahnjs/lib.
+when you're in (after clone or npm install) :
+```
+npm install
+node index.js
+```
+
+Enjoy.
 
 ## Example of autobahnjs "app" and expressjs skeleton
 
