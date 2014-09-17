@@ -130,7 +130,7 @@ var repl = require("repl")
 });
 ```
 
-### Example of retsful map
+### Example of restful map
 ```javascript
 var deep = require("deepjs/deep");
 require("deep-mongo");
