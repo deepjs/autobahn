@@ -72,7 +72,7 @@ var autobahnApp = autobahn.app({
 	{
 		// You could use session to make decision. 
 		// If you have login, session contains your user.
-		if (session && session.user) // if your logged in : you're a "user"
+		if (session && session.user) // if you have logged in : you're a "user"
 			return { roles: "user" }; 
 		else // else you're "public"
 			return { roles: "public" }; 
@@ -95,11 +95,11 @@ app
 	secret: 'paezijp7YlhgiGOUYgtogz',
 	maxAge: new Date(Date.now() + 3600000)
 }))
-// to get body parsed automatically (json/files/..)
+// to get posted body parsed automatically (json/files/..)
 .use(bodyParser.json({ strict:false, extended:true }))
 // ------ context and modes
-.use(autobahn.context.middleware())	// create and bind unique context to each incoming request
-.use(autobahn.modes.middleware(autobahnApp.sessionModes)) // assign OCM modes to each incoming req. store it in previously created context
+.use(autobahn.context.middleware(autobahnApp.initContext))	// create and bind unique context to each incoming request
+.use(autobahn.modes.middleware(autobahnApp.sessionModes)) // assign OCM modes to each incoming req. context
 // ------ login and logout
 .post("/logout", autobahn.logout.middleware()) 	// catch post on /logout and break session.
 .post("/login", autobahn.login.middleware(autobahnApp))  // catch post on /login and try to login
