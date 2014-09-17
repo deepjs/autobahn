@@ -1,10 +1,11 @@
-var deep = require("deepjs");
-	autobahn = require("autobahnjs"),	// bunch of middlware for expressjs
-	Unit = require("deepjs/lib/unit"),  // for deepjs unit testing
+var deep = require("deepjs"),
 	express = require('express'),
-	cookieParser = require('cookie-parser'),
-	session = require('express-session'),
-	bodyParser = require('body-parser');
+	autobahn = require("autobahnjs"),	// bunch of middlware for expressjs
+	Unit = require("deepjs/lib/unit");  // for deepjs unit testing
+
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
+var bodyParser = require('body-parser');
 
 // bind actual JSON-Schema validator. taking one from deepjs core.
 deep.Validator.set(require("deepjs/lib/schema"));
@@ -21,21 +22,21 @@ deep.Modes({
 //_________________________ Start your app construction
 var app = express();
 
-// Decorate session when logged in. 
-// Used by login middleware and chained API
-var loggedIn = function(session) {
-	// logged user is already stored in session.
-	session.myDecoration = true;
-	return session;
-};
-
 // simple app example
 var autobahnApp = autobahn.app({
-	express: app,
 	port:3000,
-
-	loggedIn: loggedIn,
-
+	// initialise context for each request
+	initContext: function(context){
+		// do something
+		return context;
+	},
+	// Decorate session when logged in. 
+	// Used by login middleware and chained API
+	loggedIn: function(session) {
+		// logged user is already stored in session.
+		session.myDecoration = true;
+		return session;
+	},
 	// Returns current request modes depending on session. 
 	// Used by "modes" middleware and chained API (on login).
 	sessionModes: function(session) 
@@ -48,14 +49,13 @@ var autobahnApp = autobahn.app({
 			return { roles: "public" }; 
 	},
 	// login handler (used by login middleware and chained API)
-	loginHandlers: autobahn.login.createHandlers({
+	loginConfig: {
 		store: "user",			// users collection (deepjs protocol or direct reference).
 		encryption: "sha1",		// how compare login
 		loginField: "email", 		// which field to look in posted json.
-		passwordField: 'password',  // same
-		loggedIn: loggedIn 			// what to do when login match
-	})
-});
+		passwordField: 'password'  // same
+	}
+}, app);
 
 app
 // set simple session management (pure expressjs)
@@ -73,7 +73,7 @@ app
 .use(autobahn.modes.middleware(autobahnApp.sessionModes)) // assign OCM modes to each incoming req. store it in previously created context
 // ------ login and logout
 .post("/logout", autobahn.logout.middleware()) 	// catch post on /logout and break session.
-.post("/login", autobahn.login.middleware(autobahnApp.loginHandlers))  // catch post on /login and try to login
+.post("/login", autobahn.login.middleware(autobahnApp))  // catch post on /login and try to login
 // ------ Your maps-to-* middleware
 .use(autobahn.restful.map(require("./server/services")))	// deep-restful map-to-services
 .use(autobahn.html.map(require("./server/html")))			// deep-views/deep-routes map-to-html rendering.
@@ -99,3 +99,4 @@ var repl = require("repl")
 	input: process.stdin,
 	output: process.stdout
 });
+
