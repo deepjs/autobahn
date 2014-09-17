@@ -259,5 +259,5 @@ Imagine that you produce different expressjs skeleton/autobhan js app in the sam
 You should want to switch from one to another and/or execute each in its own context.
 For that you have two method that encapsulate the provided app in chain context.
 
-	* deep.app(appObj) : start a contextualised chain that hold appObj in its context. (advanced) 
-	* .app(appObj) : from anywhere in a chain, hold appObj in its context. (advanced)
+* deep.app(appObj) : start a contextualised chain that hold appObj in its context. (advanced) 
+* .app(appObj) : from anywhere in a chain, hold appObj in its context. (advanced)
