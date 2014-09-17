@@ -170,7 +170,9 @@ module.exports = {
 		how:"<title>html from server</title>",
 		where:"dom.appendTo::head"
 	}),
-	body:deep.View({
+	index:deep.View({
+		how:"swig::/app.html",	// load index from www
+		where:"dom.appendTo::",		// NO Selector says : use html merge rules (see deep-jquery)
 		subs:{
 			topbar:deep.View({
 				how:"<div>topbar</div>",
@@ -187,11 +189,7 @@ module.exports = {
 				where:"dom.htmlOf::#content"
 			})
 		}
-	}),
-	index:deep.View({
-		how:"swig::/index.html",	// load index from www
-		where:"dom.appendTo::"		// NO Selector says : use html merge rules (see deep-jquery)
-	})
+	})	
 };
 ```
 
