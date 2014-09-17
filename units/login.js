@@ -15,7 +15,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                 session.decorated = true;
                 return session;
             };
-            return {
+            return { // return an "autobahnjs app". will be used as "this" in tests (see below).
                 protocols: deep.ocm({
                     'public': {
                         test: { 
