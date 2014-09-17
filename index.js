@@ -4,20 +4,11 @@
  */
 var deep = require("deepjs"),
     app = require("./lib/app"),
+    utils = require("./lib/utils"),
     crypto = require("crypto");
 
 require("deep-restful/lib/collection"); // could be util
 require("deep-restful/lib/chain"); // deepjs homogeneous restful chain API
-
-//________________________________________  Hash utils
-deep.utils.Hash = function(string, algo) {
-    return crypto.createHash(algo || 'sha1').update(string).digest('hex');
-};
-deep.transformers.Hash = function(algo) {
-    return function(node) {
-        return deep.utils.Hash(node.value, algo);
-    };
-};
 
 deep.coreUnits = deep.coreUnits || [];
 deep.coreUnits.push(
