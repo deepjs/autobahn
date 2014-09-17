@@ -16,7 +16,7 @@ Example of soustractive synthesis : "admin" is full rights, "user" and "public" 
 ```javascript
 
 var myServiceMap = {
-	admin:deep.store.Collection.create(null, [{ id:"e1", title:"hello" }, { id:"e2", title:"world" }]),
+	admin:deep.Collection(null, [{ id:"e1", title:"hello" }, { id:"e2", title:"world" }]),
 	public:{
 		backgrounds:["this::../admin", deep.AllowOnly("get","range")]
 	},
@@ -48,5 +48,5 @@ var myService = deep.ocm(myServiceMap, { sensibleTo:"roles", strict:true });
 (strict:true means : if any of asked modes is not present : return empty object (+ debug log))
 
 ==> on usage :
-deep.setModes("roles",["dev","bloutch"])
+deep.Modes("roles",["dev","bloutch"])
 
