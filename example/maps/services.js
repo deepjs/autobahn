@@ -7,7 +7,10 @@ require("autobahnjs/lib/utils"); /// load deep.transformers.Hash
 
 module.exports = {
 	"/user": deep.ocm({
-		dev: deep.Collection(null, [{ id:"e1", email:"john@doe.com", password:deep.utils.Hash("test1234") }]),
+		dev: deep.Collection(null, [
+			{ id:"e1", email:"john@doe.com", password:deep.utils.Hash("test1234") },
+			{ id:"e2", email:"test@doe.com", password:deep.utils.Hash("test4321") }
+		]),
 		prod: deep.Mongo(null, "mongodb://127.0.0.1:27017/yourdb", "user"),
 		admin:{
 			schema:{
@@ -27,9 +30,7 @@ module.exports = {
 				}
 			}
 		},
-		"public": {
-			// nothing to do
-		}
+		"public":deep.AllowOnly()
 	}, {
 		protocol: "user",
 		sensibleTo: ["env","roles"]
