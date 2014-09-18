@@ -140,6 +140,9 @@ var repl = require("repl")
 ```
 
 ### Example of restful map
+
+For full info on how managing/designing restful stores, see deep-restful and deepjs core documentation.
+
 ```javascript
 var deep = require("deepjs/deep");
 require("deep-mongo");
@@ -161,6 +164,10 @@ module.exports = {
 ```
 
 ### Example of html map
+
+For full info on how managing/designing html routes map, see deep-views and deep-routes documentation.
+
+
 ```javascript
 var deep = require("deepjs");
 require("deep-views/lib/view");
@@ -231,7 +238,7 @@ Open your browser and try by example :
 `http://127.0.0.1:3000/foo/?bar`
 ...
 
-And with your prefered restful client, you should try to post/put/patch/Del/get/range/... to /foo service.
+And with your prefered restful client, you should try to post/put/patch/del/get/range/... to /foo service.
 
 ## Usage from "inside"
 
@@ -259,6 +266,12 @@ deep.login({ email:"john@doe.com", password:"..." }) // endoss localy user ident
 .done(function(s){ /*...*/ })
 .fail(/*...*/);
 ```
+
+deepjs core provides additionnaly the `.modes(...)` API that allow you, by example, to do :
+```javascript
+deep.modes({ roles:"admin" }).restful("user").get().log(); // you should see an array with users.
+```
+
 
 
 ## Manage multiple app (advanced)
