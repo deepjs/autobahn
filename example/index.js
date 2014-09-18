@@ -16,6 +16,7 @@ deep.context("cwd", __dirname);
 
 // assign default modes.
 deep.Modes({
+	env:"dev",
 	roles:"public"
 });
 
