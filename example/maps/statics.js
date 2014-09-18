@@ -1,4 +1,4 @@
-var deep = require("deepjs/deep");
+var deep = require("deepjs");
 // map for static files served by server (the map itself could be OCM)
 module.exports = {
 	"/": [{ // serve root
