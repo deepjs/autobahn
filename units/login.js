@@ -15,7 +15,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                 session.decorated = true;
                 return session;
             };
-            return { // return an "autobahnjs app". will be used as "this" in tests (see below).
+            return autobahn.app({ // return an "autobahnjs app". will be used as "this" in tests (see below).
                 protocols: deep.ocm({
                     'public': {
                         test: { 
@@ -45,7 +45,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         roles: 'public'
                     };
                 },
-                loginHandlers: autobahn.login.createHandlers({
+                loginConfig: {
                     encryption: 'sha1',
                     store: deep.Collection(null, [{
                         id: 'u1',
@@ -59,15 +59,14 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
                         valid:true
                     }]),
                     loginField: 'email',
-                    passwordField: 'password',
-                    loggedIn: loggedIn
-                })
-            };
+                    passwordField: 'password'
+                }
+            });
         },
         tests: {
             login: function() {
                 return deep.app(this)
-                    .roles('public')
+                    .modes('roles', 'public')
                     .login({
                         email: 'toto@bloup.com',
                         password: 'test'
@@ -86,7 +85,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
             },
             session: function() {
                 return deep.app(this)
-                    .roles('public')
+                    .modes('roles', 'public')
                     .session({
                         user: {
                             id: 'u1',
@@ -110,7 +109,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
             },
             impersonate_id: function() {
                 return deep.app(this)
-                    .roles('public')
+                    .modes('roles', 'public')
                     .impersonate({
                         id: 'u1'
                     })
@@ -132,7 +131,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
             },
             impersonate_email: function() {
                 return deep.app(this)
-                    .roles('public')
+                    .modes('roles', 'public')
                     .impersonate({
                         email: 'toto@bloup.com'
                     })
@@ -154,7 +153,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
             },
             login_logout: function() {
                 return deep.app(this)
-                    .roles('public')
+                    .modes('roles', 'public')
                     .login({
                         email: 'toto@bloup.com',
                         password: 'test'
@@ -171,7 +170,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
             },
             impersonate_logout: function() {
                 return deep.app(this)
-                    .roles('public')
+                    .modes('roles', 'public')
                     .impersonate({
                         email: 'toto@bloup.com'
                     })
@@ -187,7 +186,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
             },
             login_impersonate_logout: function() {
                 return deep.app(this)
-                    .roles('public')
+                    .modes('roles', 'public')
                     .login({
                         email: 'toto@bloup.com',
                         password: 'test'
@@ -212,7 +211,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
             },
             protocols_public: function() {
                 return deep.app(this)
-                    .roles('public')
+                    .modes('roles', 'public')
                     //.logContext("protocols")
                     /*.done(function(){
                         console.log("_____________________________________________protocols : ", this._context.protocols())
@@ -222,7 +221,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
             },
             protocols_user: function() {
                 return deep.app(this)
-                    .roles('user')
+                    .modes('roles', 'user')
                     //.logContext("protocols")
                     .done(function(){
                         console.log("protocols : ", this._context.protocols())
@@ -232,7 +231,7 @@ define(['require', 'deepjs', 'autobahnjs'], function(require, deep, autobahn) {
             },
             protocols_login_user: function() {
                 return deep.app(this)
-                    .roles('public')
+                    .modes('roles', 'public')
                     .login({
                         email: 'toto@bloup.com',
                         password: 'test'
