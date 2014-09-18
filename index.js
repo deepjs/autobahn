@@ -4,8 +4,7 @@
  */
 var deep = require("deepjs"),
     app = require("./lib/app"),
-    utils = require("./lib/utils"),
-    crypto = require("crypto");
+    utils = require("./lib/utils");
 
 require("deep-restful/lib/collection"); // could be util
 require("deep-restful/lib/chain"); // deepjs homogeneous restful chain API
