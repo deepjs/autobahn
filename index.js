@@ -15,12 +15,9 @@ deep.coreUnits.push(
 );
 
 module.exports = {
-    app:function(config, expressApp){
-        var app = deep.utils.copy(config);
-        app.express = expressApp;
-        var handler = this.login.createHandlers(config);
-        deep.up(app, handler);
-        return app;
+    // autobahn app contruction
+    app:function(config){
+        return deep.up({}, config, this.login.createHandlers(config));
     },
     /* Middlewares */
     context: require("./lib/middleware/context"),
