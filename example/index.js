@@ -20,20 +20,18 @@ deep.Modes({
 	roles:"public"
 });
 
-//_________________________ Start your app construction
-var app = express();
 
-// simple app example
+// simple autobahn app example
 var autobahnApp = autobahn.app({
 	port:3000,
 	// initialise context for each request
 	initContext: function(context){
-		// do something (could be asynch : if so return a promise)
+		// do something (could be asynch : if so, return a promise)
 		return context;
 	},
 	// Decorate session when logged in. 
 	// Used by login middleware and chained API
-	// (could be asynch : if so return a promise)
+	// (could be asynch : if so, return a promise)
 	loggedIn: function(session) {
 		// logged user is already stored in session.
 		session.myDecoration = true;
@@ -57,7 +55,10 @@ var autobahnApp = autobahn.app({
 		loginField: "email", 		// which field to look in posted json.
 		passwordField: 'password'  // same
 	}
-}, app);
+});
+
+//_________________________ expressjs routing
+var app = express();
 
 app
 // set simple session management (pure expressjs)
@@ -90,7 +91,7 @@ app
 })
 .listen(autobahnApp.port);
 
-// bind global app. Allow us to apply login/logout/impersonate (and more) from chained API.
+// bind global app. Allow us to apply login/logout/impersonate call through this "app" from chained API.
 deep.App(autobahnApp);
 
 console.log("server is listening on port : ", autobahnApp.port);
