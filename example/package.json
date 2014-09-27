@@ -14,7 +14,7 @@
     "deep-mongo": ">=0.6.0",
     "deep-node": ">=0.3.0",
     "deep-restful": ">=0.2.2",
-    "deep-routes": ">=0.3.5",
+    "deep-routes": ">=0.4.0",
     "deep-shell": ">=0.3.0",
     "deep-swig": ">=0.5.1",
     "deep-views": ">=0.1.1",
