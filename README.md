@@ -1,5 +1,11 @@
 # autobahnjs
 
+
+WARNING : Deprecated. Use [deep-app](https://github.com/deepjs/deep-jquery-http) instead. 
+
+
+
+
 deepjs/server oriented tools and middlewares for expressjs.
 
 Autobahnjs comes with two kind of tools :
